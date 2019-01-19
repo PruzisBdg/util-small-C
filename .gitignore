@@ -1,4 +1,14 @@
 # unit test coverage files.
 *.gcda
-*.gnco
+*.gcno
+# gcovr results (for now)
+gcovr*.html
+# in projects
+*.o
 *.exe
+# backups from e.g Winmerge
+*.bak
+# libs
+*.a
+#copies
+* - Copy.*

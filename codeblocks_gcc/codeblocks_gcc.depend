@@ -1,0 +1,389 @@
+# depslib dependency file v1.0
+1479836070 source:c:\spj6\swr\util\src\copybytesu8.c
+	"util.h"
+
+1546996687 c:\spj6\swr\util\public\util.h
+	"libs_support.h"
+	"bit_field.h"
+
+1546142215 c:\spj6\swr\util\src\libs_support.h
+	"GenericTypeDefs.h"
+	<stddef.h>
+	<stdio.h>
+
+1506991560 c:\spj6\swr\util\generictypes\generictypedefs.h
+
+1479831299 source:c:\spj6\swr\util\src\ascii_num\got_float_from_ascii.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\ascii_num\read_binary_word.c
+	"libs_support.h"
+	"util.h"
+
+1547004299 source:c:\spj6\swr\util\src\ascii_num\read_dirty_int.c
+	"libs_support.h"
+	"util.h"
+	<ctype.h>
+	"arith.h"
+
+1546995915 c:\spj6\swr\util\arith_incl\arith.h
+	"GenericTypeDefs.h"
+
+1479836070 source:c:\spj6\swr\util\src\ascii_num\read_dirty_int_pass_char.c
+	"libs_support.h"
+	"util.h"
+	<ctype.h>
+	"arith.h"
+
+1479836070 source:c:\spj6\swr\util\src\ascii_num\read_next_float.c
+	"libs_support.h"
+	"util.h"
+	<ctype.h>
+	"arith.h"
+
+1479831319 source:c:\spj6\swr\util\src\bits\idx_to_1st_bit_set_u16.c
+	"libs_support.h"
+	"util.h"
+
+1479831299 source:c:\spj6\swr\util\src\bits\idx_to_1st_bit_set_u32.c
+	"libs_support.h"
+	"util.h"
+
+1479831299 source:c:\spj6\swr\util\src\bits\num_bits_set_u16.c
+	"libs_support.h"
+	"util.h"
+
+1479831299 source:c:\spj6\swr\util\src\bits\num_bits_set_u32.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copyconstbytesu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copyconstintsu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copyintsu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\fill_floats_u8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\fillbytesu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\fillintsu8.c
+	"util.h"
+
+1546145652 source:c:\spj6\swr\util\src\hexascii\byte_to_hexascii.c
+	"libs_support.h"
+	"util.h"
+
+1546145538 source:c:\spj6\swr\util\src\hexascii\get_next_hexascii_byte.c
+	"libs_support.h"
+	"util.h"
+
+1546145806 source:c:\spj6\swr\util\src\hexascii\get_next_hexascii_int.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\hexascii\hex_to_nibble.c
+	"libs_support.h"
+	"util.h"
+
+1546145587 source:c:\spj6\swr\util\src\hexascii\hexascii_to_byte.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\hexascii\high_nibble_to_hexascii.c
+	"libs_support.h"
+	"util.h"
+
+1546145851 source:c:\spj6\swr\util\src\hexascii\int_to_hexascii_nospace.c
+	"libs_support.h"
+	"util.h"
+
+1546145862 source:c:\spj6\swr\util\src\hexascii\int_to_hexascii_space.c
+	"libs_support.h"
+	"util.h"
+
+1546053666 source:c:\spj6\swr\util\src\hexascii\is_hexascii.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\hexascii\low_nibble_to_hexascii.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\hexascii\nibble_to_hexascii.c
+	"libs_support.h"
+	"util.h"
+
+1546057571 source:c:\spj6\swr\util\src\misc\endstr.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+
+1479836070 source:c:\spj6\swr\util\src\misc\tbl_search_ascending_key_u16.c
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+
+1479836070 source:c:\spj6\swr\util\src\queues\byte_queue.c
+	"libs_support.h"
+	"util.h"
+
+1289592110 source:c:\spj6\swr\util\src\repeat_idx_func.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\sumbytesu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\sumintsu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\swapbytesu8.c
+	"util.h"
+
+1546124550 source:c:\spj6\swr\util\src\timedate\iso8601_str_to_secs.c
+	"libs_support.h"
+	"util.h"
+	<stdio.h>
+
+1479836070 source:c:\spj6\swr\util\src\timedate\legal_ymdhms.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\timedate\secs_to_hms.c
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+
+1546124669 source:c:\spj6\swr\util\src\timedate\secs_to_hms_str.c
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+	<stdio.h>
+
+1546053722 source:c:\spj6\swr\util\src\timedate\secs_to_ymdhms.c
+	"libs_support.h"
+	"util.h"
+
+1546053737 source:c:\spj6\swr\util\src\timedate\secs_to_ymdhms_str.c
+	"libs_support.h"
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\timedate\ymdhms_to_secs.c
+	"libs_support.h"
+	"util.h"
+
+1546053752 source:c:\spj6\swr\util\src\timedate\ymdhms_to_str.c
+	"libs_support.h"
+	"util.h"
+	<stdio.h>
+	<string.h>
+
+1479836070 source:c:\spj6\swr\util\src\zerobytesu8.c
+	"libs_support.h"
+	"util.h"
+
+1547418553 source:c:\spj6\swr\util\codeblocks_gcc\main.c
+	<stdio.h>
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+
+1506974610 source:c:\spj6\swr\util\src\stores\c8_bag.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<string.h>
+	<ctype.h>
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+
+1507313992 c:\spj6\swr\util\public\bit_field.h
+
+1506964416 source:c:\spj6\swr\util\src\stores\u8_bag.c
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<string.h>
+	<ctype.h>
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+
+1546125732 source:c:\spj6\swr\util\src\timedate\secs_to_hr_min_str.c
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+	<stdio.h>
+
+1546049288 source:c:\spj6\swr\util\src\misc\safe_string.c
+	"libs_support.h"
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+	<string.h>
+	<ctype.h>
+
+1534248272 source:c:\spj6\swr\util\src\misc\string_soft_match.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+	<ctype.h>
+	<stdio.h>
+
+1546130133 source:c:\spj6\swr\util\src\misc\text_line_builder.c
+	"libs_support.h"
+	<string.h>
+	<stdio.h>
+	"systime.h"
+	"arith.h"
+	"text_line_builder.h"
+
+1478274134 c:\spj6\swr\tiny2\public\systime.h
+	"GenericTypeDefs.h"
+	<timer.h>
+
+1487616092 c:\spj6\swr\util\public\text_line_builder.h
+	"libs_support.h"
+	<string.h>
+	<stdio.h>
+	"systime.h"
+	"arith.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\copybytesu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\copyconstbytesu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\copyconstintsu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\copyintsu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\fill_floats_u8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\fillbytesu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\fillintsu8.c
+	"util.h"
+
+1479836070 source:c:\spj6\swr\util\src\copys_fills\zerobytesu8.c
+	"libs_support.h"
+	"util.h"
+
+1484338300 source:c:\spj6\swr\util\src\endians\reverse_u16.c
+	"libs_support.h"
+	"util.h"
+
+1484338510 source:c:\spj6\swr\util\src\endians\reverse_u32.c
+	"libs_support.h"
+	"util.h"
+
+1546145685 source:c:\spj6\swr\util\src\hexascii\get_next_hexascii_byte_lenient.c
+	"libs_support.h"
+	"util.h"
+
+1546145822 source:c:\spj6\swr\util\src\hexascii\get_next_hexascii_u16.c
+	"libs_support.h"
+	"util.h"
+
+1546145839 source:c:\spj6\swr\util\src\hexascii\get_next_hexascii_u32.c
+	"libs_support.h"
+	"util.h"
+
+1546049446 source:c:\spj6\swr\util\src\hexascii\hex_ascii_to_u16.c
+	"libs_support.h"
+	"util.h"
+
+1546049458 source:c:\spj6\swr\util\src\hexascii\hex_ascii_to_u32.c
+	"libs_support.h"
+	"util.h"
+
+1495726890 source:c:\spj6\swr\util\src\network\http_parse.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+	<ctype.h>
+
+1490207162 source:c:\spj6\swr\util\src\network\mac_addr.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+
+1546049330 source:c:\spj6\swr\util\src\parsing\find_outer_braces.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+
+1546142040 source:c:\spj6\swr\util\src\parsing\strip_whitespace.c
+	"libs_support.h"
+	"util.h"
+	<stddef.h>
+	<ctype.h>
+
+1546057571 source:c:\spj6\swr\util\src\safe_string\endstr.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+
+1546049288 source:c:\spj6\swr\util\src\safe_string\safe_string.c
+	"libs_support.h"
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+	<string.h>
+	<ctype.h>
+
+1546145518 source:c:\spj6\swr\util\src\srecord\parse_s_record.c
+	"libs_support.h"
+	"util.h"
+
+1546141086 source:c:\spj6\swr\util\src\heaps\heap_1way_u16.c
+	"libs_support.h"
+	"util.h"
+	"arith.h"
+
+1546142880 source:c:\spj6\swr\util\src\printfs\array_pretty_print_w_header.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+
+1546139767 c:\spj6\swr\util\public\tiny1_stdio.h
+	<stdarg.h>
+	"libs_support.h"
+	"GenericTypeDefs.h"
+	<float.h>
+
+1546036802 source:c:\spj6\swr\util\src\printfs\tiny1_printf_string_heap.c
+	"libs_support.h"
+	"tiny1_stdio.h"
+	<stdarg.h>
+	<string.h>
+	"util.h"
+
+1546141341 source:c:\spj6\swr\util\src\printfs\tiny1_printf.c
+	"tiny1_printf_unit_test.h"
+	"GenericTypeDefs.h"
+	"libs_support.h"
+	<math.h>
+	<ctype.h>
+	"arith.h"
+	"tiny1_stdio.h"
+	<stdarg.h>
+
+1547418748 source:c:\spj6\swr\util\src\network\ip_addr.c
+	"libs_support.h"
+	"util.h"
+	<string.h>
+	<ctype.h>
+
