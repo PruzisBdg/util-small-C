@@ -63,6 +63,7 @@
 		<Compiler>
 			<Add option="-DTPRINT_IS_FLOAT" />
 			<Add directory="../GenericTypes" />
+			<Add directory="../private" />
 			<Add directory="../public" />
 			<Add directory="../arith_incl" />
 			<Add directory="../src" />

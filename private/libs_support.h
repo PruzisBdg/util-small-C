@@ -60,10 +60,14 @@
 // A line with a phrase in each of the supported languages.
 typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 
-#define bool BOOL
-#define true TRUE
-#define false FALSE
+#define TOOL_GCC 1
+#define _TOOL_IS TOOL_GCC
 
+#define bool BOOL
+#define false FALSE
+#define true TRUE
+#include <stddef.h>
+#include <stdio.h>
 
 #endif // LIBS_SUPPORT_H
 

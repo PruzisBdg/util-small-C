@@ -2,7 +2,7 @@
 1479836070 source:c:\spj6\swr\util\src\copybytesu8.c
 	"util.h"
 
-1546996687 c:\spj6\swr\util\public\util.h
+1547433065 c:\spj6\swr\util\public\util.h
 	"libs_support.h"
 	"bit_field.h"
 
@@ -386,4 +386,10 @@
 	"util.h"
 	<string.h>
 	<ctype.h>
+
+1548016499 c:\spj6\swr\util\private\libs_support.h
+	"GenericTypeDefs.h"
+	<stdlib.h>
+	<stddef.h>
+	<stdio.h>
 
