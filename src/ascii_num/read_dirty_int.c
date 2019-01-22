@@ -102,6 +102,11 @@ PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out)
             }
             else                       // else 3 or fewer digits
             {
+               if(digitCnt == 0)       // 1st digit?
+               {
+                  *out = 0;            // then zero accumulator.
+               }
+
                addChToAcc(out, ch);    // so add new digit to these
                digitCnt++;             // and keep going.
             }
