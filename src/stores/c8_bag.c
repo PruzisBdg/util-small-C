@@ -130,7 +130,7 @@ PUBLIC void C8bag_Print(S_C8bag const *m)
    if(sizeof(m->lines[0]) == sizeof(U32)) {
       U8 i;
       for(i = 0; i < _C8bag_NumLines; i++) {
-         printf("  %d: 0x%x\r\n", i, m->lines[i]); }}
+         printf("  %d: 0x%lx\r\n", i, m->lines[i]); }}
 
 }
 
