@@ -1,5 +1,6 @@
 # unit test runners e.g run-test-ascii_num.c.
 run-*.c
+*_Runner.c
 # unit test coverage files.
 *.gcda
 *.gcno
@@ -14,3 +15,7 @@ gcovr*.html
 *.a
 #copies
 * - Copy.*
+# Code::Blocks
+codeblocks_gcc/codeblocks_gcc.depend
+codeblocks_gcc/codeblocks_gcc.layout
+codeblocks_gcc/main.c
