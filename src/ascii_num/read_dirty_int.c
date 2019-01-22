@@ -48,7 +48,6 @@ PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out)
 
    isNeg = 0;
    digitCnt = 0;
-   *out = 0;                           // Parser accumulates result in 'out'. Zero to start.
 
    while(1)
    {
