@@ -434,6 +434,13 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../unit_test/ascii_num/ascii_num.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/ascii_num/test-ascii_num.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/network/network.mak">
 			<Option target="Unity TDD" />
 		</Unit>

@@ -43,25 +43,27 @@ PRIVATE void addChToAcc(S16 *n, U8 ch) { *n = (10 * *n) + ch - '0'; }
 PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out)
 {
    U8 DATA  ch;         // the current char
-   U8 IDATA digitCnt;   // digits so far
-   BIT      isNeg;
+   U8 IDATA digitCnt;   // significant digits so far
+   BIT      isNeg;      // Got preceding '-'
+   BIT      got1st;     // Got a 1st digit, even if it's a leading zero.
 
    isNeg = 0;
    digitCnt = 0;
+   got1st = 0;
 
    while(1)
    {
       ch = *inTxt;                     // char to be handled this pass
 
-      if(ch == '\0' && !digitCnt)      // End of string and no digits?
+      if(ch == '\0' && got1st == 0)    // End of string and no digits, not even zeros?
       {
-         return NULL;                     // then we didn't get a number
+         return NULL;                  // then we didn't get a number
       }
       else                             // otherwise keep going
       {
          if( !isdigit(ch) )            // This char isn't a digit?
          {
-            if(digitCnt)               // but we have at least one already?
+            if(got1st == 1)            // but we had at least one digit already? ...even a zero.
             {
                break;                  // then we have a number; break to return it.
             }
@@ -102,13 +104,17 @@ PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out)
             }
             else                       // else 3 or fewer digits
             {
-               if(digitCnt == 0)       // 1st digit?
+               if(got1st == 0)       // 1st digit?
                {
+                  got1st = 1;
                   *out = 0;            // then zero accumulator.
                }
 
-               addChToAcc(out, ch);    // so add new digit to these
-               digitCnt++;             // and keep going.
+               if(digitCnt > 0 || ch != '0') // Not a leading zero?
+               {
+                  addChToAcc(out, ch); // then add new digit to accumulator
+                  digitCnt++;          // and bump digits count.
+               }
             }
          }
       }
