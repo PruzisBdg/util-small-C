@@ -7,10 +7,11 @@
 int main(void)
 {
     T_IPAddrNum n = 0x55AA55AA;
+    C8 const str[] = "0.0.0.0";
     //C8 const str[] = "0.1.2.3";
     //C8 const str[] =  "16 .32. 48 . 64 ";
     //C8 const str[] =  "just some text";
-    C8 const str[]  = "7.89.22  1.2.3.4tail";
+    //C8 const str[]  = "7.89.22  1.2.3.4tail";
 
     C8 const *p = ReadIPAddr(str, &n);
     C8 b1[_MaxIPAddrChars+1];
