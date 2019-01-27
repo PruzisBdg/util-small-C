@@ -102,6 +102,7 @@
 			<Option target="Release" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../public/wordlist.h" />
 		<Unit filename="../src/SumBytesU8.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -434,6 +435,66 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/wordlist/romstring.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/romstring_b.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_1st_word_has_char.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_1st_words_match.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_1st_words_match_vc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_copy_nth_word.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_delete.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_end_of_word_list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_find_word.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_find_word_cc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_find_word_vc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_get_end_word.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_get_nth_word.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_insert.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_replace.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_word_char_cnt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_word_cnt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_word_delimiter.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_word_in_str.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_words_in_str.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../unit_test/ascii_num/ascii_num.mak">
 			<Option target="Unity TDD" />
 		</Unit>
@@ -452,6 +513,13 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/util_common_pre.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/wordlist/test-wordlist.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/wordlist/wordlist.mak">
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="main.c">

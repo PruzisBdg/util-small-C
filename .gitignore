@@ -19,3 +19,5 @@ gcovr*.html
 codeblocks_gcc/codeblocks_gcc.depend
 codeblocks_gcc/codeblocks_gcc.layout
 codeblocks_gcc/main.c
+
+src/wordlist/wordlist delim.c
