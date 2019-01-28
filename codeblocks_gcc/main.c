@@ -3,6 +3,7 @@
 #include "util.h"
 #include "arith.h"
 #include "wordlist.h"
+#include <string.h>
 
 int main(void)
 {
@@ -24,7 +25,8 @@ int main(void)
 
     printf("IP \"%s\" -> 0x%08lx -> %s, tail = \"%s\"\r\n", str, n, PrintIPAddr(b1, n), p == NULL ? "NULL" : (*p == '\0' ? "\\0" : p));
 #endif
-
-    printf("ret = %d\r\n", Str_1stWordHasChar("   ", ' '));
+   C8 b0[100];
+   strcpy(b0, "abc def ghi");
+    printf("ret = \"%s\"\r\n", Str_Insert(b0, "", 0, 2));
     return 0;
 }

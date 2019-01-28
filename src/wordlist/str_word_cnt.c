@@ -4,7 +4,7 @@
 |
 |--------------------------------------------------------------------------*/
 
-#include "common.h"
+#include "libs_support.h"
 #include "wordlist.h"
 
 /*-----------------------------------------------------------------------------------------
@@ -24,21 +24,21 @@ PUBLIC U8 Str_WordCnt( U8 GENERIC const *str )
    for( cnt = 0;; str++ )              // for each char in str
    {
       ch = *str;
-      
+
       if( ch == 0 ) { return cnt; }    // end of 'str'? return cnt.
-   
-      if( spc )                        // currently parsing spaces? 
+
+      if( spc )                        // currently parsing spaces?
       {
          if( !Str_Delimiter(ch) )      // now got a char?
          {
-         spc = 0;                       
+         spc = 0;
          cnt++;                        // then its another word
          }
       }
       else                             // else currently parsing chars
       {
          if( Str_Delimiter(ch) ) { spc = 1; }  // got space? flip to parsing spaces
-      }   
+      }
    }
 }
 

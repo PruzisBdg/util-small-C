@@ -4,14 +4,14 @@
 |
 |--------------------------------------------------------------------------*/
 
-#include "common.h"
+#include "libs_support.h"
 #include "wordlist.h"
 
 /*-----------------------------------------------------------------------------------------
 |
 |  Str_WordsInStr()
 |
-|  Finds the 1st word in 'wordsToMatch' which matches ANY word in 'str'. Returns an index 
+|  Finds the 1st word in 'wordsToMatch' which matches ANY word in 'str'. Returns an index
 |  to the word in 'wordsToMatch' (NOT 'str') e.g.
 |
 |     Str_WordsInStr("one two three four",  "just four three")
@@ -41,4 +41,4 @@ PUBLIC U8 Str_WordsInStr( U8 GENERIC const *str, U8 GENERIC const *wordsToMatch 
    return _Str_NoMatch;                                        // else no matches between 'wordsToMatch' and 'str'
 }
 
-// ---------------------------------- eof ----------------------------------------- 
+// ---------------------------------- eof -----------------------------------------

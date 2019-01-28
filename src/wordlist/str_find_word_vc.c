@@ -4,10 +4,10 @@
 |
 |--------------------------------------------------------------------------*/
 
-#include "common.h"
+#include "libs_support.h"
 #include "wordlist.h"
 
-extern BIT wordChar(U8 ch);   // true if not space or '\0'
+extern BIT wordChar(U8 ch);
 
 /*-----------------------------------------------------------------------------------------
 |
@@ -31,6 +31,8 @@ PUBLIC U8 Str_FindWord_VC( U8 GENERIC *lst, U8 CONST *str )
    BIT      wasSpc = 1;    // if last char was a space
    BIT      neq = 0;       // when comparing words, '1' if a mismatch
 
+   while( Str_Delimiter(str[idx]) ) { idx++; }  // Advance to start of first word in 'str'. (Or end-of-string if empty).
+
    while(1) 
    {
       ch = *lst++;                              // next char from list
@@ -46,7 +48,7 @@ PUBLIC U8 Str_FindWord_VC( U8 GENERIC *lst, U8 CONST *str )
             return _Str_NoMatch;                // else no match in 'lst'
          }
       }
-      else if( ch == ' ' )                      // next char is space?
+      else if( Str_Delimiter(ch)  )             // Next ch is delimiter?
       {
          if( wasSpc == 0 )                      // last char wasn't space (AND have space now)?
          {

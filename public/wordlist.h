@@ -21,10 +21,10 @@ PUBLIC U8           Str_CopyNthWord( U8 GENERIC const *lst, U8 *out, U8 n, U8 ma
 PUBLIC BIT          Str_WordInStr(   U8 GENERIC const *str, U8 GENERIC const *theWord );
 PUBLIC U8           Str_WordsInStr(  U8 GENERIC const *str, U8 GENERIC const *wordsToMatch );
 PUBLIC BIT          Str_1stWordsMatch( U8 GENERIC const *w1, U8 GENERIC const *w2 );
-PUBLIC U8           Str_WordCharCnt( U8 GENERIC *w );
+PUBLIC U8           Str_WordCharCnt( U8 GENERIC const *w );
 PUBLIC U8 GENERIC * Str_GetEndWord( U8 GENERIC const *lst, U8 n );
 PUBLIC void         Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt );
-PUBLIC void         Str_Insert( U8 GENERIC *dest, U8 GENERIC const *src, U8 start, U8 cnt );
+PUBLIC U8 GENERIC * Str_Insert( U8 GENERIC *dest, U8 GENERIC const *src, U8 start, U8 cnt );
 PUBLIC void         Str_Replace( U8 GENERIC *str, U8 GENERIC const *toFind, U8 GENERIC const * replaceWith, U8 numToReplace, U8 numToInsert );
 
 PUBLIC BIT          Str_Delimiter(U8 ch);          // Word are divied by CRLF or ' '
