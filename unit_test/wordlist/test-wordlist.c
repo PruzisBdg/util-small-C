@@ -249,12 +249,29 @@ void test_Str_Insert(void)
 {
     typedef struct { C8 const *dest; C8 const *src; U8 start; U8 cnt; C8 const *res; C8 const *delimiters; } S_Tst;
 
-    S_Tst const tsts[] = {                                                 // Looking for...
-       { .dest = "", .src = "", .start = 0, .cnt = 0, .res = "" },
+    S_Tst const tsts[] = {                                                       // Insert...
+       // Into an empty destination.
+       { .dest = "", .src = "", .start = 0, .cnt = 0, .res = "" },                           // none of nothing ("") into start of nothing -> nothing "".
+       { .dest = "", .src = "", .start = 0, .cnt = 3, .res = "" },                           // something of nothing ("") into start of nothing -> nothing "".
+       { .dest = "", .src = "", .start = 3, .cnt = 3, .res = "" },                           // something of nothing ("") into beyond start of nothing -> nothing "".
+       { .dest = "", .src = "", .start = 3, .cnt = 0, .res = "" },                           // none of nothing ("") into beyond start of nothing -> nothing "".
+
+       { .dest = "", .src = "abc def", .start = 0, .cnt = 0, .res = "" },                    // none of nothing ("") into start of nothing -> nothing "".
+       { .dest = "", .src = "abc def", .start = 0, .cnt = 1, .res = "abc" },                 // 1 word from "abc def" into start of nothing -> "abc".
+       { .dest = "", .src = "abc def", .start = 5, .cnt = 1, .res = "abc" },                 // 1 word from "abc def" into 6th of nothing -> "abc".
+       { .dest = "", .src = "abc def", .start = 3, .cnt = 2, .res = "abc def" },             // 2 words from "abc def" into 4th of nothing -> "abc def".
+
+       { .dest = "  ", .src = "", .start = 0, .cnt = 0, .res = "  " },                       // none of nothing ("") into start of just delimiters -> unchanged "".
+
+       { .dest = "", .src = "  ", .start = 0, .cnt = 3, .res = "" },                         // something of just delimiters ("  ") into start of nothing -> nothing "".
+       { .dest = "", .src = "  ", .start = 3, .cnt = 3, .res = "" },                         // something of just delimiters ("  ") into beyond start of nothing -> nothing "".
+       { .dest = "", .src = "  ", .start = 3, .cnt = 0, .res = "" },                         // none of just delimiters ("  ") into beyond start of nothing -> nothing "".
 
        { .dest = "abc def ghi", .src = "", .start = 0, .cnt = 2, .res = "abc def ghi" },
 
        { .dest = "abc def ghi", .src = "pqr", .start = 0, .cnt = 1, .res = "pqr abc def ghi" },
+       { .dest = "abc def ghi", .src = "pqr", .start = 1, .cnt = 1, .res = "abc pqr def ghi" },
+       { .dest = "abc...def.ghi", .src = "pqr", .start = 1, .cnt = 1, .res = "abc...pqr.def.ghi", .delimiters = "." },
      };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
