@@ -249,7 +249,7 @@ void test_Str_Insert(void)
 {
     typedef struct { C8 const *dest; C8 const *src; U8 start; U8 cnt; C8 const *res; C8 const *delimiters; } S_Tst;
 
-    S_Tst const tsts[] = {                                                       // Insert...
+   S_Tst const tsts[] = {                                                       // Insert...
        // Into an empty destination.
        { .dest = "", .src = "", .start = 0, .cnt = 0, .res = "" },                           // none of nothing ("") into start of nothing -> nothing "".
        { .dest = "", .src = "", .start = 0, .cnt = 3, .res = "" },                           // something of nothing ("") into start of nothing -> nothing "".
@@ -267,12 +267,25 @@ void test_Str_Insert(void)
        { .dest = "", .src = "  ", .start = 3, .cnt = 3, .res = "" },                         // something of just delimiters ("  ") into beyond start of nothing -> nothing "".
        { .dest = "", .src = "  ", .start = 3, .cnt = 0, .res = "" },                         // none of just delimiters ("  ") into beyond start of nothing -> nothing "".
 
-       { .dest = "abc def ghi", .src = "", .start = 0, .cnt = 2, .res = "abc def ghi" },
+       { .dest = "abc def ghi", .src = "", .start = 0, .cnt = 2, .res = "abc def ghi" },    // something of nothing into multiple words -> unchanged.
 
-       { .dest = "abc def ghi", .src = "pqr", .start = 0, .cnt = 1, .res = "pqr abc def ghi" },
+       { .dest = "abc def ghi", .src = "pqr",         .start = 0, .cnt = 1, .res = "pqr abc def ghi" },
+       { .dest = "abc def ghi", .src = "pqr tuv",     .start = 1, .cnt = 1, .res = "abc pqr def ghi" },
+       { .dest = "abc def ghi", .src = "pqr tuv xyz", .start = 1, .cnt = 2, .res = "abc pqr tuv def ghi" },
+
+       { .dest = "abc def ghi", .src = "..pqr",         .start = 0, .cnt = 1, .res = "pqr;abc def ghi", .delimiters = ";. " },
+
+       // Request to insert more words than there are in 'src' -> All words in src are inserted
+       { .dest = "abc def ghi", .src = "pqr tuv", .start = 1, .cnt = 10, .res = "abc pqr tuv def ghi", .delimiters = "" },
+
        { .dest = "abc def ghi", .src = "pqr", .start = 1, .cnt = 1, .res = "abc pqr def ghi" },
+
+       // With non-default delimiter; must use the delimiter at the insertion point.
        { .dest = "abc...def.ghi", .src = "pqr", .start = 1, .cnt = 1, .res = "abc...pqr.def.ghi", .delimiters = "." },
-     };
+
+       // With multiple delimiters; the delimiter used for insertion must be the 1st one
+       { .dest = "abc;..def.ghi", .src = "pqr", .start = 1, .cnt = 1, .res = "abc;..pqr;def.ghi", .delimiters = ";." },
+    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
    {
@@ -290,5 +303,33 @@ void test_Str_Insert(void)
    }
 }
 
+/* ------------------------------------- test_Str_Delete ------------------------------------- */
+
+//PUBLIC U8 GENERIC * Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt )
+
+
+void test_Str_Delete(void)
+{
+    typedef struct { C8 const *lst; U8 start, cnt; C8 const * res; C8 const *delimiters; } S_Tst;
+
+    S_Tst const tsts[] = {                                                       // Insert...
+
+    };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      if(t->delimiters != NULL) { Str_Delimiters = t->delimiters; }
+
+      U8 dest[100];
+      strcpy(dest, t->lst);
+
+      C8 const * rtn = Str_Delete(dest, t->start, t->cnt);
+      C8 b0[100];
+
+      sprintf(b0, "\"%s\" + \"%s\"[%d],%d -> \"%s\"", t->lst, t->start, t->cnt, dest);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->res, dest, b0);
+   }
+}
 
 // ----------------------------------------- eof --------------------------------------------
