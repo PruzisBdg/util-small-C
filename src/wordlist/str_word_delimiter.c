@@ -2,7 +2,8 @@
 |
 |        The inter-word delimiter for space-delimited word lists.
 |
-|  If Str_Delimiters[] is left NULL then SPC is the only delimiter.
+|  If Str_Delimiters[] is left NULL OR if Str_Delimiters[] == "" then SPC is
+|  the only delimiter.
 |
 |--------------------------------------------------------------------------*/
 
@@ -25,28 +26,29 @@ PUBLIC C8 const * Str_Delimiters = NULL;
 
 PRIVATE BIT chIsDelimiter(U8 ch)
 {
-    if( Str_Delimiters == NULL )
+    if( Str_Delimiters != NULL )                // There's a delimiters string? AND...
     {
-        return ch == ' ' ? 1 : 0;
-    }
-    else
-    {
-        U8 i;
-        for(i = 0; i < _MaxDelimiters; i++)
-        {
-            U8 dl = Str_Delimiters[i];
+       if(Str_Delimiters[0] != '\0')            // ...that string is not empty?
+       {
+         U8 i;
+         for(i = 0; i < _MaxDelimiters; i++)    // For no more than '_MaxDelimiters'
+         {
+            U8 dl = Str_Delimiters[i];          // For each delimiter specified in that string...
 
-            if(dl == '\0')
+            if(dl == '\0')                      // End of list
             {
-                return 0;
+               return 0;                        // then 'ch' was not found, is not a delimiter.
             }
-            else if(ch == dl)
+            else if(ch == dl)                   // 'ch' is in this delimiters list?
             {
-                return 1;
+               return 1;                        // then yes, 'ch' is delimiter.
             }
-        }
-        return 0;
+         }
+         return 0;                              // Found no match for 'ch' and Exceeded length-limit.
+       }
     }
+    // If no list or empty list then SPC is the default delimiter.
+    return ch == ' ' ? 1 : 0;
 }
 
 /*-----------------------------------------------------------------------------------------
