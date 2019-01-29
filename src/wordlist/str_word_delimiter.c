@@ -67,18 +67,9 @@ PUBLIC BIT wordChar(U8 ch)
 |
 |  Str_Delimiter
 |
-|  In word string, words are separated by spaces commas or newlines.
+|  Return 1 if 'ch' is a delimiter, else 0.
 |
 ------------------------------------------------------------------------------------------*/
-#if 0
-PUBLIC BIT Str_Delimiter(U8 ch)
-{
-   if( ch == ' ' || ch == ',' || ch == '\t' || ch == '\r' || ch == '\n' || (Str_DiceComposites && ch == '.') )
-      { return 1; }
-   else
-      { return 0; }
-}
-#else
 PUBLIC BIT Str_Delimiter(U8 ch)
 {
    if( chIsDelimiter(ch) || (Str_DiceComposites && ch == '.') )
@@ -87,6 +78,32 @@ PUBLIC BIT Str_Delimiter(U8 ch)
       { return 0; }
 }
 
-#endif
+/*-----------------------------------------------------------------------------------------
+|
+|  Str_1stDelimiter
+|
+|  Return the 1st delimiter in Str_Delimiters[], SPC ' ' is Str_Delimiters is NULL.
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 Str_1stDelimiter(void)
+{
+   if( Str_Delimiters == NULL )              // Not defined?
+   {
+      return ' ';                            // then default to SPC.
+   }
+   else
+   {
+      if(Str_Delimiters[0] == '\0')          // else define dbut empty?
+      {
+         return ' ';                         // then, again, default to SPC.
+      }
+      else
+      {
+         return Str_Delimiters[0];           // else return 1st delimiter in list.
+      }
+   }
+}
+
 
 // ------------------------------ eof -----------------------------------------
