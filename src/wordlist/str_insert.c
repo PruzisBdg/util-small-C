@@ -62,6 +62,8 @@ PUBLIC U8 GENERIC * Str_Insert( U8 GENERIC *dest, U8 GENERIC const *src, U8 star
 
       if(*endOfInsert != '\0')                                       // NOT end-of-string?...
       {                                                              // ...meaning 'src' had at least word, so there's something to insert.
+         while( Str_Delimiter(*src) ) { src++; }                     // Bypass any leading delimiters in 'src'.
+
          U8 bytesToInsert = (U8)(endOfInsert - src + 1);
 
          if(bytesToInsert > 0)                                       // Bytes to be inserted/appended?
