@@ -4,7 +4,7 @@
 |
 |--------------------------------------------------------------------------*/
 
-#include "common.h"
+#include "libs_support.h"
 #include "wordlist.h"
 #include <string.h>
 
@@ -16,13 +16,11 @@
 |
 ------------------------------------------------------------------------------*/
 
-PUBLIC void Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt )
+PUBLIC U8 GENERIC * Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt )
 {
-   #if _TOOL_IS == TOOL_CC430
-   strcpy( (C8*)Str_GetNthWord(lst, start), (C8 const *)Str_GetNthWord(lst, start+cnt) );
-   #else
-   strcpy( Str_GetNthWord(lst, start), Str_GetNthWord(lst, start+cnt) );
-   #endif
+   // Note: We can case return from Str_GetNthWord() to non-const because we know that
+   // return is 'lst' (which is non-const).
+   return strcpy( (C8*)Str_GetNthWord(lst, start), (C8 const *)Str_GetNthWord(lst, start+cnt) );
 }
 
-// --------------------------- eof ------------------------------- 
+// --------------------------- eof -------------------------------
