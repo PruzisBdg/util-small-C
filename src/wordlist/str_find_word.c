@@ -29,7 +29,7 @@ PUBLIC U8 Str_FindWord( U8 GENERIC const *lst, U8 GENERIC const *str )
    BIT      wasSpc = 1;    // if last char was a space
    BIT      neq = 0;       // when comparing words, '1' if a mismatch
 
-   while( Str_Delimiter(str[idx]) ) { idx++; }  // Advance to start of first word in 'str'. (Or end-of-string if empty).
+   str = Str_StripLeadDelimiters(str);          // Advance to start of first word in 'str'. (Or end-of-string if empty).
 
    while(1)
    {

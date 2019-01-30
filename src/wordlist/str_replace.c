@@ -11,12 +11,12 @@
 |
 |  Str_Replace()
 |
-|  Replace 'numToReplace' words in 'str' with 'numToInsert' words from 'toFind'.
+|  Replace 'numToCut' words in 'str' with 'numToInsert' words from 'toFind'.
 |
 |  Replacement is at the 1st SINGLE word in 'str' which matches the 1st WORD in
 |  'to Find'.
 |
-|  If 'numToReplace' exceeds the number of words in the remainder of the string
+|  If 'numToCut' exceeds the number of words in the remainder of the string
 |  then the whole remainder is replaced.
 |
 |  If 'numToInsert' exceeds the number of words in 'toFind' then all the words
@@ -26,19 +26,23 @@
 |
 ------------------------------------------------------------------------------*/
 
-void Str_Replace( U8 GENERIC *str,
+PUBLIC U8 GENERIC * Str_Replace( U8 GENERIC *str,
                   U8 GENERIC const *toFind,
                   U8 GENERIC const * replaceWith,
-                  U8 numToReplace,
+                  U8 numToCut,
                   U8 numToInsert )
 {
-   U8 findIdx;
-
-   if( (findIdx = Str_FindWord(str, toFind)) != _Str_NoMatch)
+   if(numToCut > 0)
    {
-      Str_Delete(str, findIdx, numToReplace);
-      Str_Insert(str, replaceWith, findIdx, numToInsert);
+      U8 findIdx;
+
+      if( (findIdx = Str_FindWord(str, toFind)) != _Str_NoMatch)
+      {
+         Str_Delete(str, findIdx, numToCut);
+         Str_Insert(str, replaceWith, findIdx, numToInsert);
+      }
    }
+   return str;      // Return destination string, updated or no.
 }
 
 // ----------------------------- eof --------------------------------------

@@ -108,4 +108,23 @@ PUBLIC U8 Str_1stDelimiter(void)
 }
 
 
+/*-----------------------------------------------------------------------------------------
+|
+|  Str_StripLeadDelimiters
+|
+|  Boof past any leading delimiters in 'w'. Return one 1st char of 1st word or end-of-string
+|  whichever is first.
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 GENERIC * Str_StripLeadDelimiters(U8 GENERIC const *w)
+{
+   while( Str_Delimiter(*w) ) {w++;}
+    // Return 'w' as non-const; what the caller gave may have been non-const or no;
+    // the type-modifier will be enforced on the caller's scope.
+   return (U8 *)w;
+}
+
+
+
 // ------------------------------ eof -----------------------------------------
