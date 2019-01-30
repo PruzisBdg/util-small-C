@@ -4,7 +4,7 @@
 |
 |--------------------------------------------------------------------------*/
 
-#include "common.h"
+#include "libs_support.h"
 #include "wordlist.h"
 
 /*-----------------------------------------------------------------------------
@@ -26,10 +26,10 @@
 |
 ------------------------------------------------------------------------------*/
 
-void Str_Replace( U8 GENERIC *str, 
-                  U8 GENERIC const *toFind, 
-                  U8 GENERIC const * replaceWith, 
-                  U8 numToReplace, 
+void Str_Replace( U8 GENERIC *str,
+                  U8 GENERIC const *toFind,
+                  U8 GENERIC const * replaceWith,
+                  U8 numToReplace,
                   U8 numToInsert )
 {
    U8 findIdx;
@@ -41,4 +41,4 @@ void Str_Replace( U8 GENERIC *str,
    }
 }
 
-// ----------------------------- eof -------------------------------------- 
+// ----------------------------- eof --------------------------------------
