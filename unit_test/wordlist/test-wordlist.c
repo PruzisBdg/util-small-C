@@ -346,4 +346,35 @@ void test_Str_Delete(void)
    }
 }
 
+/* ------------------------------------- test_Str_Replace ------------------------------------- */
+
+void test_Str_Replace(void)
+{
+   typedef struct { C8 const *str; C8 const *find; C8 const *subst; U8 nCut, nSubst; C8 const * res; C8 const *delimiters; } S_Tst;
+
+    S_Tst const tsts[] = {                                                       // Replace...
+       // Empty source string, hence nothing to find.
+       { .str = "", .find = "", .subst = "", .nCut = 0, .nSubst = 0, .res = "", .delimiters = "" },
+       { .str = "", .find = "", .subst = "", .nCut = 0, .nSubst = 3, .res = "", .delimiters = "" },
+       { .str = "", .find = "", .subst = "", .nCut = 10, .nSubst = 0, .res = "", .delimiters = "" },
+       { .str = "", .find = "abc", .subst = "cde", .nCut = 0, .nSubst = 0, .res = "", .delimiters = "" },
+       { .str = "", .find = "abc", .subst = "cde", .nCut = 1, .nSubst = 1, .res = "", .delimiters = "" },
+    };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      if(t->delimiters != NULL) { Str_Delimiters = t->delimiters; }
+
+      U8 dest[100];
+      strcpy(dest, t->str);
+
+      Str_Replace(dest, t->find, t->subst, t->nCut, t->nSubst);
+      C8 b0[100];
+
+      sprintf(b0, "\"%s\" ? \"%s\"[%d], \"%s\"[%d] -> \"%s\"", t->str, t->find, t->nCut, t->subst, t->nSubst, dest);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->res, dest, b0);
+   }
+}
+
 // ----------------------------------------- eof --------------------------------------------
