@@ -21,6 +21,41 @@ void setUp(void) {
 void tearDown(void) {
 }
 
+
+/* ------------------------------------- test_Str_GetNthWord ------------------------------------------ */
+// PUBLIC U8 GENERIC * Str_GetNthWord( U8 GENERIC const *lst, U8 n )
+
+void test_Str_GetNthWord(void)
+{
+   typedef struct { C8 const *lst; U8 get; C8 const *tail; C8 const *delimiters; } S_Tst;
+
+   S_Tst const tsts[] = {                                                          // Looking for...
+      { .lst = "",      .get = 0,      .tail = "",       .delimiters = "" },           // Empty list, nothing to find -> ""
+      { .lst = "...",   .get = 0,      .tail = "",       .delimiters = "." },          // Just delimiters, nothing to find, also -> ""
+      { .lst = "...",   .get = 5,      .tail = "",       .delimiters = "." },          // Same, but ask for nth which doesn't exist -> ""
+
+
+      { .lst = ";abc tail",         .get = 0,   .tail = "abc tail",     .delimiters = "; " },         // Request 1st word
+      { .lst = "abc...def.ghi",     .get = 1,   .tail = "def.ghi",      .delimiters = "." },          // 2nd word
+      { .lst = "abc..def..ghi",     .get = 2,   .tail = "ghi",          .delimiters = "." },          // Last word
+
+      { .lst = "abc..def..ghi",     .get = 3,   .tail = "",             .delimiters = "." },          // But there's no 4th word
+      { .lst = "abc..def..ghi..",   .get = 3,   .tail = "",             .delimiters = "." },          // Boof past trailing delimiters looking for that 4th word.
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      if(t->delimiters != NULL) { Str_Delimiters = t->delimiters; }
+
+      C8 const * tail = Str_GetNthWord(t->lst, t->get);
+
+      C8 b0[100];
+      sprintf(b0, "\"%s\"[%d] -> \"%s\"", t->lst, t->get, tail);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, tail, b0);
+   }
+}
+
 /* --------------------------------- test_Str_FindWord_DfltDelimiter ------------------------------------ */
 
 void test_Str_FindWord_DfltDelimiter(void)
@@ -236,8 +271,8 @@ void test_Str_GetEndWord(void)
       if(t->delimiters != NULL) { Str_Delimiters = t->delimiters; }
 
       C8 const * rtn = Str_GetEndWord(t->lst, t->nth);
-      C8 b0[100];
 
+      C8 b0[100];
       sprintf(b0, "\"%s\"[%d] -> \"%s\"", t->lst, t->nth, rtn);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, rtn, b0);
    }
@@ -296,8 +331,8 @@ void test_Str_Insert(void)
       strcpy(dest, t->dest);
 
       C8 const * rtn = Str_Insert(dest, t->src, t->start, t->cnt);
-      C8 b0[100];
 
+      C8 b0[100];
       sprintf(b0, "\"%s\" + \"%s\"[%d],%d -> \"%s\"", t->dest, t->src, t->start, t->cnt, dest);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->res, dest, b0);
    }
@@ -339,8 +374,8 @@ void test_Str_Delete(void)
       strcpy(dest, t->lst);
 
       C8 const * rtn = Str_Delete(dest, t->start, t->cnt);
-      C8 b0[100];
 
+      C8 b0[100];
       sprintf(b0, "\"%s\" - [%d],%d -> \"%s\"", t->lst, t->start, t->cnt, dest);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->res, dest, b0);
    }
@@ -359,6 +394,41 @@ void test_Str_Replace(void)
        { .str = "", .find = "", .subst = "", .nCut = 10, .nSubst = 0, .res = "", .delimiters = "" },
        { .str = "", .find = "abc", .subst = "cde", .nCut = 0, .nSubst = 0, .res = "", .delimiters = "" },
        { .str = "", .find = "abc", .subst = "cde", .nCut = 1, .nSubst = 1, .res = "", .delimiters = "" },
+
+       { .str = "abc", .find = "abc", .subst = "cde", .nCut = 1, .nSubst = 1, .res = "cde", .delimiters = "" },
+
+       // Match & replace from 1st word
+       { .str = "abc def ghi jkl", .find = "abc", .subst = "XYZ", .nCut = 1,  .nSubst = 1, .res =  "XYZ def ghi jkl", .delimiters = "" },   // Cut 1st
+       { .str = "abc def ghi jkl", .find = "abc", .subst = "XYZ", .nCut = 2,  .nSubst = 1, .res =  "XYZ ghi jkl", .delimiters = "" },       // Cut 1st & 2nd
+       { .str = "abc def ghi jkl", .find = "abc", .subst = "XYZ", .nCut = 4,  .nSubst = 1, .res =  "XYZ", .delimiters = "" },               // Cut all
+       { .str = "abc def ghi jkl", .find = "abc", .subst = "XYZ", .nCut = 4,  .nSubst = 1, .res =  "XYZ", .delimiters = "" },               // Cut all
+       { .str = "abc def ghi jkl", .find = "abc", .subst = "XYZ", .nCut = 20, .nSubst = 1, .res =  "XYZ", .delimiters = "" },               // Try to cut more word than there are -> cuts all.
+
+       // Match and replace some middle words
+       { .str = "abc def ghi jkl", .find = "def", .subst = "UVW XYZ", .nCut = 1, .nSubst = 2, .res =  "abc UVW XYZ ghi jkl", .delimiters = "" },
+       { .str = "abc def ghi jkl", .find = "def", .subst = "UVW XYZ", .nCut = 2, .nSubst = 2, .res =  "abc UVW XYZ jkl", .delimiters = "" },
+       { .str = "abc def ghi jkl", .find = "def", .subst = "UVW XYZ", .nCut = 3, .nSubst = 2, .res =  "abc UVW XYZ", .delimiters = "" },
+       { .str = "abc def ghi jkl", .find = "def", .subst = "UVW XYZ", .nCut = 9, .nSubst = 2, .res =  "abc UVW XYZ", .delimiters = "" },    // Try to cut more words than are -> cuts all.
+
+       // Match and replace at end
+       { .str = "abc def ghi jkl", .find = "jkl", .subst = "UVW XYZ", .nCut = 1, .nSubst = 2, .res =  "abc def ghi UVW XYZ", .delimiters = "" },
+       { .str = "abc def ghi jkl", .find = "jkl", .subst = "UVW XYZ", .nCut = 3, .nSubst = 2, .res =  "abc def ghi UVW XYZ", .delimiters = "" },
+       { .str = "abc def ghi jkl", .find = "jkl", .subst = "UVW XYZ", .nCut = 9, .nSubst = 2, .res =  "abc def ghi UVW XYZ", .delimiters = "" },    // Try to cut more words than are -> cuts all.
+
+       // Non-matches -> original string unchanged.
+       { .str = "abc def ghi jkl", .find = "",     .subst = "UVW XYZ", .nCut = 1, .nSubst = 2, .res =  "abc def ghi jkl", .delimiters = "" },      // Empty match string.
+       { .str = "abc def ghi jkl", .find = "de",   .subst = "UVW XYZ", .nCut = 1, .nSubst = 2, .res =  "abc def ghi jkl", .delimiters = "" },      // Undermatch
+       { .str = "abc def ghi jkl", .find = "defg", .subst = "UVW XYZ", .nCut = 1, .nSubst = 2, .res =  "abc def ghi jkl", .delimiters = "" },      // Overmatch.
+
+       /* Multiple delimiters.
+
+          1. Here ';' is the 1st delimiter on the delimiters-list so it's ';' which is inserted if the tail of the
+          original string is spliced on after an insertion.
+
+          2. Leading and trailing delimiters in the insertion string are deleted.
+       */
+       { .str = "abc def ghi jkl", .find = "def", .subst = "UVW...XYZ",   .nCut = 1, .nSubst = 2, .res =  "abc UVW...XYZ;ghi jkl", .delimiters = "; ." },
+       { .str = "abc def ghi jkl", .find = "def", .subst = "..UVW.XYZ..", .nCut = 1, .nSubst = 2, .res =  "abc UVW.XYZ;ghi jkl",   .delimiters = "; ." },
     };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -370,11 +440,102 @@ void test_Str_Replace(void)
       strcpy(dest, t->str);
 
       Str_Replace(dest, t->find, t->subst, t->nCut, t->nSubst);
-      C8 b0[100];
 
+      C8 b0[100];
       sprintf(b0, "\"%s\" ? \"%s\"[%d], \"%s\"[%d] -> \"%s\"", t->str, t->find, t->nCut, t->subst, t->nSubst, dest);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->res, dest, b0);
    }
 }
+
+/* --------------------------------------- test_Str_1stWordsMatch ------------------------------------------- */
+
+void test_Str_1stWordsMatch(void)
+{
+   typedef struct { U8 const *w1; U8 const *w2; BIT res; C8 const * delimiters; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Empty word(s) -> No match
+      { .w1 = "",          .w2 = "",               .res = 0,      .delimiters = "" },
+      { .w1 = "word1",     .w2 = "",               .res = 0, },
+      { .w1 = "",          .w2 = "word2",          .res = 0, },
+
+      // Partials -> No match
+      { .w1 = "word",      .w2 = "word2",          .res = 0, },
+      { .w1 = "word1",     .w2 = "word2",          .res = 0, },
+      { .w1 = "ord",       .w2 = "word",           .res = 0, },
+
+      // Exact match.
+      { .w1 = "word",      .w2 = "word",           .res = 1, },
+
+      // Ignore leading and trailing delimiters; also additional words.
+      { .w1 = "...word",      .w2 = ".word",       .res = 1,  .delimiters = "." },
+      { .w1 = "...word.more", .w2 = ".word.more",  .res = 1,  .delimiters = "." },
+
+      // The 1st words are the ones which must match. Later matches don't count.
+      { .w1 = "...w1.more",   .w2 = ".w2.more",    .res = 0,  .delimiters = "." },
+      { .w1 = ".w1.w2",       .w2 = ".w2.w1",      .res = 0,  .delimiters = "." },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      if(t->delimiters != NULL) { Str_Delimiters = t->delimiters; }
+
+      BIT res = Str_1stWordsMatch(t->w1, t->w2);
+
+      C8 b0[100];
+      sprintf(b0, "\"%s\" vs \"%s\"-> \"%d\"", t->w1, t->w2, res);
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(t->res, res, b0);
+   }
+}
+
+/* --------------------------------------- test_Str_CopyNthWord ------------------------------------------- */
+
+void test_Str_CopyNthWord(void)
+{
+   typedef struct { C8 const *lst; C8 const *out; U8 get, maxChars, res; C8 const * delimiters; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Request 1st word from empty list. Allow no chars -> unmodified output.
+      { .lst = "",  .out = "unmodified", .get = 0, .maxChars = 0, .res = 0, .delimiters = "" },
+      { .lst = "",  .out = "unmodified", .get = 3, .maxChars = 5, .res = 0, .delimiters = "" },
+      // A list with just delimiters is also empty.
+      { .lst = "...",  .out = "unmodified", .get = 3, .maxChars = 5, .res = 0, .delimiters = "." },
+
+      // Copy of 1st word
+      { .lst = "abc",      .out = "abc",     .get = 0, .maxChars = 5, .res = 3, .delimiters = "." },    // 'abc' -> 3 chars
+      // Copy-out limit is exactly word size -> success.
+      { .lst = "abcd",     .out = "abcd",    .get = 0, .maxChars = 4, .res = 4, .delimiters = "." },
+      // Not enough room to copy out. Returns '0' (fail) and copies out 1st 3 chars.
+      { .lst = "abcd",     .out = "abc",     .get = 0, .maxChars = 3, .res = 0, .delimiters = "." },
+
+      // 1st word with leading & trailing delimiters. Just the word is copied out.
+      { .lst = "..abc..",  .out = "abc",     .get = 0, .maxChars = 5, .res = 3, .delimiters = "." },    // 'abc' -> 3 chars
+      { .lst = "..abcd..", .out = "abcd",    .get = 0, .maxChars = 4, .res = 4, .delimiters = "." },
+      { .lst = "..abcd..", .out = "abc",     .get = 0, .maxChars = 3, .res = 0, .delimiters = "." },
+
+      // get 2nd & last words
+      { .lst = "abc def ghi",    .out = "def",     .get = 1, .maxChars = 5, .res = 3, .delimiters = ". " },    // 'abc' -> 3 chars
+      { .lst = "abc def ghi",    .out = "ghi",     .get = 2, .maxChars = 5, .res = 3, .delimiters = ". " },    // 'abc' -> 3 chars
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      if(t->delimiters != NULL) { Str_Delimiters = t->delimiters; }
+
+      U8 out[100];
+      strcpy(out, "unmodified");
+
+      BIT res = Str_CopyNthWord(t->lst, out, t->get, t->maxChars);
+
+      C8 b0[100];
+      sprintf(b0, "\"%s\"[%d],max = %d -> (\"%s\",%d)", t->lst, t->get, t->maxChars, out, res);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, out, b0);
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(t->res, res, b0);
+   }
+}
+
+
 
 // ----------------------------------------- eof --------------------------------------------
