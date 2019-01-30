@@ -20,9 +20,12 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)str_word_in_str.c \
 								$(SRCDIR)str_words_in_str.c \
 								$(SRCDIR)str_get_end_word.c \
+								$(SRCDIR)str_get_nth_word.c \
 								$(SRCDIR)str_insert.c \
 								$(SRCDIR)str_delete.c \
 								$(SRCDIR)str_replace.c \
+								$(SRCDIR)str_copy_nth_word.c \
+								$(SRCDIR)str_1st_words_match.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build
