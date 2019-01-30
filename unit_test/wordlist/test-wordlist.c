@@ -305,15 +305,29 @@ void test_Str_Insert(void)
 
 /* ------------------------------------- test_Str_Delete ------------------------------------- */
 
-//PUBLIC U8 GENERIC * Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt )
-
-
 void test_Str_Delete(void)
 {
     typedef struct { C8 const *lst; U8 start, cnt; C8 const * res; C8 const *delimiters; } S_Tst;
 
-    S_Tst const tsts[] = {                                                       // Insert...
+    S_Tst const tsts[] = {                                                       // Delete...
+       { .lst = "", .start = 0, .cnt = 0, .res = "", .delimiters = "" },                     // none of nothing ("") from start of nothing -> nothing "".
+       { .lst = "", .start = 0, .cnt = 3, .res = "", .delimiters = "" },                     // etc...
+       { .lst = "", .start = 5, .cnt = 0, .res = "", .delimiters = "" },                     // etc...
+       { .lst = "", .start = 2, .cnt = 3, .res = "", .delimiters = "" },                     // etc...  All the nothings.
 
+       { .lst = "..", .start = 0, .cnt = 0, .res = "..", .delimiters = "." },                // Preserves delimiters.
+
+       { .lst = "abc def", .start = 0, .cnt = 0, .res = "abc def", .delimiters = "" },
+       { .lst = "abc.def.", .start = 0, .cnt = 1, .res = "def.", .delimiters = "." },
+       { .lst = "abc.def.ghi", .start = 1, .cnt = 1, .res = "abc.ghi", .delimiters = "." },
+
+       { .lst = "abc...def.", .start = 0, .cnt = 1, .res = "..def.", .delimiters = "." },
+
+       { .lst = "abc;def.ghi:..jkl", .start = 1, .cnt = 2, .res = "abc;..jkl", .delimiters = ".;:" },  // The ':' at end of excised segment gets dropped.
+
+       { .lst = "abc;def.ghi:..jkl", .start = 1, .cnt = 3, .res = "abc;", .delimiters = ".;:" },
+
+       { .lst = "abc;.;.def.ghi:..jkl", .start = 1, .cnt = 5, .res = "abc;.;.", .delimiters = ".;:" },   // Removing tail preserves all trailing delimiters on head.
     };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -327,7 +341,7 @@ void test_Str_Delete(void)
       C8 const * rtn = Str_Delete(dest, t->start, t->cnt);
       C8 b0[100];
 
-      sprintf(b0, "\"%s\" + \"%s\"[%d],%d -> \"%s\"", t->lst, t->start, t->cnt, dest);
+      sprintf(b0, "\"%s\" - [%d],%d -> \"%s\"", t->lst, t->start, t->cnt, dest);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->res, dest, b0);
    }
 }
