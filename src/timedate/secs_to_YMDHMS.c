@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------
 |
-| SecsToYMDHMS() 
-|   
+| SecsToYMDHMS()
+|
 |--------------------------------------------------------------------------*/
 
 #include "libs_support.h"
@@ -57,21 +57,22 @@ PRIVATE U8 splitDaysIntoMD(U16 allDays, U8 *monthOut, BOOLEAN isLeapYear) {
       if( allDays <= DaysToMonthStartTbl[c] )                  // Overshoot 'allDays'
          { break; }                                            // then break; at one-past the month which 'allDays' is in.
       }
-   // Month is array-index when we overran DaysToMonthStartTbl[] e.g Jan exits at 2nd 
+   // Month is array-index when we overran DaysToMonthStartTbl[] e.g Jan exits at 2nd
    // table entry, index = 1.
    *monthOut = c;
-   
+
    // To return the days remaining, subtract the day-total of the PREVIOUS table entry.
    // i.e the one we overshot.
-   return allDays - DaysToMonthStartTbl[c-1];   // 
+   return allDays - DaysToMonthStartTbl[c-1];   //
 }
 
-/* ------------------------ SecsToYMDHMS ---------------------------- 
+/* ------------------------ SecsToYMDHMS ----------------------------
 
-   Convert seconds since 00:00:00 Jan 1st 2000AD ('secsSince1AD') into 
+   Convert seconds since 00:00:00 Jan 1st 2000AD ('secsSince1AD') into
    Y:M:D:H:M:S in a date/time struct 'dt'.
-*/
 
+   This routine does NOT handle leap-seconds.
+*/
 PUBLIC void SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
 
    U8    yearsRem;
@@ -80,26 +81,26 @@ PUBLIC void SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
 
    #define _4yr_secs (3600L*24*(365+365+365+366))                 // Seconds in 4 years
 
-   yr4 = secsSince2000AD/_4yr_secs;                               // Divide total secs into 4-year chunks... 
-   secsRem = secsSince2000AD - ((U32)yr4 * _4yr_secs);            // and (0 - 126,230,400) seconds. ...           
+   yr4 = secsSince2000AD/_4yr_secs;                               // Divide total secs into 4-year chunks...
+   secsRem = secsSince2000AD - ((U32)yr4 * _4yr_secs);            // and (0 - 126,230,400) seconds. ...
    daysRem = secsRem/(3600L*24);                                  // ... which are 0 - 1461 days left over.
    yearsRem =                                                     // ... or 0 - 3 years left over
-      daysRem <= 366-1 
-         ? 0 
-         : (daysRem <= (366+365-1) 
-            ? 1 
+      daysRem <= 366-1
+         ? 0
+         : (daysRem <= (366+365-1)
+            ? 1
             : (daysRem <= (366+365+365-1) ? 2 : 3));
 
    dt->yr = _2000AD + (4*yr4) + yearsRem;                         // Year is 2000AD + 4 x 4-year chunks + years-left-over
 
    daysRem =                                                      // Days left over after the last year is...
-      daysRem -                                                   // days remaining after 4-year chunks, minus...                                         
+      daysRem -                                                   // days remaining after 4-year chunks, minus...
       (yearsRem == 3                                              // the number of days in the (0-3) left-over years
-         ? (366+365+365) 
-         : (yearsRem == 2 
-            ? (366+365) 
-            : (yearsRem == 1 
-               ? 366 
+         ? (366+365+365)
+         : (yearsRem == 2
+            ? (366+365)
+            : (yearsRem == 1
+               ? 366
                : 0)));
 
    /* Split days-left-over into a month and day-of-month. Note we must convert
@@ -107,18 +108,18 @@ PUBLIC void SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
    */
    #define _leapYr(rem)  (rem==0)
    dt->day = splitDaysIntoMD(daysRem+1, &dt->mnth, _leapYr(yearsRem));
-   
-   secsRem =                                                      // Seconds remaining in the final day are.... 
-      secsRem -                                                   // secs left over after 4-years chunks removed, minus...                                                                  
-      (yearsRem == 3                                              // ...secs in the remining 0 - 3 complete years... 
-         ? 3600L*24*(366+365+365) 
-         : (yearsRem == 2 
-            ? 3600L*24*(366+365) 
-            : (yearsRem == 1 
-               ? 3600L*24*366 
+
+   secsRem =                                                      // Seconds remaining in the final day are....
+      secsRem -                                                   // secs left over after 4-years chunks removed, minus...
+      (yearsRem == 3                                              // ...secs in the remaining 0 - 3 complete years...
+         ? 3600L*24*(366+365+365)
+         : (yearsRem == 2
+            ? 3600L*24*(366+365)
+            : (yearsRem == 1
+               ? 3600L*24*366
                : 0)))
       - (3600L*24 * daysRem);                                     // ... minus secs left over remaining days subtracted.
-       
+
    dt->hr = secsRem/3600;                                         // Hours in the final day are..
    dt->min = (secsRem - (3600L * dt->hr)) / 60;                   // Minutes left over are.. (subtract hour*3600)
    dt->sec = secsRem - (3600L * dt->hr) - (60 * dt->min);         // Secs left over are..(subtract hour*3600 + minutes*60)
