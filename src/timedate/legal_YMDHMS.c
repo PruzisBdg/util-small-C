@@ -9,7 +9,7 @@
 
 /* ------------------------------ daysInMonth ---------------------------------
 
-   Return days in 'month' of a non-leap year.
+   Return days in 'month' of 'yr'.  Does Feb 29th.
 */
 
 PRIVATE U8 const daysInMonthTbl[] = {0,31,28,31,30,31,30,31,31,30,31,30,31};
