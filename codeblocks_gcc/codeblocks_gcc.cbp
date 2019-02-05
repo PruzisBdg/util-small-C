@@ -509,6 +509,13 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/timedate/test-timedate.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/timedate/timedate.mak">
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/util_common_build.mak">
 			<Option target="Unity TDD" />
 		</Unit>
