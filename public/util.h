@@ -138,6 +138,7 @@ PUBLIC U32 ReverseU32(U32 n);
 
 /* A 32bit count of seconds. Will count 132 years */
 typedef U32 T_Seconds32;
+#define _Max_T_Seconds32 MAX_U32
 
 typedef struct {
    U16 yr;           // 0000 - 9999.  0000 = 1.BC 0001 = 1.AD
@@ -179,6 +180,9 @@ PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOu
 PUBLIC T_Seconds32   YMDHMS_To_Secs(S_DateTime const *dt);
 PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
 PUBLIC U8            YMDHMS_ToStr(S_DateTime const *t, C8 *outStr);
+PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);
+PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
+
 extern S16 const     DaysToMonthStartTbl[];
 
 #define _ISO8601_YMDHMS_MaxStr (sizeof("2018-03-06T20:28:44") + 2)
