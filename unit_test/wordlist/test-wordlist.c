@@ -23,7 +23,6 @@ void tearDown(void) {
 
 
 /* ------------------------------------- test_Str_GetNthWord ------------------------------------------ */
-// PUBLIC U8 GENERIC * Str_GetNthWord( U8 GENERIC const *lst, U8 n )
 
 void test_Str_GetNthWord(void)
 {
