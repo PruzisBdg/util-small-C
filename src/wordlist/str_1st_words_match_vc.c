@@ -7,8 +7,6 @@
 #include "common.h"
 #include "wordlist.h"
 
-extern BIT wordChar(U8 ch);
-
 /*-----------------------------------------------------------------------------------------
 |
 |  Str_1stWordsMatch_VC()
@@ -45,7 +43,7 @@ PUBLIC BIT Str_1stWordsMatch_VC( U8 GENERIC *w1, U8 CONST *w2 )
 
    for(i = 0;;i++)
    {
-      if( !wordChar(w1[i]) && !wordChar(w2[i]) )   // ended with match?
+      if( !Str_WordChar(w1[i]) && !Str_WordChar(w2[i]) )   // ended with match?
       {
          if(i == 0)                                // but didn't have word yet?
             { return 0; }                          // then no match

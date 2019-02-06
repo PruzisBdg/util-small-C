@@ -53,14 +53,14 @@ PRIVATE BIT chIsDelimiter(U8 ch)
 
 /*-----------------------------------------------------------------------------------------
 |
-|  wordChar()
+|  Str_WordChar()
 |
 |  Used by Str_ routines (wordlist). Returns 1 if char is not a word delimiter or
 |  end of word list.
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC BIT wordChar(U8 ch)
+PUBLIC BIT Str_WordChar(U8 ch)
 {
    if( ch == '\0' || Str_Delimiter(ch) ) return 0; else return 1;
 }
@@ -110,14 +110,14 @@ PUBLIC U8 Str_1stDelimiter(void)
 
 /*-----------------------------------------------------------------------------------------
 |
-|  Str_StripLeadDelimiters
+|  Str_LTrim
 |
 |  Boof past any leading delimiters in 'w'. Return one 1st char of 1st word or end-of-string
 |  whichever is first.
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC * Str_StripLeadDelimiters(U8 GENERIC const *w)
+PUBLIC U8 GENERIC * Str_LTrim(U8 GENERIC const *w)
 {
    while( Str_Delimiter(*w) ) {w++;}
     // Return 'w' as non-const; what the caller gave may have been non-const or no;

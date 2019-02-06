@@ -7,8 +7,6 @@
 #include "libs_support.h"
 #include "wordlist.h"
 
-extern BIT wordChar(U8 ch);
-
 /*-----------------------------------------------------------------------------------------
 |
 |  Str_1stWordsMatch()
@@ -22,14 +20,14 @@ extern BIT wordChar(U8 ch);
 
 PUBLIC BIT Str_1stWordsMatch( U8 GENERIC const *w1, U8 GENERIC const *w2 )
 {
-   w1 = Str_StripLeadDelimiters(w1);
-   w2 = Str_StripLeadDelimiters(w2);
+   w1 = Str_LTrim(w1);
+   w2 = Str_LTrim(w2);
 
    U8 i;
 
    for(i = 0;;i++)
    {
-      if( !wordChar(w1[i]) && !wordChar(w2[i]) )   // Both strings or words ended (together)?
+      if( !Str_WordChar(w1[i]) && !Str_WordChar(w2[i]) )   // Both strings or words ended (together)?
       {
          if(i == 0)                                // but didn't have word yet?
             { return 0; }                          // then no match

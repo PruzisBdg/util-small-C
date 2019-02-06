@@ -7,8 +7,6 @@
 #include "libs_support.h"
 #include "wordlist.h"
 
-extern BIT wordChar(U8 ch);
-
 /*-----------------------------------------------------------------------------------------
 |
 |  Str_FindWord()
@@ -29,7 +27,7 @@ PUBLIC U8 Str_FindWord( U8 GENERIC const *lst, U8 GENERIC const *str )
    BIT      wasSpc = 1;    // if last char was a space
    BIT      neq = 0;       // when comparing words, '1' if a mismatch
 
-   str = Str_StripLeadDelimiters(str);          // Advance to start of first word in 'str'. (Or end-of-string if empty).
+   str = Str_LTrim(str);          // Advance to start of first word in 'str'. (Or end-of-string if empty).
 
    while(1)
    {
@@ -37,7 +35,7 @@ PUBLIC U8 Str_FindWord( U8 GENERIC const *lst, U8 GENERIC const *str )
 
       if( ch == '\0' )                          // end of list?
       {
-         if( neq == 0 && !wordChar(str[idx]))   // match so far AND end of 'str' OR end of 1st word in 'str'
+         if( neq == 0 && !Str_WordChar(str[idx]))   // match so far AND end of 'str' OR end of 1st word in 'str'
          {
             return wordCnt;                     // then found match for 'str'; return index to matching word
          }
@@ -52,7 +50,7 @@ PUBLIC U8 Str_FindWord( U8 GENERIC const *lst, U8 GENERIC const *str )
          {
             wasSpc = 1;                         // mark it now
 
-            if( neq == 0 && !wordChar(str[idx]))// match so far AND end of 'str' OR end of 1st word in 'str'
+            if( neq == 0 && !Str_WordChar(str[idx]))// match so far AND end of 'str' OR end of 1st word in 'str'
             {
                return wordCnt;                  // then found match for 'str'; return index to matching word
             }

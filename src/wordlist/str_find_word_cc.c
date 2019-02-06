@@ -7,13 +7,12 @@
 #include "libs_support.h"
 #include "wordlist.h"
 
-extern BIT wordChar(U8 ch);
 
 /*-----------------------------------------------------------------------------------------
 |
 |  Str_FindWord_CC()
 |
-|  Return index to the word in 'lst' which matches the FIRST OR ONLY word in 'str'. If no 
+|  Return index to the word in 'lst' which matches the FIRST OR ONLY word in 'str'. If no
 |  match return '_Str_NoMatch'. The 1st word index is 0.
 |
 |  A word is one or more non-space characters.
@@ -33,13 +32,13 @@ PUBLIC U8 Str_FindWord_CC( U8 CONST *lst, U8 CONST *str )
 
    while( Str_Delimiter(str[idx]) ) { idx++; }  // Advance to start of first word in 'str'. (Or end-of-string if empty).
 
-   while(1) 
+   while(1)
    {
       ch = *lst++;                              // next char from list
 
       if( ch == '\0' )                          // end of list?
       {
-         if( neq == 0 && !wordChar(str[idx]))   // match so far AND end of 'str' OR end of 1st word in 'str'
+         if( neq == 0 && !Str_WordChar(str[idx]))   // match so far AND end of 'str' OR end of 1st word in 'str'
          {
             return wordCnt;                     // then found match for 'str'; return index to matching word
          }
@@ -54,7 +53,7 @@ PUBLIC U8 Str_FindWord_CC( U8 CONST *lst, U8 CONST *str )
          {
             wasSpc = 1;                         // mark it now
 
-            if( neq == 0 && !wordChar(str[idx]))// match so far AND end of 'str' OR end of 1st word in 'str'
+            if( neq == 0 && !Str_WordChar(str[idx]))// match so far AND end of 'str' OR end of 1st word in 'str'
             {
                return wordCnt;                  // then found match for 'str'; return index to matching word
             }
@@ -75,7 +74,7 @@ PUBLIC U8 Str_FindWord_CC( U8 CONST *lst, U8 CONST *str )
             if( ch != str[idx] )                // but this char doesn't match?
             {
                neq = 1;                         // then note the mismatch
-            }        
+            }
             else                                // else will keep comparing
             {
                idx++;                           // so must bump 'str' ptr
@@ -85,4 +84,4 @@ PUBLIC U8 Str_FindWord_CC( U8 CONST *lst, U8 CONST *str )
    }
 }
 
-// ------------------------------ eof --------------------------------------- 
+// ------------------------------ eof ---------------------------------------
