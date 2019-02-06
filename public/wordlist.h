@@ -28,6 +28,7 @@ PUBLIC U8 GENERIC * Str_Insert( U8 GENERIC *dest, U8 GENERIC const *src, U8 star
 PUBLIC U8 GENERIC * Str_Replace( U8 GENERIC *str, U8 GENERIC const *toFind, U8 GENERIC const * replaceWith, U8 numToCut, U8 numToInsert );
 
 PUBLIC BIT          Str_Delimiter(U8 ch);          // Word are divied by CRLF or ' '
+PUBLIC BIT          Str_WordChar(U8 ch);
 PUBLIC BIT          Str_EndOfLineOrString(U8 ch);
 PUBLIC U8           Str_1stWordHasChar( U8 GENERIC const *lst, U8 ch );
 
@@ -46,6 +47,11 @@ extern BIT Str_DiceComposites;
 */
 PUBLIC C8 const * Str_Delimiters;
 PUBLIC U8 Str_1stDelimiter(void);
-PUBLIC U8 GENERIC * Str_StripLeadDelimiters(U8 GENERIC const *w);
+PUBLIC U8 GENERIC * Str_LTrim(U8 GENERIC const *w);
+
+// Convert 1st word in a string (using Str_Delimiters to define the delimiters).
+PUBLIC C8 const *Word_1stToUpper(C8 *out, C8 const *str);
+PUBLIC C8 const *Word_1stToLower(C8 *out, C8 const *str);
+PUBLIC C8 const *Word_1stToCamel(C8 *out, C8 const *str);
 
 #endif // WORDLIST_H
