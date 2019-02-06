@@ -13,13 +13,13 @@
 
 PUBLIC U8 IdxTo1stBitSet_U32(U32 n)
 {
-   U8 c, cnt;
+   U8 c;
 
-   for( cnt = 0, c = 8 * sizeof(U32); c; c-- ) {
-      if( n & 0x01 ) cnt++;
+   for( c = 0; c < 8 * sizeof(U32); c++ ) {
+      if( n & 0x01 ) return c;
       n >>= 1;
       }
-   return cnt;
+   return 0xFF;
 }
 
 
