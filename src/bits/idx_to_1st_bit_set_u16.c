@@ -9,6 +9,8 @@
 |
 |  IdxTo1stBitSet_U16()
 |
+|  0 is lsb set. If no bits set (n == 0) then returns 0xFF.
+|
 ------------------------------------------------------------------------------------------*/
 
 PUBLIC U8 IdxTo1stBitSet_U16(U16 n)
@@ -19,8 +21,8 @@ PUBLIC U8 IdxTo1stBitSet_U16(U16 n)
       if( n & 0x01 ) return c;
       n >>= 1;
       }
-   return 0;
+   return 0xFF;
 }
 
 
-// --------------------- eof --------------------------------  -   
+// --------------------- eof --------------------------------  -
