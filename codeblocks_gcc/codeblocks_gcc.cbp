@@ -390,12 +390,22 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/AD2000_to_epoch.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/ISO8601_Str_to_secs.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/timedate/Secs_to_HMS.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/epoch_to_2000AD.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -495,6 +505,11 @@
 		<Unit filename="../src/wordlist/str_words_in_str.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/words/word_convert_1st.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../unit_test/ascii_num/ascii_num.mak">
 			<Option target="Unity TDD" />
 		</Unit>
@@ -534,6 +549,13 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/wordlist/wordlist.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/words/test-words.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/words/words.mak">
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="main.c">
