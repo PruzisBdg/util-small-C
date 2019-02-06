@@ -25,9 +25,13 @@ int main(void)
     C8 b1[_MaxIPAddrChars+1];
 
     printf("IP \"%s\" -> 0x%08lx -> %s, tail = \"%s\"\r\n", str, n, PrintIPAddr(b1, n), p == NULL ? "NULL" : (*p == '\0' ? "\\0" : p));
-#endif
    C8 b0[100];
    strcpy(b0, "");
     printf("ret = \"%s\"\r\n", Str_Insert(b0, "abc def", 3, 2));
+#endif
+
+   C8 const *in = "abc";
+   C8 out[100];
+   printf("ToUpper \"%s\" -> \"%s\"\r\n", in, Word_1stToUpper(out, in));
     return 0;
 }
