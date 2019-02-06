@@ -117,10 +117,10 @@ PUBLIC void RepeatIdxFunc( void( *func)(U8), U8 repeatCnt);
 /* ---------------------------- Bits ---------------------------------- */
 
 PUBLIC U8 NumBitsSet_U16(U16 n);
-PUBLIC U8 IdxTo1stBitSet_U16(U16 n);
+PUBLIC U8 IdxToLsbSet_U16(U16 n);
 
 PUBLIC U8 NumBitsSet_U32(U32 n);
-PUBLIC U8 IdxTo1stBitSet_U32(U32 n);
+PUBLIC U8 IdxToLsbSet_U32(U32 n);
 
 /* ----------------------------- Endians ------------------------------------*/
 

@@ -18,9 +18,9 @@ void setUp(void) {
 void tearDown(void) {
 }
 
-/* ------------------------------- test_IdxTo1stBitSet_U16 --------------------------------------------------- */
+/* ------------------------------- test_IdxToLsbSet_U16 --------------------------------------------------- */
 
-void test_IdxTo1stBitSet_U16 (void)
+void test_IdxToLsbSet_U16 (void)
 {
    typedef struct { U16 in; U8 posn; } S_Tst;
 
@@ -48,15 +48,15 @@ void test_IdxTo1stBitSet_U16 (void)
    {
       S_Tst const *t = &tsts[i];
 
-      U8 rtn = IdxTo1stBitSet_U16(t->in);
+      U8 rtn = IdxToLsbSet_U16(t->in);
 
       TEST_ASSERT_EQUAL_UINT8(t->posn, rtn);
    }
 }
 
-/* ------------------------------- test_IdxTo1stBitSet_U32 --------------------------------------------------- */
+/* ------------------------------- test_IdxToLsbSet_U32 --------------------------------------------------- */
 
-void test_IdxTo1stBitSet_U32 (void)
+void test_IdxToLsbSet_U32 (void)
 {
    typedef struct { U32 in; U8 posn; } S_Tst;
 
@@ -100,7 +100,7 @@ void test_IdxTo1stBitSet_U32 (void)
    {
       S_Tst const *t = &tsts[i];
 
-      U8 rtn = IdxTo1stBitSet_U32(t->in);
+      U8 rtn = IdxToLsbSet_U32(t->in);
 
       TEST_ASSERT_EQUAL_UINT8(t->posn, rtn);
    }
