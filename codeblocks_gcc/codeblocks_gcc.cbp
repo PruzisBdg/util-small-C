@@ -16,6 +16,7 @@
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-g" />
+					<Add option="-DTPRINT_IS_FLOAT" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -28,7 +29,6 @@
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-Wall" />
-					<Add option="-DTPRINT_IS_FLOAT" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -53,6 +53,7 @@
 				<Compiler>
 					<Add option="-std=c99" />
 					<Add option="-g" />
+					<Add option="-DTPRINT_IS_FLOAT" />
 				</Compiler>
 				<Linker>
 					<Add library="bin/Debug/libutil_x86_gcc.a" />
@@ -61,7 +62,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-DTPRINT_IS_FLOAT" />
 			<Add directory="../GenericTypes" />
 			<Add directory="../private" />
 			<Add directory="../public" />
@@ -82,6 +82,7 @@
 		<Unit filename="../../unity_tdd/tdd_common_pre_build.mak">
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../private/libs_support.h" />
 		<Unit filename="../public/bit_field.h">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -290,10 +291,6 @@
 		</Unit>
 		<Unit filename="../src/hexascii/nibble_to_hexascii.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../src/libs_support.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
@@ -529,6 +526,13 @@
 		</Unit>
 		<Unit filename="../unit_test/network/test-network.c">
 			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/printfs/test-tiny1_printf_float.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/printfs/tiny1_printf_float.mak">
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/timedate/test-timedate.c">
