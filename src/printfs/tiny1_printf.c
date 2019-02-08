@@ -978,7 +978,7 @@ PUBLIC T_PrintCnt tiny1_sprintf(C8 *buf, C8 FMT_QUALIFIER *fmt, ...)
    return cnt;			// Return number of chars in string, excluding '\0';
 }
 
-extern PUBLIC tiny1_S_SafeSprintf TPrint_Safe;		// If using tiny1_sprintf_safe(), to limit chars added to output buffer.
+extern tiny1_S_SafeSprintf TPrint_Safe;		// If using tiny1_sprintf_safe(), to limit chars added to output buffer.
 extern void TPrint_ChIntoBuf_Safe(U8 ch);			// So can be a plain buffer or a stream.
 
 PUBLIC T_PrintCnt tiny1_sprintf_safe(tiny1_S_SafeBuf const *out, C8 FMT_QUALIFIER *fmt, ...)
