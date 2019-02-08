@@ -17,7 +17,7 @@ PRIVATE U8 to_lower(U8 ch) { return tolower(ch); }
 |
 |  convert1stWord()
 |
-|  Convert the 1st word in str' to uppercase and return in 'out'. The word is delimited
+|  Convert the 1st word in str' with 'cvts()' and return in 'out'. The word is delimited
 |  by delimiters listed in Str_Delimiter().
 |
 |  If 'out' == 'str' the conversion is done in-place. Otherwise the converted word is
@@ -76,7 +76,7 @@ PUBLIC C8 const *Word_1stToUpper(C8 *out, C8 const *str)
 |
 |  Word_1stToLower()
 |
-|  Convert the 1st word in str' to uppercase. See convert1stWord() above.
+|  Convert the 1st word in str' to lowercase. See convert1stWord() above.
 |
 ------------------------------------------------------------------------------------------*/
 
@@ -87,7 +87,7 @@ PUBLIC C8 const *Word_1stToLower(C8 *out, C8 const *str)
 |
 |  Word_1stToCamel()
 |
-|  Convert the 1st word in str' to uppercase. See convert1stWord() above.
+|  Convert the 1st word in str' to camelcase. See convert1stWord() above.
 |
 ------------------------------------------------------------------------------------------*/
 
@@ -113,7 +113,7 @@ PRIVATE U8 toCamel(U8 ch)
 
 PUBLIC C8 const *Word_1stToCamel(C8 *out, C8 const *str)
 {
-   didLeadCh = 0; got1Lower = 0;
+   didLeadCh = 0; got1Lower = 0;             // Clear camel states.
    return convert1stWord(out, str, toCamel);
 }
 
