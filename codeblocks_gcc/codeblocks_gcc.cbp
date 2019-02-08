@@ -535,6 +535,13 @@
 		<Unit filename="../unit_test/printfs/tiny1_printf_float.mak">
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/printfs/tiny1_printf_test_support.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/printfs/tiny1_printf_test_support.h">
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/timedate/test-timedate.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />

@@ -16,6 +16,7 @@ CFLAGS := $(CFLAGS) -DTPRINT_IS_FLOAT
 # The complete files list
 SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)tiny1_printf.c \
+								tiny1_printf_test_support.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build
