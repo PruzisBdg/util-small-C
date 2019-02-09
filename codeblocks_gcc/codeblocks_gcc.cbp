@@ -54,6 +54,7 @@
 					<Add option="-std=c99" />
 					<Add option="-g" />
 					<Add option="-DTPRINT_IS_FLOAT" />
+					<Add directory="../unit_test/printfs" />
 				</Compiler>
 				<Linker>
 					<Add library="bin/Debug/libutil_x86_gcc.a" />
@@ -538,6 +539,7 @@
 		<Unit filename="../unit_test/printfs/tiny1_printf_test_support.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/printfs/tiny1_printf_test_support.h">
 			<Option target="Unity TDD" />
