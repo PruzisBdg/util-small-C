@@ -45,7 +45,8 @@ extern S32 ClipFloatToLong(float f);
 
 PRIVATE U8  width;
 PRIVATE U8  prec = 0;
-PRIVATE BIT wrNeg = 0;
+PRIVATE BIT wrNeg = 0;           // If number is negative -> prepend '-'.
+PRIVATE BIT wrPlus = 0;          // If '+' format specifier, '+' in front of positive number
 PRIVATE T_PrintCnt printCnt;
 PRIVATE BIT quoteCtrls = 0;		// If '1' the e.g '\t' will be quoted (as "\t")
 
@@ -211,7 +212,7 @@ PRIVATE void putSpc(void)
 |
 |  wrDigit()
 |
-|  Write a single digit, adn maybe a leading zero.
+|  Write a single digit, and maybe a leading zero.
 |
 --------------------------------------------------------------------------------------*/
 
@@ -219,10 +220,16 @@ PRIVATE BIT wrDigit(U8 n)
 {
    if(n || wrZero)         // Print (leading) zero? OR digit is non-zero
    {
-      if( wrNeg )          // Needs leading '-'?
+      if( wrNeg )          // Needs leading '-'? (because number was negative)
       {
          putCh('-');       // then write it.
-         wrNeg = 0;        // and clear flag, meaning it's done.
+         wrNeg = 0;        // and clear flag, meaning we prepend to just leading digit.
+         wrPlus = 0;       // Also clear the '+' specify, as we are done with the leading digit.
+      }
+      else if(wrPlus)      // else, if a positive number, needs leading '+'?
+      {
+         putCh('+');       // then write '+'
+         wrPlus = 0;       // and clear flag, meaning we prepend to just leading digit.
       }
       putCh((U8)(n + '0'));// then print the digit
       wrZero = 1;          // After this, will print any in-number zeroes.
@@ -263,21 +270,35 @@ PRIVATE U16 getPwr10_U16(U8 pwr) { return powersOf10[pwr]; }
 
 PRIVATE U16 wrU16Rem(U16 n, U8 pwr)
 {
-   U8 ms;            // (Presumed) most significant decimal digit
-
-   ms = n / getPwr10_U16(pwr);            // Get msd
-
-   if(prec > pwr)                         // Must left-pad with zeros?
-      {wrZero = 1;}
-
-   if( !wrDigit(ms) )                     // Wrote digit?
+   if(n == 0 && pwr == 0)                    // Last digit and it's zero?
    {
-      if(!wrZero && width > pwr)          // No! Need more spaces to justify?
-      {
-         putSpc();                        // then write one.
-      }
+      putCh('0');                            // then print '0'.
    }
-   return n - (ms * getPwr10_U16(pwr));   // Return the remainder
+   else                                      // else may print digit, depending on value and width-specifier.
+   {
+      U8 ms;                                 // (Presumed) most significant decimal digit
+
+      ms = n / getPwr10_U16(pwr);            // Get msd
+
+      /* If this 'pwr'th digit is less than the number of significant digits to be printed
+         then must left-pad with zeros. Also, if there's a leading '+' or '-' then one less
+         leading zero to print.
+      */
+      if(prec >                              // Significant digits GT?...
+         ((wrPlus == 1 || wrNeg == 1)        // if to prepend "+' or '-"?...
+            ? pwr+1                          //    ... GT pwr'th + 1
+            : pwr))                          //    ... else GT pwr'th
+         {wrZero = 1;}
+
+      if( !wrDigit(ms) )                     // Did not write digit?
+      {
+         if(!wrZero && width > pwr)          // then need more spaces to justify?
+         {
+            putSpc();                        // then write one.
+         }
+      }
+      return n - (ms * getPwr10_U16(pwr));   // Return the remainder
+   }
 }
 
 /*-----------------------------------------------------------------------------------
@@ -295,14 +316,14 @@ PRIVATE void printLeftSpaces(U8 maxDigits)
   /* If field width is greater than maximum U32 decimal digits, then print all the leading
       spaces which will be there regardless of the value of 'n'.
    */
-   if( wrNeg && width )          // Will prepend a minus sign to the digits?
+   if( (wrNeg || wrPlus) && width ) // Will prepend '-" or '+' to the digits?
    {
-      width--;                   // then one space less to print
+      width--;                      // then one space less to print
    }
-   while(width >= maxDigits )    // (While) field width > max decimal digits for U32?
+   while(width > maxDigits )        // (While) field width > max decimal digits?
    {
-      putSpc();                  // write a space
-      width--;                   // and 1 less to write.
+      putSpc();                     // write a space
+      width--;                      // and 1 less to write.
    }
  }
 
@@ -334,23 +355,12 @@ PRIVATE void wrU16(U16 n)
 
 PRIVATE void wrInt16(S16 n)
 {
-   if(n == 0)                    // Is zero?
+   if(n < 0 && isSigned)      // Format was '%d' or '%i' and 'n' is negative?
    {
-      putCh('0');                // Print at least one '0'
-      for(; width > 1; width--)
-      {
-         putCh('0');             // Print any additional zeros to fill width.
-      }
-   }                             // then we're done
-   else                          // else non-zero, so...
-   {
-      if(n < 0 && isSigned)      // Format was '%d' or '%i' and 'n' is negative?
-      {
-         wrNeg = 1;              // Will write '-' before 1st significant digit.
-         n = -n;                 // and flip the number positive
-      }
-      wrU16(n);                  // Print the (positive) number.
+      wrNeg = 1;              // Will write '-' before 1st significant digit.
+      n = -n;                 // and flip the number positive
    }
+   wrU16(n);                  // Print the (positive) number.
 }
 
 /*-----------------------------------------------------------------------------------
@@ -728,8 +738,11 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
          isSigned = 0;                                      // Unless made 1 below
 
          // Parse the optional modifiers; remember each one you get
-
-         if( !gotLong && ch == 'l' )                        // 'l' for 32bit fixed point and double floats
+         if(ch == '+')
+         {
+            wrPlus = 1;
+         }
+         else if( !gotLong && ch == 'l' )                        // 'l' for 32bit fixed point and double floats
          {
             gotLong = 1;
             gotWidth = 1;
@@ -894,7 +907,8 @@ skip:
                gotLong = 0;                                 // Setup to decode modifiers.
                gotWidth = 0; width = 0;                     // Unless we get width.
                zeroPad = 0;
-               wrNeg = 0;
+               wrNeg = 0;                                   // Unless number is negative.
+               wrPlus = 0;                                  // Unless get a '+' format specifier.
 
                   #if _TPRINT_IS != TPRINT_TINY
                gotPrec = 0; prec = 0;                       // Unless we get precision, this is the default
