@@ -4,6 +4,8 @@
 #include "arith.h"
 #include "wordlist.h"
 #include <string.h>
+#include "tiny1_stdio.h"
+#include "tiny1_printf_test_support.h"
 
 int main(void)
 {
@@ -28,10 +30,16 @@ int main(void)
    C8 b0[100];
    strcpy(b0, "");
     printf("ret = \"%s\"\r\n", Str_Insert(b0, "abc def", 3, 2));
-#endif
 
    C8 const *in = "abc";
    C8 out[100];
    printf("ToUpper \"%s\" -> \"%s\"\r\n", in, Word_1stToUpper(out, in));
+#endif
+
+   OStream_Reset();
+   printf("<\\\ta\r\n>");
+   tiny1_printf("\\\ta\r\n");
+   OStream_Print();
+
     return 0;
 }
