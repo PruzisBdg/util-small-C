@@ -27,7 +27,7 @@ PUBLIC void OStream_Reset(void) {
    memset(os.buf, 0, _OStreamBufSize); }
 
 PUBLIC void OStream_Print(void) {
-   printf("OStream: \"%s\"\r\n", os.buf); }
+   printf("OStream: <%s>\r\n", os.buf); }
 
 PUBLIC U8 const * OStream_Get(void)
    { return os.buf; }
