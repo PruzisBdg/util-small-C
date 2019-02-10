@@ -241,6 +241,24 @@ PRIVATE BIT wrDigit(U8 n)
    }
 }
 
+/*-----------------------------------------------------------------------------------
+|
+|  chkPadZero()
+|
+|  If the 'pwr'th digit is less than the number of significant digits to be printed
+|  ('prec') then set 'wrZero' left-pad with zeros. Also, if there's a leading
+|  '+' or '-' then one less leading zero to print.
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void chkPadZero(U8 pwr)
+{
+   if(prec >                              // Significant digits GT?...
+      ((wrPlus == 1 || wrNeg == 1)        // if to prepend "+' or '-"?...
+         ? pwr+1                          //    ... GT pwr'th + 1
+         : pwr))                          //    ... else GT pwr'th
+      { wrZero = 1; }
+}
 
 /*-----------------------------------------------------------------------------------
 |
@@ -280,15 +298,7 @@ PRIVATE U16 wrU16Rem(U16 n, U8 pwr)
 
       ms = n / getPwr10_U16(pwr);            // Get msd
 
-      /* If this 'pwr'th digit is less than the number of significant digits to be printed
-         then must left-pad with zeros. Also, if there's a leading '+' or '-' then one less
-         leading zero to print.
-      */
-      if(prec >                              // Significant digits GT?...
-         ((wrPlus == 1 || wrNeg == 1)        // if to prepend "+' or '-"?...
-            ? pwr+1                          //    ... GT pwr'th + 1
-            : pwr))                          //    ... else GT pwr'th
-         {wrZero = 1;}
+      chkPadZero(pwr);                       // Check if should left-pad with zero
 
       if( !wrDigit(ms) )                     // Did not write digit?
       {
@@ -394,15 +404,18 @@ PRIVATE U32 getPwr10L(U8 pwr) { return powersOf10L[pwr]; }
 
 PRIVATE U32 wrU32Rem(U32 n, U8 pwr)
 {
-   U8 q;
+   if(n == 0 && pwr == 0)              // Last digit and it's zero?
+   {
+      putCh('0');                      // then print '0'.
+   }
+   else                                // else may print digit, depending on value and width-specifier.
+   {
+      U8 q = (U8)(n/getPwr10L(pwr));   // Get millions, 1000's, hundreds, etc, by division
 
-   q = (U8)(n/getPwr10L(pwr));      // Get millions, 1000's, hundreds, etc, by division
-
-   if(prec > pwr)                   // Must left-pad with zeros
-      {wrZero = 1;}                 // then mark as such.
-
-   wrDigit(q);
-   return n - (q*getPwr10L(pwr));   // Return the remainder.
+      chkPadZero(pwr);                 // Check if should left-pad with zero (if current digit is zero)
+      wrDigit(q);
+      return n - (q*getPwr10L(pwr));   // Return the remainder.
+   }
 }
 
 /*-----------------------------------------------------------------------------------
@@ -463,22 +476,13 @@ PRIVATE void wrU32(U32 n)
 
 PRIVATE void wrInt32(S32 n)
 {
-   if(n == 0)                    // Is zero?
-      { putCh('0'); }            // then we're done
-   else                          // else it's non-zero so..
+   if(n < 0 && isSigned)      // If format was '%d' or '%i' and it's negative?
    {
-      if(n < 0 && isSigned)      // If format was '%d' or '%i' and it's negative?
-      {
-         wrNeg = 1;              // Will print '-'
-         n = -n;                 // invert the number
-      }
-      wrU32(n);                  // Print (positive) 'n' with this.
+      wrNeg = 1;              // Will print '-'
+      n = -n;                 // invert the number
    }
+   wrU32(n);                  // Print (positive) 'n' with this.
 }
-
-
-
-
 
 
 // ====================== Floating-Point Support ==================================
