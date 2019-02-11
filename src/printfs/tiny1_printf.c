@@ -27,6 +27,16 @@
 |     for sprintf().... extern C8 *TPrint_BufPtr;
 |                       extern void TPrint_ChIntoBuf(U8 ch);
 |
+|  Whats's in/out:
+|     - no doubles
+|     - no 64bit: ints are 16 bit; longs are 32bit.
+|     - 'l' is the only length modifier. 'hh', 'h', 'll', 'z', 'L' not suppoerted.
+|     - %c,%s,%d,%u,%x/X,%f,%e. No %g/G %a/A.
+|     - %f and %F are same, %e and %E are same.
+|
+|  Extensions:
+|     - %C and %S quote non-printables in char and string printouts.
+|
 |--------------------------------------------------------------------------*/
 
 	#ifdef _UNIT_TEST
@@ -96,14 +106,15 @@ PRIVATE void (*putChPtr)(U8);    // Pointer to the user-supplied putchar()
 
 #define _NibbleToHexASCII_Lowercase 0
 #define _NibbleToHexASCII_Uppercase 1
-PRIVATE U8 nibbleToASCII(U8 n, BIT uppercase)
+PRIVATE U8 nibbleToASCII(U8 n, BIT ucase)
 {
    return
-      (U8)((n > 0x0F)
-         ? '\0'
-         : ((n > 9)
-            ? (n - 10 + (uppercase==1 ? 'A' : 'a'))
-            : n + '0'));
+      (U8)((n > 0x0F)               // Not a Hex nibble?
+         ? '\0'                     // then print '0' as fallback.
+         : ((n > 9)                 // else is hex... A-F?
+            ? (n - 10 +                   // -> to A-F
+               (ucase==1 ? 'A' : 'a'))    // which we print as uppercase or lowercase, depending.
+            : n + '0'));                  // else print '0' - '9'.
 }
 
 /*-----------------------------------------------------------------------------------
@@ -119,30 +130,34 @@ PRIVATE U8 nibbleToASCII(U8 n, BIT uppercase)
 
 PRIVATE void putCh(U8 ch)
 {
-   if(!isprint(ch) && quoteCtrls == 1)                             // Non-printable? AND we are quoted non-printables
-   {
-      putChPtr('\\');                                              // Backslash
-      if(ch == '\t' || ch == '\r' || ch == '\n')                   // '\t', '\r', '\n'? ...
-	  {
-		  putChPtr(ch == '\t' ? 't' : (ch == '\r' ? 'r' : 'n'));   // ...are quoted as written
-		  printCnt += 2;                                           // e.g '\r' -> 2 chars
-	  }
-	  else                                                         // any other whitespace...
-	  {
-         putChPtr('x');                                            // ...is quoted as hex.
-         putChPtr(nibbleToASCII(HIGH_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
-         putChPtr(nibbleToASCII(LOW_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
-         printCnt += 4;                                            // e.g '\x34' -> 4 chars
-	  }
+   // '\0' is not printed unless were are quoting it.
+   if(ch != '\0' || quoteCtrls == 1)                                 // NOT '\0'? OR quoting non-printables?
+   {                                                                 // then we will output something...proceed.
+      if(!isprint(ch) && quoteCtrls == 1)                            // Non-printable? AND we are quoting non-printables
+      {
+         putChPtr('\\');                                             // Backslash
+         if(ch == '\t' || ch == '\r' || ch == '\n')                  // '\t', '\r', '\n'? ...
+        {
+           putChPtr(ch == '\t' ? 't' : (ch == '\r' ? 'r' : 'n'));    // ...are quoted as written
+           printCnt += 2;                                            // e.g '\r' -> 2 chars
+        }
+        else                                                         // any other whitespace...
+        {
+            putChPtr('x');                                           // ...is quoted as hex.
+            putChPtr(nibbleToASCII(HIGH_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
+            putChPtr(nibbleToASCII(LOW_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
+            printCnt += 4;                                           // e.g '\x34' -> 4 chars
+        }
+      }
+      else                                                           // else is printable? OR we are not quoting anything?
+      {
+         putChPtr(ch);                                               // so print 'ch' as-is.
+         printCnt++;
+      }
+         #if _TPRINT_IS != TPRINT_TINY
+      fieldCnt++;
+         #endif
    }
-   else                                                            // else is printable? OR we are not quoting anything?
-   {
-      putChPtr(ch);                                                // so print 'ch' as-is.
-      printCnt++;
-   }
-      #if _TPRINT_IS != TPRINT_TINY
-   fieldCnt++;
-      #endif
 }
 
 /*-----------------------------------------------------------------------------------
@@ -842,12 +857,14 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                      { wrInt16((S16)va_arg(arg, VA_ARG_S16)); }
                   break;
 
-               case 'c':                                       // Character?
+               case 'C':                                       // Character?
+   			      quoteCtrls = 1;                              // Non-printables will be quoted.
+               case 'c':
                   putCh((U8)va_arg(arg, VA_ARG_CHAR));
                   break;
 
                case 'S':
-			      quoteCtrls = 1;                              // Non-printables will be quoted.
+			      quoteCtrls = 1;                                 // Non-printables will be quoted.
                case 's':                                       // String?
                {
                   p = va_arg(arg, U8 GENERIC *);               // Get ptr to this string
@@ -856,13 +873,13 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                   /* If (maybe) printing to string heap, will count how many string chars printed and offer that
                      count to the string heap. If this string was from the heap (it may be e.g a constant string, which
                      is not), then release that heap space, the string has been consumed.
-				  */
+				      */
                   U16 printsWas = printCnt;                    // Mark chars printed so far.
 				  U8 GENERIC const *strAt = p;
                      #endif
 
                   while( (ch = *(p++)) != '\0')                // Until end of string...
-                     { putCh(ch); }							   // print chars and count them.
+                     { putCh(ch); }							         // print chars and count them.
 
                      #ifdef TPRINT_USE_STRING_HEAP
                   /* Offer to the heap the number of chars emitted, plus 1 for '\0'. Note that putCh() may emit more than one
@@ -888,23 +905,18 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                      { wrHex16((U16)va_arg(arg, VA_ARG_U16)); }// so print 16 unsigned as hex.
                   break;
 
-                  /* Note that the Hex formats are not ANSI standard, where 'X' means an uppercase
-                     and 'x' means lowercase. But printing just a byte is something we want quite
-                     often so bend the rules.
-                  */
-
                      // ------- Floating point support
                      #if _TPRINT_IS == TPRINT_FLOAT
 
                case 'e':
                case 'E':
-                  if(!gotPrec) { prec = 4; }                   // If don't get precision for float, this is default.
+                  if(!gotPrec) { prec = 6; }                   // If precision was not specified '%.6f' is the C Library default.
                   wrFloatExp((float)va_arg(arg, VA_ARG_FLOAT), prec); // Write E-float
                   break;
 
                case 'f':
                case 'F':
-                  if(!gotPrec) { prec = 4; }                   // If don't get precision for float, this is default.
+                  if(!gotPrec) { prec = 6; }                   // If precision was not specified '%.6f' is the C Library default.
                   wrFloatFixed((float)va_arg(arg, VA_ARG_FLOAT), prec); // Write fixed-float
                   break;
 
