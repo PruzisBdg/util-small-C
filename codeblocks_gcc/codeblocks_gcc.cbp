@@ -342,6 +342,7 @@
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../src/printfs/tiny1_printf_string_heap.c">
 			<Option compilerVar="CC" />
@@ -573,8 +574,6 @@
 		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
 		<Extensions>
