@@ -30,7 +30,6 @@ void setUp(void) {
 void tearDown(void) {
 }
 
-
 /* --------------------------------- test_JustStrings -------------------------------------- */
 
 void test_JustStrings(void) {
@@ -201,7 +200,6 @@ void test_Decimal16_Unsigned(void)
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
       OStream_Print();
    }
-
 }
 
 /* --------------------------------- test_Decimal32_Signed -------------------------------------- */
@@ -354,5 +352,73 @@ void test_Decimal32_Unsigned(void)
       OStream_Print();
    }
 }
+
+/* --------------------------------- test_Hex16 -------------------------------------- */
+
+void test_Hex16(void)
+{
+   typedef struct { C8 const *fmt; C8 const *out; U16 n; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Basic zero and range
+      { .fmt = "%x",    .n = 0,          .out = "0" },                    // Zero prints value of the byte i.e 0x00
+      { .fmt = "%x",    .n = MAX_U16,    .out = "FFFF" },
+
+      { .fmt = "%x",    .n = MAX_U16-1,  .out = "FFFE" },
+      // Zeros with width
+      { .fmt = "abc%1x",   .n = 0,        .out = "abc0" },
+      { .fmt = "abc%01x",  .n = 0,        .out = "abc0" },
+
+      { .fmt = "abc%3x",   .n = 0,        .out = "abc  0" },
+      { .fmt = "abc%03x",  .n = 0,        .out = "abc000" },
+
+      { .fmt = "abc%5x",   .n = 0,        .out = "abc    0" },             // For an Hex16, print up to 5 leading zeros.
+      { .fmt = "abc%05x",  .n = 0,        .out = "abc 0000" },
+
+      { .fmt = "abc%12x",   .n = 0,        .out = "abc           0" },     // Specifying more than 5 leading zeros results in spaces.
+      { .fmt = "abc%012x",  .n = 0,        .out = "abc        0000" },
+
+      // Numbers
+      { .fmt = "...%x",    .n = 1,        .out = "...1" },
+      { .fmt = "...%+x",   .n = 1,        .out = "...1" },                 // For Hex, the '+' modifier is ignored.
+      { .fmt = "...%x",    .n = 0x345,      .out = "...345" },
+      { .fmt = "...%4x",   .n = 0x73,       .out = "...  73" },
+
+      { .fmt = "...%04x", .n = 0x81,      .out = "...0081" },
+
+      // All these 4-digit corners shoxld print the same
+      { .fmt = "%x",      .n = 0x1234,    .out = "1234" },
+      { .fmt = "%4x",     .n = 0x1234,    .out = "1234" },
+      { .fmt = "%04x",    .n = 0x1234,    .out = "1234" },
+
+      // Just-under and just over field/significant digits.
+      { .fmt = "%3x",     .n = 0x1234,    .out = "1234" },
+      { .fmt = "%03x",    .n = 0x1234,    .out = "1234" },
+
+      { .fmt = "%5x",     .n = 0x1234,    .out = " 1234" },
+      { .fmt = "%05x",    .n = 0x1234,    .out = " 1234" },
+
+      { .fmt = "a%6x",    .n = 0x1234,    .out = "a  1234" },
+      { .fmt = "a%06x",   .n = 0x1234,    .out = "a  1234" },
+
+      { .fmt = "abc%3xdef",.n = 0x79,        .out = "abc 79def" },     // Continue with rest of formatter.
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->n);
+
+      C8 b0[100];
+      sprintf(b0, "Wrong output string: fmt = \"%s\",%u", t->fmt, t->n);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Wrong output length: \"%s\",%u -> \"%s\"", t->fmt, t->n, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      OStream_Print();
+   }
+}
+
 
 // ----------------------------------------- eof --------------------------------------------

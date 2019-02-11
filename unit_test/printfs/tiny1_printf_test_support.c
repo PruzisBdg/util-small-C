@@ -19,7 +19,7 @@ typedef struct {
    U16 put, get;
 } S_OStream;
 
-PRIVATE S_OStream os;
+PUBLIC S_OStream os;
 
 PUBLIC void OStream_Reset(void) {
    os.put = 0;
