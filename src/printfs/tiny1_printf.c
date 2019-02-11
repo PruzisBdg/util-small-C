@@ -61,6 +61,7 @@ PRIVATE U8 fieldCnt;             // Chars printed in field so far; for adding co
 // Some file-global flags
 PRIVATE BIT wrZero;              // When set, write a '0' for 0 when parsing a number
 PRIVATE BIT isSigned;            // The current 16 bit number is signed
+PRIVATE BIT hexUpperCase;        // If 1, print 'A' else 'a'.
 
 PRIVATE void (*putChPtr)(U8);    // Pointer to the user-supplied putchar()
 
@@ -88,13 +89,21 @@ PRIVATE void (*putChPtr)(U8);    // Pointer to the user-supplied putchar()
 |
 |  nibbleToASCII()
 |
-|  Convert 0x00 -> 0x0F to '0' -> 'F'; anything else becomes '\0'.
+|  Convert 0x00 -> 0x0F to '0' -> 'F' if 'uppercase==1 or '0' -> 'f' if 'uppercase==0.
+|  Anything else becomes '\0'.
 |
 --------------------------------------------------------------------------------------*/
 
-PRIVATE U8 nibbleToASCII(U8 n)
+#define _NibbleToHexASCII_Lowercase 0
+#define _NibbleToHexASCII_Uppercase 1
+PRIVATE U8 nibbleToASCII(U8 n, BIT uppercase)
 {
-   return (U8)((n > 0x0F) ? '\0' : ((n > 9) ? n - 10 + 'A' : n + '0'));
+   return
+      (U8)((n > 0x0F)
+         ? '\0'
+         : ((n > 9)
+            ? (n - 10 + (uppercase==1 ? 'A' : 'a'))
+            : n + '0'));
 }
 
 /*-----------------------------------------------------------------------------------
@@ -121,8 +130,8 @@ PRIVATE void putCh(U8 ch)
 	  else                                                         // any other whitespace...
 	  {
          putChPtr('x');                                            // ...is quoted as hex.
-         putChPtr(nibbleToASCII(HIGH_NIBBLE(ch)));
-         putChPtr(nibbleToASCII(LOW_NIBBLE(ch)));
+         putChPtr(nibbleToASCII(HIGH_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
+         putChPtr(nibbleToASCII(LOW_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
          printCnt += 4;                                            // e.g '\x34' -> 4 chars
 	  }
    }
@@ -175,35 +184,6 @@ PRIVATE void printLeftSpaces(U8 maxDigits)
 
 /*-----------------------------------------------------------------------------------
 |
-|  wrHexASCII
-|
-|  Write byte 'n' as uppercase Hex ASCII
-|
---------------------------------------------------------------------------------------*/
-
-PRIVATE void wrHexASCII(U8 n)
-{
-   putCh(nibbleToASCII(HIGH_NIBBLE(n)));
-   putCh(nibbleToASCII(LOW_NIBBLE(n)));
-}
-
-
-/*-----------------------------------------------------------------------------------
-|
-|  wrHex16
-|
-|  Write word 'n' as uppercase Hex ASCII.
-|
---------------------------------------------------------------------------------------*/
-
-PRIVATE void wrHex16(U16 n)
-{
-   wrHexASCII(HIGH_BYTE(n));
-   wrHexASCII(LOW_BYTE(n));
-}
-
-/*-----------------------------------------------------------------------------------
-|
 |  wrNibbleIdx
 |
 |  Write nibble 'n' at 'idx', where idx == 0 is rightmost (least-significant). If 'n' is
@@ -217,7 +197,7 @@ PRIVATE void wrNibbleIdx(U8 n, U8 idx)
 {
    if(n > 0)                        // Non-zero?
    {
-      putCh(nibbleToASCII(n));      // then print '1' - 'F' regardless
+      putCh(nibbleToASCII(n, hexUpperCase));      // then print '1' - 'F' or '1' - 'f' regardless
       wrZero = 1;                   // and mark to print any zeros after this (cuz they are in the number)
    }
    else if(prec > idx ||            // else significant-digit at this position? OR
@@ -233,23 +213,49 @@ PRIVATE void wrNibbleIdx(U8 n, U8 idx)
 
 /*-----------------------------------------------------------------------------------
 |
+|  wrHex8at
+|
+|  Write word 'n' as uppercase Hex ASCII at nibble 'f(ie)ld' as part of a larger number.
+|  'fld' 0 is lsb; e.g in 0x1234ABCD 'fld'==0 would be 'D' 'fld'==4 would be '4' etc.
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void wrHex8at(U8 n, U8 digitIdx)
+{
+   wrNibbleIdx( HIGH_NIBBLE(n), digitIdx--);
+   wrNibbleIdx( LOW_NIBBLE(n),  digitIdx);
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  wrHex16at
+|
+|  Write word 'n' as uppercase Hex ASCII at nibble 'f(ie)ld' as part of a larger number.
+|  'fld' 0 is lsb; e.g in 0x1234ABCD 'fld'==0 would be 'D' 'fld'==4 would be '4' etc.
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void wrHex16at(U16 n, U8 digitIdx)
+{
+   wrHex8at(HIGH_BYTE(n), digitIdx);
+   wrHex8at(LOW_BYTE(n), digitIdx-2);
+}
+
+/*-----------------------------------------------------------------------------------
+|
 |  wrHex16
 |
 |  Write word 'n' as uppercase Hex ASCII. If upper byte is zero then write just the low byte.
 |
 --------------------------------------------------------------------------------------*/
 
-PRIVATE void wrHex16Short(U16 n)
+PRIVATE void wrHex16(U16 n)
 {
    // Hex16 is 4 digits. Print up to 3 left-spaces.
    printLeftSpaces(4);
    // Print nibbles, msb to lsb. Will print digit, space or leadin zero, depending.
-   wrNibbleIdx( HIGH_NIBBLE(HIGH_BYTE(n)), 3);
-   wrNibbleIdx( LOW_NIBBLE( HIGH_BYTE(n)), 2);
-   wrNibbleIdx( HIGH_NIBBLE(LOW_BYTE(n)),  1);
-   wrNibbleIdx( LOW_NIBBLE( LOW_BYTE(n)),  0);
+   wrHex16at(n, 3);
 }
-
 
 /*-----------------------------------------------------------------------------------
 |
@@ -261,8 +267,9 @@ PRIVATE void wrHex16Short(U16 n)
 
 PRIVATE void wrHex32(U32 n)
 {
-   wrHex16(HIGH_WORD(n));
-   wrHex16(LOW_WORD(n));
+   printLeftSpaces(8);
+   wrHex16at(HIGH_WORD(n), 7);
+   wrHex16at(LOW_WORD(n), 3);
 }
 
 /*-----------------------------------------------------------------------------------
@@ -720,10 +727,6 @@ PRIVATE void wrFloatFixed(float f, U8 _prec)
 #endif // TPRINT_FLOAT == 1
 
 
-
-
-
-
 // ====================== end: Floating-Point Support ==================================
 // ====================== end: Floating-Point Support ==================================
 // ====================== end: Floating-Point Support ==================================
@@ -870,17 +873,15 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                      #endif
                   break;
                }
+
                case 'x':                                       // Small 'x'. Print a single byte if no 'l' AND small number.
+               case 'X':                                       // always uppercase '0x2ABD'
+                  hexUpperCase = ch == 'X' ? 1 : 0;            // 'X' <- uppercase 'A'->'F'; 'x' -> lowercase.
+
                   if( zeroPad && width > prec )                // Got e.g '%04d'?, i.e left-pad with zeros to make at least 4 digits
                   {
                      prec = width;                             // then the width '4' was actually a precision specifier...
                   }
-                  if(!gotLong) {                               // No 'l' modifier?
-                     wrHex16Short((U16)va_arg(arg, VA_ARG_U16)); // then print 16bit number, omitting high byte if it is zero.
-                     break;
-                     }                                         // else print 32 bit hex (below)
-
-               case 'X':                                       // always uppercase '0x2ABD'
                   if( gotLong)                                 // Got 'l' modifier?
                      { wrHex32((U32)va_arg(arg, U32)); }       // then print 32bit unsigned as hex
                   else                                         // else no 'l' modifier

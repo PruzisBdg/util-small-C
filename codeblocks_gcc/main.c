@@ -38,7 +38,7 @@ int main(void)
 
    OStream_Reset();
 //   tiny1_printf("%x", 0xAB0D);
-   tiny1_printf("%x", 0);
+   tiny1_printf("%lx", 0xFFFFFFFE);
    OStream_Print();
 
     return 0;

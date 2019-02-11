@@ -361,10 +361,9 @@ void test_Hex16(void)
 
    S_Tst const tsts[] = {
       // Basic zero and range
-      { .fmt = "%x",    .n = 0,          .out = "0" },                    // Zero prints value of the byte i.e 0x00
-      { .fmt = "%x",    .n = MAX_U16,    .out = "FFFF" },
-
-      { .fmt = "%x",    .n = MAX_U16-1,  .out = "FFFE" },
+      { .fmt = "%x",    .n = 0,          .out = "0" },                     // Zero prints value of the byte i.e 0x00
+      { .fmt = "%x",    .n = MAX_U16,    .out = "ffff" },                  // Lowercase
+      { .fmt = "%X",    .n = MAX_U16-1,  .out = "FFFE" },                  // Uppercase
       // Zeros with width
       { .fmt = "abc%1x",   .n = 0,        .out = "abc0" },
       { .fmt = "abc%01x",  .n = 0,        .out = "abc0" },
@@ -372,14 +371,16 @@ void test_Hex16(void)
       { .fmt = "abc%3x",   .n = 0,        .out = "abc  0" },
       { .fmt = "abc%03x",  .n = 0,        .out = "abc000" },
 
-      { .fmt = "abc%5x",   .n = 0,        .out = "abc    0" },             // For an Hex16, print up to 5 leading zeros.
-      { .fmt = "abc%05x",  .n = 0,        .out = "abc 0000" },
+      { .fmt = "abc%4x",   .n = 0,        .out = "abc   0" },             // For an Hex16, print up to 4 leading zeros.
+      { .fmt = "abc%04x",  .n = 0,        .out = "abc0000" },
 
-      { .fmt = "abc%12x",   .n = 0,        .out = "abc           0" },     // Specifying more than 5 leading zeros results in spaces.
+      { .fmt = "abc%12x",   .n = 0,        .out = "abc           0" },     // Specifying more than 4 leading zeros results in spaces.
       { .fmt = "abc%012x",  .n = 0,        .out = "abc        0000" },
 
       // Numbers
       { .fmt = "...%x",    .n = 1,        .out = "...1" },
+      { .fmt = "...%x",    .n = 0xABCD,   .out = "...abcd" },
+      { .fmt = "...%X",    .n = 0xABCD,   .out = "...ABCD" },
       { .fmt = "...%+x",   .n = 1,        .out = "...1" },                 // For Hex, the '+' modifier is ignored.
       { .fmt = "...%x",    .n = 0x345,      .out = "...345" },
       { .fmt = "...%4x",   .n = 0x73,       .out = "...  73" },
@@ -412,9 +413,76 @@ void test_Hex16(void)
       T_PrintCnt rtn = tiny1_printf(t->fmt, t->n);
 
       C8 b0[100];
-      sprintf(b0, "Wrong output string: fmt = \"%s\",%u", t->fmt, t->n);
+      sprintf(b0, "Wrong output string: fmt = \"%s\",0x%x", t->fmt, t->n);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
-      sprintf(b0, "Wrong output length: \"%s\",%u -> \"%s\"", t->fmt, t->n, t->out);
+      sprintf(b0, "Wrong output length: \"%s\",0x%x -> \"%s\"", t->fmt, t->n, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      OStream_Print();
+   }
+}
+
+
+/* --------------------------------- test_Hex32 -------------------------------------- */
+
+void test_Hex32(void)
+{
+   typedef struct { C8 const *fmt; C8 const *out; U32 n; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Basic zero and range
+      { .fmt = "%lx",    .n = 0,          .out = "0" },                    // Zero prints value of the byte i.e 0x00
+      { .fmt = "%lx",    .n = MAX_U32,    .out = "ffffffff" },             // Lowercase
+      { .fmt = "%lX",    .n = MAX_U32-1,  .out = "FFFFFFFE" },             // Uppercase
+      // Zeros with width
+      { .fmt = "abc%1lx",   .n = 0,        .out = "abc0" },
+      { .fmt = "abc%01lx",  .n = 0,        .out = "abc0" },
+
+      { .fmt = "abc%3lx",   .n = 0,        .out = "abc  0" },
+      { .fmt = "abc%03lx",  .n = 0,        .out = "abc000" },
+
+      { .fmt = "abc%8lx",   .n = 0,        .out = "abc       0" },             // For an Hex32, print up to 8 leading zeros.
+      { .fmt = "abc%08lx",  .n = 0,        .out = "abc00000000" },
+
+      { .fmt = "abc%12lx",   .n = 0,        .out = "abc           0" },     // Specifying more than 8 leading zeros results in spaces.
+      { .fmt = "abc%012lx",  .n = 0,        .out = "abc    00000000" },
+
+      // Numbers
+      { .fmt = "...%lx",    .n = 1,        .out = "...1" },
+      { .fmt = "...%+lx",   .n = 1,        .out = "...1" },                 // For Hex, the '+' modifier is ignored.
+      { .fmt = "...%lx",    .n = 0x345ABC,      .out = "...345abc" },
+      { .fmt = "...%8lx",   .n = 0x7399,       .out = "...    7399" },
+
+      { .fmt = "...%08lx", .n = 0x81,      .out = "...00000081" },
+
+      // All these 8-digit corners shoxld print the same
+      { .fmt = "%lX",      .n = 0x1234ABCD,    .out = "1234ABCD" },
+      { .fmt = "%8lx",     .n = 0x1234CDEF,    .out = "1234cdef" },
+      { .fmt = "%08lx",    .n = 0x12345678,    .out = "12345678" },
+
+      // Just-under and just over field/significant digits.
+      { .fmt = "%7lx",     .n = 0x1234CDEF,    .out = "1234cdef" },
+      { .fmt = "%07lx",    .n = 0x12340002,    .out = "12340002" },
+
+      { .fmt = "%9lX",     .n = 0x10A0F234,    .out = " 10A0F234" },
+      { .fmt = "%09lX",    .n = 0x10A0F234,    .out = " 10A0F234" },
+
+      { .fmt = "a%10lx",    .n = 0x12345600,    .out = "a  12345600" },
+      { .fmt = "a%010lx",   .n = 0x12345600,    .out = "a  12345600" },
+
+      { .fmt = "abc%3lxdef",.n = 0x79,        .out = "abc 79def" },     // Continue with rest of formatter.
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->n);
+
+      C8 b0[100];
+      sprintf(b0, "Test #%d: Wrong output string: fmt = \"%s\",0x%lx", i, t->fmt, t->n);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Test #%d: Wrong output length: \"%s\",0x%lx -> \"%s\"", i, t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
       OStream_Print();
    }
