@@ -129,7 +129,7 @@ void test_Decimal16_Signed(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Wrong output length: \"%s\",%d -> \"%s\"", t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 
 }
@@ -198,7 +198,7 @@ void test_Decimal16_Unsigned(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Wrong output length: \"%s\",%u -> \"%s\"", t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 }
 
@@ -281,7 +281,7 @@ void test_Decimal32_Signed(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Wrong output length: \"%s\",%ld -> \"%s\"", t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT32_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 }
 
@@ -349,7 +349,7 @@ void test_Decimal32_Unsigned(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Wrong output length: \"%s\",%lu -> \"%s\"", t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_UINT32_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 }
 
@@ -417,7 +417,7 @@ void test_Hex16(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Wrong output length: \"%s\",0x%x -> \"%s\"", t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 }
 
@@ -483,6 +483,81 @@ void test_Hex32(void)
       sprintf(b0, "Test #%d: Wrong output string: fmt = \"%s\",0x%lx", i, t->fmt, t->n);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Test #%d: Wrong output length: \"%s\",0x%lx -> \"%s\"", i, t->fmt, t->n, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      //OStream_Print();
+   }
+}
+
+/* ----------------------------------- test_Char -------------------------------------------- */
+
+void test_Char(void)
+{
+   typedef struct { C8 const *fmt; C8 ch; C8 const *out; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Zero ('\0') results in no output; it's the string terminator.
+      { .fmt = "%c",    .ch = '\0',    .out = "" },
+
+      { .fmt = "%c",    .ch = 'Z',     .out = "Z" },
+
+      // For '%c' non-printables are output as-is.
+      { .fmt = "%c",    .ch = '\r',    .out = "\x0D" },
+      { .fmt = "%c",    .ch = 0x02,    .out = "\x02" },
+
+      // For '%C" \r,\n,\t are quoted as their escape chars; else as Hex number.
+      // printables are output as-is.
+      { .fmt = "%c",    .ch = 'M',     .out = "M" },
+      { .fmt = "%C",    .ch = '\r',    .out = "\\r" },
+      { .fmt = "%C",    .ch = '\t',    .out = "\\t" },
+      { .fmt = "%C",    .ch = '\n',    .out = "\\n" },
+      { .fmt = "%C",    .ch = 0x02,    .out = "\\x02" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->ch);
+
+      C8 b0[100];
+      sprintf(b0, "Test #%d: Wrong output string: fmt = \"%s\",%c", i, t->fmt, t->ch);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Test #%d: Wrong output length: \"%s\"<-\'%c\' -> \"%s\"", i, t->fmt, t->ch, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      //OStream_Print();
+   }
+}
+
+
+/* ----------------------------------- test_Float -------------------------------------------- */
+
+void test_Float(void)
+{
+   typedef struct { C8 const *fmt; float n; C8 const *out; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Zero ('\0') results in no output; it's the string terminator.
+      { .fmt = "%f",       .n = 0.0,         .out = "0.000000" },
+      { .fmt = "%f",       .n = 0.12,        .out = "0.120000" },
+      { .fmt = "%f",       .n = 12.345,      .out = "12.345000" },
+      { .fmt = "%F",       .n = 12.345,      .out = "12.345000" },      // %F and %f are same.
+
+      { .fmt = "%4.2f",    .n = 12.3456,     .out = "12.34" },
+      { .fmt = "%06.2f",   .n = 12.3456,     .out = "12.34" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->n);
+
+      C8 b0[100];
+      sprintf(b0, "Test #%d: Wrong output string: fmt = \"%s\",%f", i, t->fmt, t->n);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Test #%d: Wrong output length: \"%s\"<-\'%f\' -> \"%s\"", i, t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
       OStream_Print();
    }
