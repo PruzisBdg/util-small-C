@@ -136,6 +136,42 @@ PRIVATE void putCh(U8 ch)
       #endif
 }
 
+/*-----------------------------------------------------------------------------------
+|
+|  putSpc()
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void putSpc(void)
+{
+   putCh(' ');
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  printLeftSpaces
+|
+|  If the field width for an integer (16 or 32bit) is more than the max number of digits
+|  which will be printed (including '-'), then print the spaces needed to right justify
+|  the printed number. 'maxDigits' is 5 for a 16 bit int, 10 for a long (32bit).
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void printLeftSpaces(U8 maxDigits)
+{
+  /* If field width is greater than maximum U32 decimal digits, then print all the leading
+      spaces which will be there regardless of the value of 'n'.
+   */
+   if( (wrNeg || wrPlus) && width ) // Will prepend '-" or '+' to the digits?
+   {
+      width--;                      // then one space less to print
+   }
+   while(width > maxDigits )        // (While) field width > max decimal digits?
+   {
+      putSpc();                     // write a space
+      width--;                      // and 1 less to write.
+   }
+ }
 
 /*-----------------------------------------------------------------------------------
 |
@@ -168,6 +204,35 @@ PRIVATE void wrHex16(U16 n)
 
 /*-----------------------------------------------------------------------------------
 |
+|  wrNibbleIdx
+|
+|  Write nibble 'n' at 'idx', where idx == 0 is rightmost (least-significant). If 'n' is
+|  zero, then
+|     a) write '0' if 'prec' means we need a leading zero
+|     b) write SPC if field with means we must left=pad with space.
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void wrNibbleIdx(U8 n, U8 idx)
+{
+   if(n > 0)                        // Non-zero?
+   {
+      putCh(nibbleToASCII(n));      // then print '1' - 'F' regardless
+      wrZero = 1;                   // and mark to print any zeros after this (cuz they are in the number)
+   }
+   else if(prec > idx ||            // else significant-digit at this position? OR
+           wrZero == 1)             // already printed a non-zero digit
+   {
+      putCh('0');                   // So print a leading zero or in-number zero..
+   }
+   else if(width > idx)             // else if field extends to left of this print position?
+   {
+      putCh(' ');                   // insert leading space.
+   }
+}
+
+/*-----------------------------------------------------------------------------------
+|
 |  wrHex16
 |
 |  Write word 'n' as uppercase Hex ASCII. If upper byte is zero then write just the low byte.
@@ -176,9 +241,13 @@ PRIVATE void wrHex16(U16 n)
 
 PRIVATE void wrHex16Short(U16 n)
 {
-   if( HIGH_BYTE(n) )
-      { wrHexASCII(HIGH_BYTE(n)); }
-   wrHexASCII(LOW_BYTE(n));
+   // Hex16 is 4 digits. Print up to 3 left-spaces.
+   printLeftSpaces(4);
+   // Print nibbles, msb to lsb. Will print digit, space or leadin zero, depending.
+   wrNibbleIdx( HIGH_NIBBLE(HIGH_BYTE(n)), 3);
+   wrNibbleIdx( LOW_NIBBLE( HIGH_BYTE(n)), 2);
+   wrNibbleIdx( HIGH_NIBBLE(LOW_BYTE(n)),  1);
+   wrNibbleIdx( LOW_NIBBLE( LOW_BYTE(n)),  0);
 }
 
 
@@ -195,18 +264,6 @@ PRIVATE void wrHex32(U32 n)
    wrHex16(HIGH_WORD(n));
    wrHex16(LOW_WORD(n));
 }
-
-/*-----------------------------------------------------------------------------------
-|
-|  putSpc()
-|
---------------------------------------------------------------------------------------*/
-
-PRIVATE void putSpc(void)
-{
-   putCh(' ');
-}
-
 
 /*-----------------------------------------------------------------------------------
 |
@@ -291,6 +348,7 @@ PRIVATE U16 wrU16Rem(U16 n, U8 pwr)
    if(n == 0 && pwr == 0)                    // Last digit and it's zero?
    {
       putCh('0');                            // then print '0'.
+      return 0;
    }
    else                                      // else may print digit, depending on value and width-specifier.
    {
@@ -310,32 +368,6 @@ PRIVATE U16 wrU16Rem(U16 n, U8 pwr)
       return n - (ms * getPwr10_U16(pwr));   // Return the remainder
    }
 }
-
-/*-----------------------------------------------------------------------------------
-|
-|  printLeftSpaces
-|
-|  If the field width for an integer (16 or 32bit) is more than the max number of digits
-|  which will be printed (including '-'), then print the spaces needed to right justify
-|  the printed number. 'maxDigits' is 5 for a 16 bit int, 10 for a long (32bit).
-|
---------------------------------------------------------------------------------------*/
-
-PRIVATE void printLeftSpaces(U8 maxDigits)
-{
-  /* If field width is greater than maximum U32 decimal digits, then print all the leading
-      spaces which will be there regardless of the value of 'n'.
-   */
-   if( (wrNeg || wrPlus) && width ) // Will prepend '-" or '+' to the digits?
-   {
-      width--;                      // then one space less to print
-   }
-   while(width > maxDigits )        // (While) field width > max decimal digits?
-   {
-      putSpc();                     // write a space
-      width--;                      // and 1 less to write.
-   }
- }
 
 /*-----------------------------------------------------------------------------------
 |
@@ -407,6 +439,7 @@ PRIVATE U32 wrU32Rem(U32 n, U8 pwr)
    if(n == 0 && pwr == 0)              // Last digit and it's zero?
    {
       putCh('0');                      // then print '0'.
+      return 0;
    }
    else                                // else may print digit, depending on value and width-specifier.
    {
@@ -720,6 +753,8 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
    U8 ch;
    U8 GENERIC *p;
 
+   wrZero = 0;
+
       #if _TPRINT_IS == TPRINT_TINY
    U8 idx = 0;
       #else
@@ -836,6 +871,10 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                   break;
                }
                case 'x':                                       // Small 'x'. Print a single byte if no 'l' AND small number.
+                  if( zeroPad && width > prec )                // Got e.g '%04d'?, i.e left-pad with zeros to make at least 4 digits
+                  {
+                     prec = width;                             // then the width '4' was actually a precision specifier...
+                  }
                   if(!gotLong) {                               // No 'l' modifier?
                      wrHex16Short((U16)va_arg(arg, VA_ARG_U16)); // then print 16bit number, omitting high byte if it is zero.
                      break;
@@ -915,7 +954,7 @@ skip:
                wrPlus = 0;                                  // Unless get a '+' format specifier.
 
                   #if _TPRINT_IS != TPRINT_TINY
-               gotPrec = 0; prec = 0;                       // Unless we get precision, this is the default
+               gotPrec = 0; prec = 1;                       // Unless we get precision, this is the default
                   #endif
                break;                                       // ... then will process the formats
 
