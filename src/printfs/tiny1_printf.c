@@ -596,11 +596,16 @@ PRIVATE void wrS32_Decpt(S32 n, U8 dp)
    {
       if( n < 0 )                      // Negative?
       {
-         putCh('-');                   // then print minus,
          n = -n;                       // and invert the number
+
+         if(wrNeg)
+         {
+            putCh('-');                   // then print minus,
+            wrNeg = 0;
+         }
       }
 
-      /* First, find the most significant decimal digit by comparision. For small
+      /* First, find the most significant decimal digit by comparison. For small
          numbers this is faster than eating through the number with successive calls
          to wrU32Rem(), each of which involves 32bit division.
 
@@ -702,6 +707,66 @@ PRIVATE void wrFloatExp(float f, U8 _prec)
 
 /*-----------------------------------------------------------------------------------
 |
+|  wrSign
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void wrSign(void)
+{
+   if(wrNeg)
+   {
+      putCh('-');
+   }
+   else if(wrPlus)
+   {
+      putCh('+');
+   }
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  padToWidth
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void padToWidth(U8 chs, U8 ch)
+{
+   while(chs++ < width)
+      putCh(ch);
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  padAndSign
+|
+|  Given '_prec' significant digits and field 'width', pad if necessary and prepend sign
+|  if necessary.  Either  e.g either "   +nn.nnnn" OR "+000nn.nnnn"
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void padAndSign(U8 _prec)
+{
+   // First, add to significant digits the DP, leading zero and maybe sign
+   U8 digitsEtc = _prec +
+      ((wrPlus || wrNeg)            // Printing sign?
+         ? sizeof("+0.")            // then add 3
+         : sizeof("0."));           // else add 2.
+
+   if(wrZero == 1)                  // Leading zeros?
+   {
+      wrSign();                     // then first write any sign
+      padToWidth(digitsEtc, '0');   // then write zeros
+   }
+   else                             // else padding with spaces
+   {
+      padToWidth(digitsEtc, ' ');   // Write spaces first...
+      wrSign();                     // ... then sign, right before leading zero or digits.
+   }
+   wrPlus = 0;  wrNeg = 0;    // If we wrote sign (above) we are done with it now.
+}
+
+/*-----------------------------------------------------------------------------------
+|
 |  wrFloatFixed
 |
 |  Write a floating point number in exponential format with 'prec' digits after
@@ -712,13 +777,17 @@ PRIVATE void wrFloatExp(float f, U8 _prec)
 
 PRIVATE void wrFloatFixed(float f, U8 _prec)
 {
-   S16  exp10;    // exponent as 10^N
+   /* First, given '_prec' significant digits, pad if necessary and prepend sign
+      if necessary.  Either  e.g either "   +nn.nnnn" OR "+000nn.nnnn"
+   */
+   if(f < 0.0)
+      { wrNeg = 1; }
+
+   padAndSign(_prec);
 
    // First, how big is this number? Get the power of 10 corresponding to the binary
    // exponent of 'f', rounded down.
-   exp10 = getExponent10(f);
-
-//printf("*** %4.2f %d %d %4.1f\r\n",f, prec, exp10, GetPwr10Float(prec));
+   S16 exp10 = getExponent10(f);
 
    /* If the won't fit within 9 digits in fixed format, then write it with an
       exponent.
@@ -917,6 +986,7 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                case 'f':
                case 'F':
                   if(!gotPrec) { prec = 6; }                   // If precision was not specified '%.6f' is the C Library default.
+                  wrZero = zeroPad;
                   wrFloatFixed((float)va_arg(arg, VA_ARG_FLOAT), prec); // Write fixed-float
                   break;
 
