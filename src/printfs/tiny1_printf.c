@@ -744,14 +744,8 @@ PRIVATE void padToWidth(U8 chs, U8 ch)
 |
 --------------------------------------------------------------------------------------*/
 
-PRIVATE void padAndSign(U8 _prec)
+PRIVATE void padAndSign(U8 digitsEtc)
 {
-   // First, add to significant digits the DP, leading zero and maybe sign
-   U8 digitsEtc = _prec +
-      ((wrPlus || wrNeg)            // Printing sign?
-         ? sizeof("+0.")            // then add 3
-         : sizeof("0."));           // else add 2.
-
    if(wrZero == 1)                  // Leading zeros?
    {
       wrSign();                     // then first write any sign
@@ -763,6 +757,55 @@ PRIVATE void padAndSign(U8 _prec)
       wrSign();                     // ... then sign, right before leading zero or digits.
    }
    wrPlus = 0;  wrNeg = 0;    // If we wrote sign (above) we are done with it now.
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  expFloatChs
+|
+|
+|  Given '_prec'ision and 'exp'onent10, the number of chars in an exponential format
+|  number.
+|     e.g  '1.23E4' -> 6;  '-1.234E-19' -> 10
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE U8 expFloatChs(U8 _prec, S16 exp10)
+{
+   return
+      _prec +                             // Digits after the DP, plus...
+      ((wrPlus || wrNeg)                  // Printing sign?
+         ? sizeof("+n.E")-1               // then add 4
+         : sizeof("n.E")-1)               // else no sign; add 3..
+      + (                                 // Plus chars in exponent
+         exp10 < -9                       // e.g E'-23'?
+            ? 3                           // ... another 3 chars
+            : ((exp10 < 0 || exp10 > 9)   // else e.g E'-5' or E'43'
+               ? 2                        // another 2 chars
+               : 1 ));                    // else e.g E'5' adds just1 char.
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  fixedDecimalChs
+|
+|  Given '_prec'ision and 'exp'onent10, the number of chars in an fixed-point format
+|  number.
+|     e.g  '123.45'    (prec = 2, exp = 3)      -> 6
+|          '-1234.789' (prec = 3, exp = 4, '-') -> 9
+|          '+0.0123'   (prec = 4, exp = -2,'+') -> 7
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE U8 fixedFloatChs(U8 _prec, S16 exp10)
+{
+   return
+      ((wrPlus || wrNeg) ? 1 : 0) +          // Prepend '+' or '-'? then add 1. PLus...
+      (
+         exp10 <= 0                          // if a fraction
+            ? (_prec + 2)                    // '0.' plus digits after DP
+            : ((1+exp10) + _prec +  1)       // else digits before DP plus digits after plus '.'.
+      );
 }
 
 /*-----------------------------------------------------------------------------------
@@ -783,21 +826,23 @@ PRIVATE void wrFloatFixed(float f, U8 _prec)
    if(f < 0.0)
       { wrNeg = 1; }
 
-   padAndSign(_prec);
-
    // First, how big is this number? Get the power of 10 corresponding to the binary
    // exponent of 'f', rounded down.
    S16 exp10 = getExponent10(f);
 
-   /* If the won't fit within 9 digits in fixed format, then write it with an
+   /* If 'f' won't fit within 9 digits in fixed format, then write it with an
       exponent.
    */
-   if( (_prec + exp10) > 9 )
+   if( (_prec + exp10) > 9 ||       // Too large to print fixed with '_prec' significant digits? OR
+       (_prec - exp10) > 9 )        // too small to print fixed with '_prec' significant digits?
    {
+      padAndSign(expFloatChs(_prec, exp10));
       wrFloatExp(f, _prec);
    }
    else     // else write in fixed format
    {
+      padAndSign(fixedFloatChs(_prec, exp10));
+
       // If 'f' < 0 then will need leading zeros to right of decimal point.
       if( exp10 < 0 ) { wrZero = 1; } else { wrZero = 0; }
 
