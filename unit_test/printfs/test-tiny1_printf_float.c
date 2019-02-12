@@ -387,7 +387,7 @@ void test_Hex16(void)
 
       { .fmt = "...%04x", .n = 0x81,      .out = "...0081" },
 
-      // All these 4-digit corners shoxld print the same
+      // All these 4-digit corners should print the same
       { .fmt = "%x",      .n = 0x1234,    .out = "1234" },
       { .fmt = "%4x",     .n = 0x1234,    .out = "1234" },
       { .fmt = "%04x",    .n = 0x1234,    .out = "1234" },
@@ -544,7 +544,13 @@ void test_Float(void)
       { .fmt = "%F",       .n = 12.345,      .out = "12.345000" },      // %F and %f are same.
 
       { .fmt = "%4.2f",    .n = 12.3456,     .out = "12.34" },
-      { .fmt = "%06.2f",   .n = 12.3456,     .out = "12.34" },
+
+      { .fmt = "%07.2f",   .n = 12.3456,     .out = "0012.34" },
+      { .fmt = "%7.2f",    .n = 12.3456,     .out = "  12.34" },
+      { .fmt = "%+07.2f",   .n = 12.3456,     .out = "+012.34" },
+      { .fmt = "%+7.2f",    .n = 12.3456,     .out = " +12.34" },
+      { .fmt = "%+07.2f",   .n = -12.3456,    .out = "-012.34" },
+      { .fmt = "%+7.2f",    .n = -12.3456,    .out = " -12.34" },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
