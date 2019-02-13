@@ -552,8 +552,9 @@ void test_Float(void)
       { .fmt = "%+07.2f",   .n = -12.3456,    .out = "-012.34" },
       { .fmt = "%+7.2f",    .n = -12.3456,    .out = " -12.34" },
 
-      { .fmt = "%+12.2f",    .n = -1.234E12,    .out = "   -1.23E+12" },
-      { .fmt = "%+12.2f",    .n = 1.234E-12,    .out = "   +1.23E-12" },
+      // If number is too large or small, fall back to exponent printout.
+      { .fmt = "%+12.2f",    .n = -1.234E12,    .out = "   -1.23e+12" },   // '%f' -> 'e'.
+      { .fmt = "%+12.2F",    .n = 1.234E-12,    .out = "   +1.23E-12" },   // '%F' -> 'e'.
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -568,7 +569,7 @@ void test_Float(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Test #%d: Wrong output length: \"%s\"<-\'%f\' -> \"%s\"", i, t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 }
 
@@ -579,24 +580,24 @@ void test_FloatExp(void)
    typedef struct { C8 const *fmt; float n; C8 const *out; } S_Tst;
 
    S_Tst const tsts[] = {
-      // Zero ('\0') results in no output; it's the string terminator.
-      { .fmt = "%e",       .n = 0.0,         .out = "0.000000E0" },
-      { .fmt = "%+e",      .n = 0.0,         .out = "+0.000000E+0" },
-      { .fmt = "%e",       .n = 0.12,        .out = "0.120000" },
-      { .fmt = "%e",       .n = 12.345,      .out = "12.345000" },
-      { .fmt = "%E",       .n = 12.345,      .out = "12.345000" },      // %F and %f are same.
+      { .fmt = "%e",          .n = 0.0,         .out = "0.000000e0" },
+      { .fmt = "%+E",         .n = 0.0,         .out = "+0.000000E+0" },
+      { .fmt = "%e",          .n = 0.12000001,  .out = "1.200000e-1" },
+      { .fmt = "%+e",         .n = 12.0,        .out = "+1.200000e+1" },
+      { .fmt = "%e",          .n = 12.345679,   .out = "1.234567e1" },
+      { .fmt = "%E",          .n = 12.345679,   .out = "1.234567E1" },
 
-      { .fmt = "%4.2E",    .n = 12.3456,     .out = "12.34" },
+      { .fmt = "%4.2E",       .n = 12.3456,     .out = "1.23E1" },
 
-      { .fmt = "%07.2e",   .n = 12.3456,     .out = "0012.34" },
-      { .fmt = "%7.2e",    .n = 12.3456,     .out = "  12.34" },
-      { .fmt = "%+07.2e",   .n = 12.3456,     .out = "+012.34" },
-      { .fmt = "%+7.2e",    .n = 12.3456,     .out = " +12.34" },
-      { .fmt = "%+07.2e",   .n = -12.3456,    .out = "-012.34" },
-      { .fmt = "%+7.2e",    .n = -12.3456,    .out = " -12.34" },
+      { .fmt = "%09.3e",      .n = 12.3456,     .out = "001.234e1" },
+      { .fmt = "%9.3e",       .n = 12.3456,     .out = "  1.234e1" },
+      { .fmt = "%+012.2E",    .n = 12.3456,     .out = "+00001.23E+1" },
+      { .fmt = "%+12.2e",     .n = 12.3456,     .out = "    +1.23e+1" },
+      { .fmt = "%+012.2E",    .n = -12.3456,    .out = "-00001.23E+1" },
+      { .fmt = "%+12.2e",     .n = -12.3456,    .out = "    -1.23e+1" },
 
-      { .fmt = "%+12.2e",    .n = -1.234E12,    .out = "   -1.23E+12" },
-      { .fmt = "%+12.2e",    .n = 1.234E-12,    .out = "   +1.23E-12" },
+      { .fmt = "%+12.2E",    .n = -1.234E18,    .out = "   -1.23E+18" },
+      { .fmt = "%+12.2e",    .n = 1.234E-18,    .out = "   +1.23e-18" },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
