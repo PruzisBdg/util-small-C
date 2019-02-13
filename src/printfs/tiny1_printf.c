@@ -31,11 +31,21 @@
 |     - no doubles
 |     - no 64bit: ints are 16 bit; longs are 32bit.
 |     - 'l' is the only length modifier. 'hh', 'h', 'll', 'z', 'L' not suppoerted.
-|     - %c,%s,%d,%u,%x/X,%f,%e. No %g/G %a/A.
+|     - Does %c,%s,%d,%u,%x/X,%f,%e. No %g/G %a/A.
 |     - %f and %F are same, %e and %E are same.
+|     - '-' (left-justify) is not supported (for now)
 |
 |  Extensions:
 |     - %C and %S quote non-printables in char and string printouts.
+|
+|  Differences:
+|     - For %f printout, if the number can't be printed with the requested precision in
+|       the a total of 10 digits (before and after the DP) then the printout is done in
+|       exponential format (at the requested precision).
+|
+|     - sprintf() Prints escapes e.g '\n' as ASCII codes i.e -> 0x0A.  C sprintf() renders
+|       these literally i.e '\r\n' -> "\r\n". This is helps with embedded where escapes
+|       don't get converted unless they originated in a string literal.
 |
 |--------------------------------------------------------------------------*/
 
@@ -568,6 +578,8 @@ PRIVATE void wrInt32(S32 n)
 
 #if _TPRINT_IS == TPRINT_FLOAT
 
+PRIVATE BIT capitalE;      // 1.2E5 vs 1.2e5.
+
 /*-----------------------------------------------------------------------------------
 |
 |  wrS16
@@ -662,9 +674,6 @@ PRIVATE void wrS32_Decpt(S32 n, U8 dp)
       while(pwr);
    }
 }
-
-// i.e  2^31 = 2.4E9
-#define _MaxS32Digits 9
 
 /*-----------------------------------------------------------------------------------
 |
@@ -774,6 +783,20 @@ PRIVATE U8 fixedFloatChs(U8 _prec, S16 exp10)
 
 /*-----------------------------------------------------------------------------------
 |
+|  getExpAndSign
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE S16 getExpAndSign(float f)
+{
+   if(f < 0.0)
+      { wrNeg = 1; }
+
+   return getExponent10(f);
+}
+
+/*-----------------------------------------------------------------------------------
+|
 |  wrFloatExp
 |
 |  Write a floating point number in exponential format 'prec' digits after the
@@ -785,7 +808,8 @@ PRIVATE void wrFloatExp(float f, U8 _prec)
 {
    // First, how big is this number? Get the power of 10 corresponding to the binary
    // exponent of 'f', rounded down.
-   S16 exp10 = getExponent10(f);
+   // Also, before doing any leading zeros find out if 'f' is negative so can prepend '-' before zeros.
+   S16 exp10 = getExpAndSign(f);
 
    // Remember the flag for the '+' modifier, if set, to be applied to the exponent too.
    BIT  _wrPlus = wrPlus;
@@ -796,16 +820,18 @@ PRIVATE void wrFloatExp(float f, U8 _prec)
       of the decimal point. Convert this to a long int and print it, inserting a
       decimal point after the 1st significant digit. This gives us e.g '4.297'.
    */
+   #define _MaxS32Digits 9    // i.e  2^31 = 2.4E9
+
    _prec = MinU8(_prec, _MaxS32Digits);
-   wrZero = 0;                                           // Suppress leading zeros
+   //wrZero = 0;                                           // Suppress leading zeros
    wrS32_Decpt(f / GetPwr10Float(exp10-_prec), _prec);
 
-   // Print the exponent e.g 'E12'
-   putCh('E');
-   width = 0;                       // Exponent digits are right after 'E', so no justify
-   prec = exp10 > 9 ? 2 : 1;        // If e.g 'E19' then 2 digits else 1.
-   wrPlus = _wrPlus;                // Recall the flag for the '+" modifier (it will have been cleared when writing the mantissa).
-   wrS16(exp10);                    // Write exponent, 1 or 2 digits signed.
+   // Print the exponent e.g 'E12' or 'e12'.
+   putCh(capitalE == 1 ? 'E' : 'e');   // Following the formatter '%e' vs. '%E'.
+   width = 0;                          // Exponent digits are right after 'E', so no justify
+   prec = exp10 > 9 ? 2 : 1;           // If e.g 'E19' then 2 digits else 1.
+   wrPlus = _wrPlus;                   // Recall the flag for the '+" modifier (it will have been cleared when writing the mantissa).
+   wrS16(exp10);                       // Write exponent, 1 or 2 digits signed.
 }
 
 /*-----------------------------------------------------------------------------------
@@ -820,15 +846,10 @@ PRIVATE void wrFloatExp(float f, U8 _prec)
 
 PRIVATE void wrFloatFixed(float f, U8 _prec)
 {
-   /* First, given '_prec' significant digits, pad if necessary and prepend sign
-      if necessary.  Either  e.g either "   +nn.nnnn" OR "+000nn.nnnn"
-   */
-   if(f < 0.0)
-      { wrNeg = 1; }
-
    // First, how big is this number? Get the power of 10 corresponding to the binary
    // exponent of 'f', rounded down.
-   S16 exp10 = getExponent10(f);
+   // Also, before doing any leading zeros find out if 'f' is negative so can prepend '-' before zeros.
+   S16 exp10 = getExpAndSign(f);
 
    /* If 'f' won't fit within 9 digits in fixed format, then write it with an
       exponent.
@@ -1023,12 +1044,17 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
 
                case 'e':
                case 'E':
+                  capitalE = ch == 'E' ? 1 : 0;                // 'E' prints e.g 1.2E5 vs 1.2e5.
+                  wrZero = zeroPad;
                   if(!gotPrec) { prec = 6; }                   // If precision was not specified '%.6f' is the C Library default.
                   wrFloatExp((float)va_arg(arg, VA_ARG_FLOAT), prec); // Write E-float
                   break;
 
                case 'f':
                case 'F':
+                  // If '%f' printout must fall back to exponent format because the number is too large/small,
+                  // then the exponent 'e' or 'E' follows the capitalisation 'f'/'F'.
+                  capitalE = ch == 'F' ? 1 : 0;
                   if(!gotPrec) { prec = 6; }                   // If precision was not specified '%.6f' is the C Library default.
                   wrZero = zeroPad;
                   wrFloatFixed((float)va_arg(arg, VA_ARG_FLOAT), prec); // Write fixed-float
