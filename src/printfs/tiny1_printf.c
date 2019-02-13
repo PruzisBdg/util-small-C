@@ -351,6 +351,23 @@ PRIVATE U16 CONST powersOf10[] = {1,10,100,1000,10000};
 
 PRIVATE U16 getPwr10_U16(U8 pwr) { return powersOf10[pwr]; }
 
+/*-----------------------------------------------------------------------------------
+|
+|  wrSign.  '-' has priority over '+'.
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void wrSign(void)
+{
+   if(wrNeg)
+   {
+      putCh('-');
+   }
+   else if(wrPlus)
+   {
+      putCh('+');
+   }
+}
 
 /*-----------------------------------------------------------------------------------
 |
@@ -369,8 +386,9 @@ PRIVATE U16 wrU16Rem(U16 n, U8 pwr)
 {
    if(n == 0 && pwr == 0)                    // Last digit and it's zero?
    {
+      wrSign();                              // If there's a '+' in front print that now.
       putCh('0');                            // then print '0'.
-      return 0;
+      return 0;                              // Remainder <- 0.
    }
    else                                      // else may print digit, depending on value and width-specifier.
    {
@@ -671,58 +689,6 @@ PRIVATE S16 getExponent10(float f)
    return (S16)floorf( exp2N/3.32192809489f);
 }
 
-
-
-/*-----------------------------------------------------------------------------------
-|
-|  wrFloatExp
-|
-|  Write a floating point number in exponential format 'prec' digits after the
-|  decimal point, but no more than 9 digits total.
-|
---------------------------------------------------------------------------------------*/
-
-PRIVATE void wrFloatExp(float f, U8 _prec)
-{
-   S16  exp10;    // exponent as 10^N
-
-   // First, how big is this number? Get the power of 10 corresponding to the binary
-   // exponent of 'f', rounded down.
-   exp10 = getExponent10(f);
-
-   /* Now, divide the original number by 10^exp10. This normalises it into [1..10].
-      Multiply by 10^(prec-1). This gets us a number with 'prec' digits to the left
-      of the decimal point. Convert this to a long int and print it, inserting a
-      decimal point after the 1st significant digit. This gives us e.g '4.297'.
-   */
-   _prec = MinU8(_prec, _MaxS32Digits);
-   wrZero = 0;                                           // Suppress leading zeros
-   wrS32_Decpt(f / GetPwr10Float(exp10-_prec), _prec);
-
-   // Print the exponent e.g 'E12'
-   putCh('E');
-   width = 0;           // Exponent digits are right after 'E', so no justify
-   wrS16(exp10);
-}
-
-/*-----------------------------------------------------------------------------------
-|
-|  wrSign
-|
---------------------------------------------------------------------------------------*/
-
-PRIVATE void wrSign(void)
-{
-   if(wrNeg)
-   {
-      putCh('-');
-   }
-   else if(wrPlus)
-   {
-      putCh('+');
-   }
-}
-
 /*-----------------------------------------------------------------------------------
 |
 |  padToWidth
@@ -769,20 +735,18 @@ PRIVATE void padAndSign(U8 digitsEtc)
 |     e.g  '1.23E4' -> 6;  '-1.234E-19' -> 10
 |
 --------------------------------------------------------------------------------------*/
-
 PRIVATE U8 expFloatChs(U8 _prec, S16 exp10)
 {
    return
       _prec +                             // Digits after the DP, plus...
       ((wrPlus || wrNeg)                  // Printing sign?
-         ? sizeof("+n.E")-1               // then add 4
+         ? sizeof("+n.E")-1               // else that sign is '-'. Applied to mantissa for sure only. Add 4.
          : sizeof("n.E")-1)               // else no sign; add 3..
-      + (                                 // Plus chars in exponent
-         exp10 < -9                       // e.g E'-23'?
-            ? 3                           // ... another 3 chars
-            : ((exp10 < 0 || exp10 > 9)   // else e.g E'-5' or E'43'
-               ? 2                        // another 2 chars
-               : 1 ));                    // else e.g E'5' adds just1 char.
+      + (
+         exp10 > 0
+            ? (wrPlus + (exp10 > 9 ? 2 : 1))
+            : (exp10 < -9 ? 3 : 2)
+         );                    // else e.g E'5' adds just1 char.
 }
 
 /*-----------------------------------------------------------------------------------
@@ -806,6 +770,42 @@ PRIVATE U8 fixedFloatChs(U8 _prec, S16 exp10)
             ? (_prec + 2)                    // '0.' plus digits after DP
             : ((1+exp10) + _prec +  1)       // else digits before DP plus digits after plus '.'.
       );
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  wrFloatExp
+|
+|  Write a floating point number in exponential format 'prec' digits after the
+|  decimal point, but no more than 9 digits total.
+|
+--------------------------------------------------------------------------------------*/
+
+PRIVATE void wrFloatExp(float f, U8 _prec)
+{
+   // First, how big is this number? Get the power of 10 corresponding to the binary
+   // exponent of 'f', rounded down.
+   S16 exp10 = getExponent10(f);
+
+   // Remember the flag for the '+' modifier, if set, to be applied to the exponent too.
+   BIT  _wrPlus = wrPlus;
+   padAndSign(expFloatChs(_prec, exp10));
+
+   /* Now, divide the original number by 10^exp10. This normalises it into [1..10].
+      Multiply by 10^(prec-1). This gets us a number with 'prec' digits to the left
+      of the decimal point. Convert this to a long int and print it, inserting a
+      decimal point after the 1st significant digit. This gives us e.g '4.297'.
+   */
+   _prec = MinU8(_prec, _MaxS32Digits);
+   wrZero = 0;                                           // Suppress leading zeros
+   wrS32_Decpt(f / GetPwr10Float(exp10-_prec), _prec);
+
+   // Print the exponent e.g 'E12'
+   putCh('E');
+   width = 0;                       // Exponent digits are right after 'E', so no justify
+   prec = exp10 > 9 ? 2 : 1;        // If e.g 'E19' then 2 digits else 1.
+   wrPlus = _wrPlus;                // Recall the flag for the '+" modifier (it will have been cleared when writing the mantissa).
+   wrS16(exp10);                    // Write exponent, 1 or 2 digits signed.
 }
 
 /*-----------------------------------------------------------------------------------
@@ -836,7 +836,6 @@ PRIVATE void wrFloatFixed(float f, U8 _prec)
    if( (_prec + exp10) > 9 ||       // Too large to print fixed with '_prec' significant digits? OR
        (_prec - exp10) > 9 )        // too small to print fixed with '_prec' significant digits?
    {
-      padAndSign(expFloatChs(_prec, exp10));
       wrFloatExp(f, _prec);
    }
    else     // else write in fixed format

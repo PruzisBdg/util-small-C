@@ -538,7 +538,7 @@ void test_Float(void)
 
    S_Tst const tsts[] = {
       // Zero ('\0') results in no output; it's the string terminator.
-      { .fmt = "%f",       .n = 0.0,         .out = "0.000000" },
+      { .fmt = "%f",       .n = 0.0,         .out = "0.000000" },       // Default precision is 6.
       { .fmt = "%f",       .n = 0.12,        .out = "0.120000" },
       { .fmt = "%f",       .n = 12.345,      .out = "12.345000" },
       { .fmt = "%F",       .n = 12.345,      .out = "12.345000" },      // %F and %f are same.
@@ -552,7 +552,7 @@ void test_Float(void)
       { .fmt = "%+07.2f",   .n = -12.3456,    .out = "-012.34" },
       { .fmt = "%+7.2f",    .n = -12.3456,    .out = " -12.34" },
 
-      { .fmt = "%+12.2f",    .n = -1.234E12,    .out = "    -1.23E12" },
+      { .fmt = "%+12.2f",    .n = -1.234E12,    .out = "   -1.23E+12" },
       { .fmt = "%+12.2f",    .n = 1.234E-12,    .out = "   +1.23E-12" },
    };
 
@@ -571,6 +571,50 @@ void test_Float(void)
       OStream_Print();
    }
 }
+
+/* ----------------------------------- test_FloatExp -------------------------------------------- */
+
+void test_FloatExp(void)
+{
+   typedef struct { C8 const *fmt; float n; C8 const *out; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Zero ('\0') results in no output; it's the string terminator.
+      { .fmt = "%e",       .n = 0.0,         .out = "0.000000E0" },
+      { .fmt = "%+e",      .n = 0.0,         .out = "+0.000000E+0" },
+      { .fmt = "%e",       .n = 0.12,        .out = "0.120000" },
+      { .fmt = "%e",       .n = 12.345,      .out = "12.345000" },
+      { .fmt = "%E",       .n = 12.345,      .out = "12.345000" },      // %F and %f are same.
+
+      { .fmt = "%4.2E",    .n = 12.3456,     .out = "12.34" },
+
+      { .fmt = "%07.2e",   .n = 12.3456,     .out = "0012.34" },
+      { .fmt = "%7.2e",    .n = 12.3456,     .out = "  12.34" },
+      { .fmt = "%+07.2e",   .n = 12.3456,     .out = "+012.34" },
+      { .fmt = "%+7.2e",    .n = 12.3456,     .out = " +12.34" },
+      { .fmt = "%+07.2e",   .n = -12.3456,    .out = "-012.34" },
+      { .fmt = "%+7.2e",    .n = -12.3456,    .out = " -12.34" },
+
+      { .fmt = "%+12.2e",    .n = -1.234E12,    .out = "   -1.23E+12" },
+      { .fmt = "%+12.2e",    .n = 1.234E-12,    .out = "   +1.23E-12" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->n);
+
+      C8 b0[100];
+      sprintf(b0, "Test #%d: Wrong output string: fmt = \"%s\",%f", i, t->fmt, t->n);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Test #%d: Wrong output length: \"%s\"<-\'%f\' -> \"%s\"", i, t->fmt, t->n, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      OStream_Print();
+   }
+}
+
 
 
 // ----------------------------------------- eof --------------------------------------------
