@@ -30,23 +30,59 @@ void setUp(void) {
 void tearDown(void) {
 }
 
-/* --------------------------------- test_JustStrings -------------------------------------- */
+/* --------------------------------- test_JustFormatters -------------------------------------- */
 
-void test_JustStrings(void) {
-   typedef struct { C8 const *str; C8 const *out; T_PrintCnt cnt; } S_Tst;
+void test_JustFormatters(void) {
+   typedef struct { C8 const *fmt; C8 const *out; } S_Tst;
 
    S_Tst const tsts[] = {
-      { .str = "", .out = "", .cnt = 0 },                                                // Empty
-      { .str = "My 1st string\r\n", .out = "My 1st string\r\n",   .cnt = sizeof("My 1st string\r\n")-1 },   // Return is number of chars written
+      { .fmt = "", .out = "" },                                                // Empty
+      { .fmt = "My 1st formatter\r\n", .out = "My 1st formatter\r\n" },   // Return is number of chars written
 
       // This printf condenses escape sequences.
-      { .str = "\\\\a\r\n",         .out = "\\a\r\n",             .cnt = sizeof("\\a\r\n")-1 },
-      { .str = "\\\\tZ\r\n",        .out = "\\tZ\r\n",             .cnt = sizeof("\\tZ\r\n")-1 },
+      { .fmt = "\\\\a\r\n",         .out = "\\a\r\n"   },
+      { .fmt = "\\\\tZ\r\n",        .out = "\\tZ\r\n"  },
+      { .fmt = "Ten%%s",             .out = "Ten%s"      },         // Escapes '%'
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++) {
       S_Tst const *t = &tsts[i];
-      chkStr(t->str, t->out, t->cnt);
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt);
+
+      C8 b0[100];
+      sprintf(b0, "Wrong output string: fmt = \"%s\"", t->fmt);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Wrong output length: \"%s\"", t->fmt);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      //OStream_Print();
+   }
+}
+
+/* --------------------------------- test_JustStrings -------------------------------------- */
+
+void test_JustStrings(void) {
+   typedef struct { C8 const *fmt; C8 const *str; C8 const *out; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .fmt = "%s", .str = "", .out = ""},                                                // Empty
+      { .fmt = "..%s..", .str = "123", .out = "..123.." },
+      { .fmt = "..%s..", .str = "123", .out = "..123.." },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++) {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->str);
+
+      C8 b0[100];
+      sprintf(b0, "Wrong output string: fmt = \"%s\"(\"%s\") -> \"%s\"", t->fmt, t->str, OStream_Get());
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Wrong output length: fmt = \"%s\"(\"%s\") -> \"%s\"", t->fmt, t->str, OStream_Get());
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      //OStream_Print();
    }
 }
 
@@ -612,7 +648,7 @@ void test_FloatExp(void)
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Test #%d: Wrong output length: \"%s\"<-\'%f\' -> \"%s\"", i, t->fmt, t->n, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
-      OStream_Print();
+      //OStream_Print();
    }
 }
 
