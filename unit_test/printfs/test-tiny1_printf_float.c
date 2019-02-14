@@ -69,6 +69,21 @@ void test_JustStrings(void) {
       { .fmt = "%s", .str = "", .out = ""},                                                // Empty
       { .fmt = "..%s..", .str = "123", .out = "..123.." },
       { .fmt = "..%s..", .str = "123", .out = "..123.." },
+
+      { .fmt = "%0s",      .str = "%0s prints nothing",  .out = ""},                         // '%0s' prints empty string (nothing)
+      { .fmt = "%5s",      .str = "abcdefghi",           .out = "abcde"},                    // Print just 1st (5) chars
+      { .fmt = "%05s",     .str = "abcdefghi",           .out = "abcde"},                    // Same; print first (5) chars
+      { .fmt = "%16s",     .str = "Clipped to 16 chars", .out = "Clipped to 16 ch" },        // Double digit width spec
+      { .fmt = "%012s",    .str = "Clip to 12 chars",    .out = "Clip to 12 c" },            // Double digit width spec
+      { .fmt = "%+012s",   .str = "Clip to 12 chars",    .out = "Clip to 12 c" },            // Extra  modifiers are ignored
+      { .fmt = "%-012s",   .str = "Clip to 12 chars",    .out = "Clip to 12 c" },
+      { .fmt = "%+-012s",  .str = "Clip to 12 chars",    .out = "Clip to 12 c" },
+
+      { .fmt = "%+012-s",  .str = "Clip to 12 chars",    .out = "Clip to 12 c" },            // Modifiers in junk positions ignored.
+
+      { .fmt = "%20s",     .str = "RightJustify",        .out = "        RightJustify"  },
+      { .fmt = "%-20s",    .str = "LeftJustify",         .out =  "LeftJustify         " },
+      { .fmt = "%-20s",    .str = "LeftJustify",         .out =  "LeftJustify         " },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++) {
@@ -150,6 +165,12 @@ void test_Decimal16_Signed(void)
       { .fmt = "a%+7d",    .n = -12345,    .out = "a -12345" },
       { .fmt = "a%+07d",   .n = -12345,    .out = "a -12345" },
 
+      // Left-justified. A leading-zeros modifer is ignored.
+      { .fmt = "%-+8d",    .n = 12345,    .out = "+12345  " },
+      { .fmt = "%-+08d",   .n = 12345,    .out = "+12345  " },
+      { .fmt = "%-+8d",    .n = -12345,   .out = "-12345  " },
+      { .fmt = "%-+08d",   .n = -12345,   .out = "-12345  " },
+
       { .fmt = "abc%3ddef",.n = 79,        .out = "abc 79def" },     // Continue with rest of formatter.
    };
 
@@ -218,6 +239,10 @@ void test_Decimal16_Unsigned(void)
 
       { .fmt = "a%+7u",    .n = 12345,    .out = "a +12345" },
       { .fmt = "a%+07u",   .n = 12345,    .out = "a +12345" },
+
+      // Left-justified. A leading-zeros modifer is ignored.
+      { .fmt = "%-+8u",    .n = 12345,    .out = "+12345  " },
+      { .fmt = "%-+08u",   .n = 12345,    .out = "+12345  " },
 
       { .fmt = "abc%3udef",.n = 79,        .out = "abc 79def" },     // Continue with rest of formatter.
    };
@@ -302,6 +327,14 @@ void test_Decimal32_Signed(void)
       { .fmt = "a%+12ld",    .n = -1234567890,    .out = "a -1234567890" },
       { .fmt = "a%+012ld",   .n = -1234567890,    .out = "a -1234567890" },
 
+      // Left-justified. A leading-zeros modifer is ignored.
+      { .fmt = "%-12ld",     .n = 1234567890,     .out = "1234567890  " },
+      { .fmt = "%-012ld",    .n = 1234567890,     .out = "1234567890  " },
+      { .fmt = "%-+12ld",    .n = 1234567890,     .out = "+1234567890 " },
+      { .fmt = "%-+012ld",   .n = 1234567890,     .out = "+1234567890 " },
+      { .fmt = "%-+12ld",    .n = -1234567890,    .out = "-1234567890 " },
+      { .fmt = "%-+012ld",   .n = -1234567890,    .out = "-1234567890 " },
+
       { .fmt = "abc%3lddef",.n = 79,        .out = "abc 79def" },     // Continue with rest of formatter.
    };
 
@@ -369,6 +402,14 @@ void test_Decimal32_Unsigned(void)
 
       { .fmt = "a%+12lu",    .n = 1234567890,    .out = "a +1234567890" },
       { .fmt = "a%+012lu",   .n = 1234567890,    .out = "a +1234567890" },
+
+      // Left-justified. A leading-zeros modifer is ignored.
+      { .fmt = "%-8lu",      .n = 1234567890,     .out = "1234567890"   },    // If field is too small for number then left-justify is ignored
+      { .fmt = "%-08lu",     .n = 1234567890,     .out = "1234567890"   },
+      { .fmt = "%-12lu",     .n = 1234567890,     .out = "1234567890  " },
+      { .fmt = "%-012lu",    .n = 1234567890,     .out = "1234567890  " },    // For left-justify, leading-zeros directive is ignored.
+      { .fmt = "%-+12lu",    .n = 1234567890,     .out = "+1234567890 " },
+      { .fmt = "%-+012lu",   .n = 1234567890,     .out = "+1234567890 " },
 
       { .fmt = "abc%3ludef",.n = 79,        .out = "abc 79def" },     // Continue with rest of formatter.
    };
@@ -438,6 +479,9 @@ void test_Hex16(void)
       { .fmt = "a%6x",    .n = 0x1234,    .out = "a  1234" },
       { .fmt = "a%06x",   .n = 0x1234,    .out = "a  1234" },
 
+      { .fmt = "a%-6x",   .n = 0x1234,    .out = "a1234  " },           // left-justify
+      { .fmt = "a%-06x",  .n = 0x1234,    .out = "a1234  " },           // For left-justify, leading zeros are ignored.
+
       { .fmt = "abc%3xdef",.n = 0x79,        .out = "abc 79def" },     // Continue with rest of formatter.
    };
 
@@ -505,6 +549,9 @@ void test_Hex32(void)
       { .fmt = "a%10lx",    .n = 0x12345600,    .out = "a  12345600" },
       { .fmt = "a%010lx",   .n = 0x12345600,    .out = "a  12345600" },
 
+      { .fmt = "a%-10lx",    .n = 0x12345600,    .out = "a12345600  " },   // Left justify
+      { .fmt = "a%-010lx",   .n = 0x12345600,    .out = "a12345600  " },   // For left-justify, leading-zeros directive is ignored.
+
       { .fmt = "abc%3lxdef",.n = 0x79,        .out = "abc 79def" },     // Continue with rest of formatter.
    };
 
@@ -534,7 +581,28 @@ void test_Char(void)
       // Zero ('\0') results in no output; it's the string terminator.
       { .fmt = "%c",    .ch = '\0',    .out = "" },
 
-      { .fmt = "%c",    .ch = 'Z',     .out = "Z" },
+      { .fmt = "%c",    .ch = 'Z',     .out = "Z"    },           // Print a char
+      { .fmt = "%0c",   .ch = 'Z',     .out = ""     },           // Zero field width prints nothing
+      { .fmt = "%4c",   .ch = 'Z',     .out = "   Z" },           // Print in a field default right-justified
+      { .fmt = "%-4c",  .ch = 'Z',     .out = "Z   " },           // Left-justified
+      { .fmt = "%-04c", .ch = 'Z',     .out = "Z   " },           // Ignores the '0'.
+
+      // Non printables can be quoted with '%C'
+      { .fmt = "%c",    .ch = 0x02,     .out = "\x02" },
+      { .fmt = "%c",    .ch = '\t',     .out = "\t"   },
+      { .fmt = "%c",    .ch = '\r',     .out = "\r"   },
+      { .fmt = "%c",    .ch = '\n',     .out = "\n"   },
+
+      { .fmt = "%C",    .ch = 0x02,     .out = "\\x02" },
+      { .fmt = "%C",    .ch = '\t',     .out = "\\t"   },
+      { .fmt = "%C",    .ch = '\r',     .out = "\\r"   },
+      { .fmt = "%C",    .ch = '\n',     .out = "\\n"   },
+
+      { .fmt = "%6C",    .ch = 0x02,     .out = "  \\x02" },
+      { .fmt = "%-6C",   .ch = 0x02,     .out = "\\x02  " },
+
+      // If there's not enough room for a quoted char in the field then write an empty field (spaces).
+      { .fmt = "%3C",    .ch = 0x02,     .out = "   " },
 
       // For '%c' non-printables are output as-is.
       { .fmt = "%c",    .ch = '\r',    .out = "\x0D" },
@@ -583,10 +651,13 @@ void test_Float(void)
 
       { .fmt = "%07.2f",   .n = 12.3456,     .out = "0012.34" },
       { .fmt = "%7.2f",    .n = 12.3456,     .out = "  12.34" },
-      { .fmt = "%+07.2f",   .n = 12.3456,     .out = "+012.34" },
-      { .fmt = "%+7.2f",    .n = 12.3456,     .out = " +12.34" },
-      { .fmt = "%+07.2f",   .n = -12.3456,    .out = "-012.34" },
-      { .fmt = "%+7.2f",    .n = -12.3456,    .out = " -12.34" },
+      { .fmt = "%+07.2f",   .n = 12.3456,    .out = "+012.34" },
+      { .fmt = "%+7.2f",    .n = 12.3456,    .out = " +12.34" },
+      { .fmt = "%+07.2f",   .n = -12.3456,   .out = "-012.34" },
+      { .fmt = "%+7.2f",    .n = -12.3456,   .out = " -12.34" },
+
+      { .fmt = "%-+8.2f",   .n = -12.3456,   .out = "-12.34  " },       // Left justified
+      { .fmt = "%-+08.2f",  .n = -12.3456,   .out = "-12.34  " },       // Left justified; leading zeros not printed, even if specified.
 
       // If number is too large or small, fall back to exponent printout.
       { .fmt = "%+12.2f",    .n = -1.234E12,    .out = "   -1.23e+12" },   // '%f' -> 'e'.
@@ -634,6 +705,8 @@ void test_FloatExp(void)
 
       { .fmt = "%+12.2E",    .n = -1.234E18,    .out = "   -1.23E+18" },
       { .fmt = "%+12.2e",    .n = 1.234E-18,    .out = "   +1.23e-18" },
+
+      { .fmt = "%-+12.2e",   .n = 1.234E-18,    .out = "+1.23e-18   " },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
