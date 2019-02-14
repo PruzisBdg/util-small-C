@@ -10,7 +10,7 @@
 int main(void)
 {
    OStream_Reset();
-   tiny1_printf("%+012.2E", -12.3456);
+   tiny1_printf("%-6s", "abc");
    OStream_Print();
 
     return 0;
