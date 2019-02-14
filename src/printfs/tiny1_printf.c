@@ -67,6 +67,7 @@ PRIVATE U8  width;
 PRIVATE U8  prec = 0;
 PRIVATE BIT wrNeg = 0;           // If number is negative -> prepend '-'.
 PRIVATE BIT wrPlus = 0;          // If '+' format specifier, '+' in front of positive number
+PRIVATE BIT leftJ = 0;           // '-' modifier => left-justify
 PRIVATE T_PrintCnt printCnt;
 PRIVATE BIT quoteCtrls = 0;		// If '1' the e.g '\t' will be quoted (as "\t")
 
@@ -598,8 +599,10 @@ PRIVATE void wrS16(S16 n)
 |
 |  wrS32_Decpt
 |
-|  Print unsigned decimal, with a decimal point inserted 'dp' from right. Also with
+|  Print 'n' as unsigned decimal, with a decimal point inserted 'dp' from right. Also with
 |  leading and trailing zeros removed, and zeros padded to right of decimal, if necessary.
+|
+|  If 'n' is negative make it positive.
 |
 |     (12345, 2)  ->  123.45
 |     (99, 4)     ->  0.0099
@@ -626,13 +629,7 @@ PRIVATE void wrS32_Decpt(S32 n, U8 dp)
    {
       if( n < 0 )                      // Negative?
       {
-         n = -n;                       // and invert the number
-
-         if(wrNeg)
-         {
-            putCh('-');                   // then print minus,
-            wrNeg = 0;
-         }
+         n = -n;                       // then invert the number
       }
 
       /* First, find the most significant decimal digit by comparison. For small
@@ -929,11 +926,17 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
          isSigned = 0;                                      // Unless made 1 below
 
          // Parse the optional modifiers; remember each one you get
-         if(ch == '+')
+         if(ch == '+')                                      // '+'?
          {
-            wrPlus = 1;
+            if(!gotWidth)                                   // and it's ahead of the width spec?
+               { wrPlus = 1; }                              // then sign numbers.
          }
-         else if( !gotLong && ch == 'l' )                        // 'l' for 32bit fixed point and double floats
+         else if(ch == '-')                                 // '-'?
+         {
+            if(!gotWidth)                                   // and it's ahead of the width spec?
+               { leftJ = 1; }                               // then left-justify
+         }
+         else if( !gotLong && ch == 'l' )                   // 'l' for 32bit fixed point and double floats
          {
             gotLong = 1;
             gotWidth = 1;
@@ -968,8 +971,6 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
 
          else
          {
-            gotWidth = 1;
-
                #if _TPRINT_IS != TPRINT_TINY
             fieldCnt = 0;
                #endif
@@ -1012,13 +1013,26 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
 				  U8 GENERIC const *strAt = p;
                      #endif
 
+                  // If e.g '%5s', a width and print left-justified, then print leading spaces if necessary.
+                  if(width > 0 && leftJ == 0)                  // Got width? AND must right-justify?
+                  {
+                     U8 GENERIC const *q;
+                     T_PrintCnt ww;
+                     for(q = p, ww = width;
+                           *q != '\0' && ww > 0;               // until end-of-string OR width used up...
+                           q++, ww--) {}                       // ...count thru the string.
+
+                     for(; ww; ww--)                           // String was shorter than width
+                        { putCh(' '); }                        // then insert as many left spaces to bulk to width.
+                  }
+                  // Inserted left-spaces if necessary; now print string itself.
                   while( (ch = *(p++)) != '\0')                // Until end of string...
                      { putCh(ch); }							         // print chars and count them.
 
                      #ifdef TPRINT_USE_STRING_HEAP
                   /* Offer to the heap the number of chars emitted, plus 1 for '\0'. Note that putCh() may emit more than one
                      printable per char given to it (when printing unicode or non-printables); 'printCnt' counts actual chars
-					 emitted.
+					      emitted.
                   */
                   TPrint_ReturnToHeap(strAt, printCnt + 1 - printsWas);
                      #endif
@@ -1105,6 +1119,7 @@ skip:
                zeroPad = 0;
                wrNeg = 0;                                   // Unless number is negative.
                wrPlus = 0;                                  // Unless get a '+' format specifier.
+               leftJ = 0;                                   // Unless we get a '-' left-justify specifier.
 
                   #if _TPRINT_IS != TPRINT_TINY
                gotPrec = 0; prec = 1;                       // Unless we get precision, this is the default
