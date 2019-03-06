@@ -9,7 +9,7 @@
 #ifndef LIBS_SUPPORT_H
 #define LIBS_SUPPORT_H
 
-#include "GenericTypeDefs.h"		// Redirect to Generac's typedefs
+#include "GenericTypeDefs.h"		// Redirect to typedefs
 #include <stdlib.h>
 
 // ======= Bits and stuff, which were in Tiny1's 'common.h'
