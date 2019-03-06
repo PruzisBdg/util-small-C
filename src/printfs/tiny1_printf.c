@@ -950,7 +950,7 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
       #endif
 
    putChPtr = putChParm;                                    // Make putCh() available everwhere in this file.
-   printCnt = 0;											// Init emit counter
+   printCnt = 0;											            // Init total-emit counter
 
    while((ch = (U8)fmt[idx]) != '\0')                       // Until the end of the format string
    {
