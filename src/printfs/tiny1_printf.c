@@ -149,8 +149,11 @@ PRIVATE void putCh(U8 ch)
          putChPtr('\\');                                             // Backslash
          if(ch == '\t' || ch == '\r' || ch == '\n')                  // '\t', '\r', '\n'? ...
         {
-           putChPtr(ch == '\t' ? 't' : (ch == '\r' ? 'r' : 'n'));    // ...are quoted as written
-           printCnt += 2;                                            // e.g '\r' -> 2 chars
+            putChPtr(ch == '\t' ? 't' : (ch == '\r' ? 'r' : 'n'));    // ...are quoted as written
+            printCnt += 2;                                            // e.g '\r' -> 2 chars
+               #if _TPRINT_IS != TPRINT_TINY
+            fieldCnt += 2;
+               #endif
         }
         else                                                         // any other whitespace...
         {
@@ -158,17 +161,40 @@ PRIVATE void putCh(U8 ch)
             putChPtr(nibbleToASCII(HIGH_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
             putChPtr(nibbleToASCII(LOW_NIBBLE(ch), _NibbleToHexASCII_Uppercase));
             printCnt += 4;                                           // e.g '\x34' -> 4 chars
+               #if _TPRINT_IS != TPRINT_TINY
+            fieldCnt += 4;
+               #endif
         }
       }
       else                                                           // else is printable? OR we are not quoting anything?
       {
          putChPtr(ch);                                               // so print 'ch' as-is.
          printCnt++;
+            #if _TPRINT_IS != TPRINT_TINY
+         fieldCnt++;
+            #endif
       }
-         #if _TPRINT_IS != TPRINT_TINY
-      fieldCnt++;
-         #endif
    }
+}
+
+/*-----------------------------------------------------------------------------------
+|
+|  charEmitCnt()
+|
+|  Return the number of bytes emitted to the output stream for 'ch'.
+--------------------------------------------------------------------------------------*/
+
+PRIVATE U8 charEmitCnt(U8 ch)
+{
+   return
+      (ch == '\0' && quoteCtrls == 0)                          // End-of-string? AND not quoting non-printables?
+         ? 0                                                   // then emit nothing
+         : ( (!isprint(ch) && quoteCtrls == 1)                 // else not a printing char? AND we quote non-printables?
+               ? ( (ch == '\t' || ch == '\r' || ch == '\n')    // CR,LF or TAB?
+                  ? 2                                          // are emitted as '\t' etc...
+                  : 4)                                         // otherwise quote as e.g '\xCB'
+               : 1                                             // else a printable, is emitted as-is.
+            );
 }
 
 /*-----------------------------------------------------------------------------------
@@ -184,27 +210,30 @@ PRIVATE void putSpc(void)
 
 /*-----------------------------------------------------------------------------------
 |
-|  printLeftSpaces
+|  printAnyLeftSpaces
 |
-|  If the field width for an integer (16 or 32bit) is more than the max number of digits
-|  which will be printed (including '-'), then print the spaces needed to right justify
-|  the printed number. 'maxDigits' is 5 for a 16 bit int, 10 for a long (32bit).
+|  If a set of chars are to be printed right-justified AND the field 'width' this group is
+|  more than 'numChs' then print the spaces needed to right justify
+|  the chars-group in the field.
+|
+|  For numbers 'numChs' is the number of digits to be printed. For these include leading
+|  '+' or '-' in the reckoning of how many spaces to prepend.
 |
 --------------------------------------------------------------------------------------*/
 
-PRIVATE void printLeftSpaces(U8 maxDigits)
+PRIVATE void printAnyLeftSpaces(U8 numChs)
 {
-  /* If field width is greater than maximum U32 decimal digits, then print all the leading
-      spaces which will be there regardless of the value of 'n'.
-   */
-   if( (wrNeg || wrPlus) && width ) // Will prepend '-" or '+' to the digits?
+   if(!leftJ)                          // Right-justify?
    {
-      width--;                      // then one space less to print
-   }
-   while(width > maxDigits )        // (While) field width > max decimal digits?
-   {
-      putSpc();                     // write a space
-      width--;                      // and 1 less to write.
+      if( (wrNeg || wrPlus) && width ) // Will prepend '-" or '+' to the digits?
+      {
+         width--;                      // then one space less to print
+      }
+      while(width > numChs )           // (While) field width > max decimal digits?
+      {
+         putSpc();                     // write a space
+         width--;                      // and 1 less to write.
+      }
    }
  }
 
@@ -278,7 +307,7 @@ PRIVATE void wrHex16at(U16 n, U8 digitIdx)
 PRIVATE void wrHex16(U16 n)
 {
    // Hex16 is 4 digits. Print up to 3 left-spaces.
-   printLeftSpaces(4);
+   printAnyLeftSpaces(4);
    // Print nibbles, msb to lsb. Will print digit, space or leadin zero, depending.
    wrHex16at(n, 3);
 }
@@ -293,7 +322,7 @@ PRIVATE void wrHex16(U16 n)
 
 PRIVATE void wrHex32(U32 n)
 {
-   printLeftSpaces(8);
+   printAnyLeftSpaces(8);
    wrHex16at(HIGH_WORD(n), 7);
    wrHex16at(LOW_WORD(n), 3);
 }
@@ -431,7 +460,7 @@ PRIVATE U16 wrU16Rem(U16 n, U8 pwr)
 PRIVATE void wrU16(U16 n)
 {
    wrZero = 0;                                                             // No leading zeros
-   printLeftSpaces(RECORDS_IN(powersOf10));                                // Print spaces needed to right-justify the number.
+   printAnyLeftSpaces(RECORDS_IN(powersOf10));                             // Print spaces needed to right-justify the number.
    wrU16Rem(wrU16Rem(wrU16Rem(wrU16Rem( wrU16Rem(n ,4), 3), 2), 1), 0);    // Print 10,1000's, 1000's 100's .....
 }
 
@@ -515,7 +544,7 @@ PRIVATE void wrU32(U32 n)
    U8 pwr;
 
    wrZero = 0;                                        // Clear 'leading zero' flag
-   printLeftSpaces(RECORDS_IN(powersOf10L));          // If field width > largest U32 then print all the spaces we know we'll need, whatever the number
+   printAnyLeftSpaces(RECORDS_IN(powersOf10L));          // If field width > largest U32 then print all the spaces we know we'll need, whatever the number
 
    /* First, find the most significant decimal digit to be printed. This will be either the first sig.
       digit of the number OR, if the precision specifier ('prec') is higher, a leading zero (e.g '0032').
@@ -569,13 +598,12 @@ PRIVATE void wrInt32(S32 n)
 }
 
 
+
+
+
 // ====================== Floating-Point Support ==================================
 // ====================== Floating-Point Support ==================================
 // ====================== Floating-Point Support ==================================
-
-
-
-
 
 #if _TPRINT_IS == TPRINT_FLOAT
 
@@ -718,23 +746,28 @@ PRIVATE void padToWidth(U8 chs, U8 ch)
 
 PRIVATE void padAndSign(U8 digitsEtc)
 {
-   if(wrZero == 1)                  // Leading zeros?
+   if(wrZero == 1)                     // Leading zeros?
    {
-      wrSign();                     // then first write any sign
-      padToWidth(digitsEtc, '0');   // then write zeros
+      wrSign();                        // then first write any sign
+      if(!leftJ)
+      {
+         padToWidth(digitsEtc, '0');   // then write zeros
+      }
    }
-   else                             // else padding with spaces
+   else                                // else padding with spaces
    {
-      padToWidth(digitsEtc, ' ');   // Write spaces first...
-      wrSign();                     // ... then sign, right before leading zero or digits.
+      if(!leftJ)
+      {
+         padToWidth(digitsEtc, ' ');   // Write spaces first...
+      }
+      wrSign();                        // ... then sign, right before leading zero or digits.
    }
-   wrPlus = 0;  wrNeg = 0;    // If we wrote sign (above) we are done with it now.
+   wrPlus = 0;  wrNeg = 0;             // If we wrote sign (above) we are done with it now.
 }
 
 /*-----------------------------------------------------------------------------------
 |
 |  expFloatChs
-|
 |
 |  Given '_prec'ision and 'exp'onent10, the number of chars in an exponential format
 |  number.
@@ -817,18 +850,19 @@ PRIVATE void wrFloatExp(float f, U8 _prec)
       of the decimal point. Convert this to a long int and print it, inserting a
       decimal point after the 1st significant digit. This gives us e.g '4.297'.
    */
-   #define _MaxS32Digits 9    // i.e  2^31 = 2.4E9
-
+   #define _MaxS32Digits 9             // i.e  2^31 = 2.4E9
    _prec = MinU8(_prec, _MaxS32Digits);
-   //wrZero = 0;                                           // Suppress leading zeros
+
    wrS32_Decpt(f / GetPwr10Float(exp10-_prec), _prec);
 
    // Print the exponent e.g 'E12' or 'e12'.
    putCh(capitalE == 1 ? 'E' : 'e');   // Following the formatter '%e' vs. '%E'.
+   U8 _width = width;                  // Remember field width; will zero it to print exponent.
    width = 0;                          // Exponent digits are right after 'E', so no justify
    prec = exp10 > 9 ? 2 : 1;           // If e.g 'E19' then 2 digits else 1.
    wrPlus = _wrPlus;                   // Recall the flag for the '+" modifier (it will have been cleared when writing the mantissa).
    wrS16(exp10);                       // Write exponent, 1 or 2 digits signed.
+   width = _width;                     // Exponent printed. Restore 'width' to print trailing spaces, if necessary for a left-justified number.
 }
 
 /*-----------------------------------------------------------------------------------
@@ -894,11 +928,12 @@ extern void TPrint_ReturnToHeap(U8 const *from, U16 numBytes);
 
 PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list arg)
 {
-   BIT gotPcent = 0;
-   BIT gotEsc = 0;
-   BIT gotWidth = 0;
-   BIT gotLong = 0;
-   BIT zeroPad = 0;
+   BIT gotPcent = 0;          // Got a '%', so parsing a format specifier.
+   BIT gotEsc = 0;            // Got '\' for escape char
+   BIT pastWidth = 0;         // Past width modifier field, whether it was filled or no.
+   BIT gotWidthCh = 0;        // Got a digit which starts a width modifier; even if turns out to be just a '0', meaning leading zeros.
+   BIT gotLong = 0;           // Got 'l' long modifier
+   BIT zeroPad = 0;           //
    U8 ch;
    U8 GENERIC *p;
 
@@ -928,20 +963,20 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
          // Parse the optional modifiers; remember each one you get
          if(ch == '+')                                      // '+'?
          {
-            if(!gotWidth)                                   // and it's ahead of the width spec?
+            if(!pastWidth)                                  // and it's ahead of the width spec?
                { wrPlus = 1; }                              // then sign numbers.
          }
          else if(ch == '-')                                 // '-'?
          {
-            if(!gotWidth)                                   // and it's ahead of the width spec?
+            if(!pastWidth)                                   // and it's ahead of the width spec?
                { leftJ = 1; }                               // then left-justify
          }
          else if( !gotLong && ch == 'l' )                   // 'l' for 32bit fixed point and double floats
          {
             gotLong = 1;
-            gotWidth = 1;
+            pastWidth = 1;
          }
-         else if(!gotWidth && isdigit(ch))                  //  digit of a width modifier?
+         else if(!pastWidth && isdigit(ch))                 //  digit of a width modifier?
          {
             if( width == 0 && ch == '0' )                   // Is 1st digit (of the width modifier)? AND is '0'
             {
@@ -956,7 +991,7 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
 
          else if( !gotPrec && ch == '.' )                   // Precision is the 2nd digit in e.g %5.3
          {                                                  // Not optional if there's been a '.'
-            gotWidth = 1;
+            pastWidth = 1;
             gotPrec = 1;
 
             idx++;                                          // then advance to digit
@@ -995,7 +1030,17 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                case 'C':                                       // Character?
    			      quoteCtrls = 1;                              // Non-printables will be quoted.
                case 'c':
-                  putCh((U8)va_arg(arg, VA_ARG_CHAR));
+                  if(!zeroPad || width > 0)
+                  {
+                     U8 ch = (U8)va_arg(arg, VA_ARG_CHAR);
+                     U8 em = charEmitCnt(ch);
+
+                     if(em <= width || width == 0)
+                     {
+                        printAnyLeftSpaces(em);
+                        putCh(ch);
+                     }
+                  }
                   break;
 
                case 'S':
@@ -1010,24 +1055,41 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                      is not), then release that heap space, the string has been consumed.
 				      */
                   U16 printsWas = printCnt;                    // Mark chars printed so far.
-				  U8 GENERIC const *strAt = p;
+				      U8 GENERIC const *strAt = p;
                      #endif
 
                   // If e.g '%5s', a width and print left-justified, then print leading spaces if necessary.
-                  if(width > 0 && leftJ == 0)                  // Got width? AND must right-justify?
-                  {
+                  if(zeroPad || width > 0)                     // Got just '%0s' and/or width-specifier? ...
+                  {                                            // ... e.g '%5s' or '%05s'
+                     // First, find out if printed '%s" will blow past 'width'
+                     S16 ww;                                   // *** Must be signed; may decrement below 0 (below)
                      U8 GENERIC const *q;
-                     T_PrintCnt ww;
-                     for(q = p, ww = width;
-                           *q != '\0' && ww > 0;               // until end-of-string OR width used up...
-                           q++, ww--) {}                       // ...count thru the string.
+                     for(q = p, ww = width;                    // From full 'width', downward
+                           *q != '\0' && ww > 0;               // until end-of-string OR 'width' used up...
+                           q++ ) {
+                           ww -= charEmitCnt(*q); }            // Subtract actual chars emitted for this ch in '%s'.
 
-                     for(; ww; ww--)                           // String was shorter than width
-                        { putCh(' '); }                        // then insert as many left spaces to bulk to width.
+                     if(!leftJ)                                // Must right-justify?
+                     {
+                        for(; ww; ww--)                        // String was shorter than width?
+                           { putCh(' '); }                     // then insert as many left spaces to bulk to width.
+                     }
+                     // Inserted left-spaces if necessary; now print string itself; but no more than the
+                     // field width.
+                     while( (ch = *(p++)) != '\0' )            // Until end of string parm...
+                     {
+                        ww += charEmitCnt(ch);                 // After this char is emiited, total chars for this '%s' will be...
+                        if(ww > width)                         // ...Too much for 'width'?
+                           { break; }                          // then will not print this char
+                        else
+                           { putCh(ch); }                      // else print thsi char - will still be inside 'width
+                     }
                   }
-                  // Inserted left-spaces if necessary; now print string itself.
-                  while( (ch = *(p++)) != '\0')                // Until end of string...
-                     { putCh(ch); }							         // print chars and count them.
+                  else                                         // else no field-width limit
+                  {
+                     while( (ch = *(p++)) != '\0')             // So print the whole string
+                        { putCh(ch); }
+                  }
 
                      #ifdef TPRINT_USE_STRING_HEAP
                   /* Offer to the heap the number of chars emitted, plus 1 for '\0'. Note that putCh() may emit more than one
@@ -1115,7 +1177,7 @@ skip:
             case '%':                                       // Its a formatter
                gotPcent = 1;
                gotLong = 0;                                 // Setup to decode modifiers.
-               gotWidth = 0; width = 0;                     // Unless we get width.
+               pastWidth = 0; width = 0;                    // Unless we get width.
                zeroPad = 0;
                wrNeg = 0;                                   // Unless number is negative.
                wrPlus = 0;                                  // Unless get a '+' format specifier.

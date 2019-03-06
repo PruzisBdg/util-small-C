@@ -10,7 +10,7 @@
 int main(void)
 {
    OStream_Reset();
-   tiny1_printf("%-6s", "abc");
+   tiny1_printf("%4S", "\xCB" "abcdefg");
    OStream_Print();
 
     return 0;
