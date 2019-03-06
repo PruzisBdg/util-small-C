@@ -69,6 +69,12 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 #include <stddef.h>
 #include <stdio.h>
 
+// Compile-time assert.
+#define CAT(x,y)  x##y
+#define XCAT(x,y)  CAT(x,y)
+#define CASSERT(condition) enum { XCAT(_compile_assert_var_at_line_,  __LINE__) = 1/(condition) };
+
+
 #endif // LIBS_SUPPORT_H
 
 // --------------------------------- eof ---------------------------------------
