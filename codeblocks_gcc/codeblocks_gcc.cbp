@@ -389,6 +389,9 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/terminal/ansi_kbd.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../src/timedate/AD2000_to_epoch.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
