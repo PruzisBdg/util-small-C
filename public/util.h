@@ -122,6 +122,18 @@ PUBLIC U8 IdxToLsbSet_U16(U16 n);
 PUBLIC U8 NumBitsSet_U32(U32 n);
 PUBLIC U8 IdxToLsbSet_U32(U32 n);
 
+PUBLIC U8  MakeAtoBSet_U8 (U8 msb, U8 lsb);
+PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
+PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
+
+typedef U16 S_BitAddr16;
+
+PUBLIC S_BitAddr16   bitAddr16_Make(U16 _byte, U8 _bit);
+PUBLIC U8            bitAddr16_Bit(S_BitAddr16 bf);
+PUBLIC U16           bitAddr16_Byte(S_BitAddr16 bf);
+PUBLIC S_BitAddr16   bitAddr16_AddBits(S_BitAddr16 src, S16 nbits);
+PUBLIC S_BitAddr16   bitAddr16_Add(S_BitAddr16 a, S_BitAddr16 b);
+
 /* ----------------------------- Endians ------------------------------------*/
 
 PUBLIC U16 ReverseU16(U16 n);
