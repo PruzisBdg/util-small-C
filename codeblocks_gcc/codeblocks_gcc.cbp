@@ -140,6 +140,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/bits/bit_addr.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/bits/idx_to_1st_bit_set_u16.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -149,6 +155,12 @@
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/bits/make_masks.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../src/bits/memcpy_bits.c">
 			<Option compilerVar="CC" />
