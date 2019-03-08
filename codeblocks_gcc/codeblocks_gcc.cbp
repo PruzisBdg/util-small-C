@@ -150,6 +150,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/bits/memcpy_bits.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/bits/num_bits_set_u16.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
