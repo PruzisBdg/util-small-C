@@ -1,5 +1,6 @@
 #include "unity.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 #include "tdd_common.h"
 #include "util.h"
@@ -161,6 +162,110 @@ void test_NumBitsSet_U32 (void)
       TEST_ASSERT_EQUAL_UINT8(t->cnt, rtn);
    }
 }
+
+
+/* ------------------------------- test_MakeAtoBSet_U8 ------------------------------------------------ */
+
+void test_MakeAtoBSet_U8(void)
+{
+   typedef struct { U8 msb, lsb, rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .msb = 0,    .lsb = 0,   .rtn = 0x01 },       // i.e mask(0,0) sets just b0.
+      { .msb = 7,    .lsb = 0,   .rtn = 0xFF },
+      { .msb = 1,    .lsb = 0,   .rtn = 0x03 },
+      { .msb = 6,    .lsb = 4,   .rtn = 0x70 },
+      { .msb = 5,    .lsb = 2,   .rtn = 0x3C },
+
+      // Upside-down indices, return no mask.
+      { .msb = 0,    .lsb = 1,    .rtn = 0x00 },
+      { .msb = 10,   .lsb = 17,   .rtn = 0x00 },
+
+      // Mask wider than U8
+      { .msb = 25,   .lsb = 0,   .rtn = 0xFF },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      U8 rtn = MakeAtoBSet_U8(t->msb, t->lsb);
+
+      C8 b0[50];
+      sprintf(b0, "(%u,%u) -> 0x%x", t->msb, t->lsb, rtn);
+      TEST_ASSERT_EQUAL_HEX8_MESSAGE(t->rtn, rtn, b0);
+   }
+}
+
+/* ------------------------------- test_MakeAtoBSet_U16 ------------------------------------------------ */
+
+void test_MakeAtoBSet_U16(void)
+{
+   typedef struct { U8 msb, lsb; U16 rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .msb = 0,    .lsb = 0,   .rtn = 0x0001 },       // i.e mask(0,0) sets just b0.
+      { .msb = 7,    .lsb = 0,   .rtn = 0x00FF },
+      { .msb = 1,    .lsb = 0,   .rtn = 0x0003 },
+      { .msb = 6,    .lsb = 4,   .rtn = 0x0070 },
+      { .msb = 5,    .lsb = 2,   .rtn = 0x003C },
+      { .msb = 15,   .lsb = 7,   .rtn = 0xFF80 },
+      { .msb = 12,   .lsb = 3,   .rtn = 0x1FF8 },
+
+      // Upside-down indices, return no mask.
+      { .msb = 0,    .lsb = 1,    .rtn = 0x0000 },
+      { .msb = 10,   .lsb = 17,   .rtn = 0x0000 },
+
+      // Mask wider than U8
+      { .msb = 25,   .lsb = 0,   .rtn = 0xFFFF },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      U16 rtn = MakeAtoBSet_U16(t->msb, t->lsb);
+
+      C8 b0[50];
+      sprintf(b0, "(%u,%u) -> 0x%x", t->msb, t->lsb, rtn);
+      TEST_ASSERT_EQUAL_HEX16_MESSAGE(t->rtn, rtn, b0);
+   }
+}
+
+
+/* ------------------------------- test_MakeAtoBSet_U32 ------------------------------------------------ */
+
+void test_MakeAtoBSet_U32(void)
+{
+   typedef struct { U8 msb, lsb; U32 rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .msb = 0,    .lsb = 0,   .rtn = 0x00000001 },       // i.e mask(0,0) sets just b0.
+      { .msb = 7,    .lsb = 0,   .rtn = 0x000000FF },
+      { .msb = 1,    .lsb = 0,   .rtn = 0x00000003 },
+      { .msb = 6,    .lsb = 4,   .rtn = 0x00000070 },
+      { .msb = 5,    .lsb = 2,   .rtn = 0x0000003C },
+      { .msb = 31,   .lsb = 22,  .rtn = 0xFFC00000 },
+      { .msb = 20,   .lsb = 10,  .rtn = 0x001FFC00 },
+      { .msb = 16,   .lsb = 16,  .rtn = 0x00010000 },
+
+      // Upside-down indices, return no mask.
+      { .msb = 0,    .lsb = 1,    .rtn = 0x00000000 },
+      { .msb = 10,   .lsb = 17,   .rtn = 0x00000000 },
+
+      // Mask wider than U8
+      { .msb = 35,   .lsb = 0,   .rtn = 0xFFFFFFFF },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      U32 rtn = MakeAtoBSet_U32(t->msb, t->lsb);
+
+      C8 b0[50];
+      sprintf(b0, "(%u,%u) -> 0x%lx", t->msb, t->lsb, rtn);
+      TEST_ASSERT_EQUAL_HEX32_MESSAGE(t->rtn, rtn, b0);
+   }
+}
+
 
 
 

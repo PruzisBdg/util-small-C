@@ -17,6 +17,7 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)idx_to_1st_bit_set_u32.c \
 								$(SRCDIR)num_bits_set_u16.c \
 								$(SRCDIR)num_bits_set_u32.c \
+								$(SRCDIR)make_masks.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build
