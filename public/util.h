@@ -126,13 +126,28 @@ PUBLIC U8  MakeAtoBSet_U8 (U8 msb, U8 lsb);
 PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
-typedef U16 S_BitAddr16;
+/* ------------------------ Bits field, 64kbit ---------------------------- */
 
-PUBLIC S_BitAddr16   bitAddr16_Make(U16 _byte, U8 _bit);
-PUBLIC U8            bitAddr16_Bit(S_BitAddr16 bf);
-PUBLIC U16           bitAddr16_Byte(S_BitAddr16 bf);
-PUBLIC S_BitAddr16   bitAddr16_AddBits(S_BitAddr16 src, S16 nbits);
-PUBLIC S_BitAddr16   bitAddr16_Add(S_BitAddr16 a, S_BitAddr16 b);
+typedef U16 S_Bit64K;
+
+PUBLIC S_Bit64K   Bit64K_MakeLE(U16 _byte, U8 _bit);
+PUBLIC U8         Bit64K_BitLE(S_Bit64K bf);
+
+PUBLIC S_Bit64K   Bit64K_MakeBE(U16 _byte, U8 _bit);
+PUBLIC U8         Bit64K_BitBE(S_Bit64K bf);
+
+PUBLIC U16        Bit64K_Byte(S_Bit64K bf);
+PUBLIC S_Bit64K   Bit64K_AddBits(S_Bit64K src, S16 nbits);
+PUBLIC S_Bit64K   Bit64K_Add(S_Bit64K a, S_Bit64K b);
+
+typedef struct {
+   bool (*rdDest)(U8 *to, U8 from, U8 cnt );
+   bool (*wrDest)(U8 to, U8 const *from, U8 cnt);
+   bool (*getSrc)(U8 *to, U8 from, U8 cnt);
+} S_Bit64KPort;
+
+PUBLIC void Bit64K_Copy(S_Bit64KPort const *port, S_Bit64K dest, S_Bit64K src, U16 numBits);
+
 
 /* ----------------------------- Endians ------------------------------------*/
 
