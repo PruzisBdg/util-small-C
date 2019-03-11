@@ -12,6 +12,7 @@
 #include "GenericTypeDefs.h"
 
 PUBLIC S16  ClipS32toS16(S32 n);
+PUBLIC U16  ClipS32toU16(S32 n);
 PUBLIC S32  ClipU32toS32(U32 n);
 PUBLIC U16  ClipU32toU16(U32 n);
 PUBLIC U8   ClipS16toU8(S16 n);

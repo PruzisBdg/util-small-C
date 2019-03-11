@@ -123,7 +123,7 @@ void test_Bit64_Copy_StraddlesDestBytes(void)
       // Src and dest are aligned; read 2 src bytes to fill 2 dest bytes
       { .cpy = {.from = {0,0}, .to = {0,0}, .nBits = 2 }, .src = (U8[]){[0 ... _TestBufSize-1] = 0xFF}, .destFill = 0x00, .result = (U8[]){0x01,0x80,  [2 ... _TestBufSize-1] = 0} },
       { .cpy = {.from = {0,0}, .to = {0,0}, .nBits = 2 }, .src = (U8[]){[0 ... _TestBufSize-1] = 0x00}, .destFill = 0xFF, .result = (U8[]){0xFE,0x7F,  [2 ... _TestBufSize-1] = 0xFF} },
-      // Make sure exactly src[(0,0):(1,7)] is copied.
+      // Make sure exactly src[(0,0):(1,7)] are copied.
       { .cpy = {.from = {0,0}, .to = {0,0}, .nBits = 2 }, .src = (U8[]){0x01,0x80, [2 ... _TestBufSize-1] = 0xFF}, .destFill = 0x00, .result = (U8[]){0x01,0x80,  [2 ... _TestBufSize-1] = 0} },
       { .cpy = {.from = {0,0}, .to = {0,0}, .nBits = 2 }, .src = (U8[]){0xFE,0x7F, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0xFF, .result = (U8[]){0xFE,0x7F,  [2 ... _TestBufSize-1] = 0xFF} },
 
@@ -131,10 +131,17 @@ void test_Bit64_Copy_StraddlesDestBytes(void)
       // Src and dest are not aligned. Read 2 src bytes to fill 1 dest byte.
       { .cpy = {.from = {0,0}, .to = {0,1}, .nBits = 2 }, .src = (U8[]){[0 ... _TestBufSize-1] = 0xFF}, .destFill = 0x00, .result = (U8[]){0x03, [1 ... _TestBufSize-1] = 0} },
       { .cpy = {.from = {0,0}, .to = {0,1}, .nBits = 2 }, .src = (U8[]){[0 ... _TestBufSize-1] = 0x00}, .destFill = 0xFF, .result = (U8[]){0xFC, [1 ... _TestBufSize-1] = 0xFF} },
-      // Make sure exactly src[(0,0):(1,7)] is copied.
+      // Make sure exactly src[(0,0):(1,7)] are copied.
       { .cpy = {.from = {0,0}, .to = {0,1}, .nBits = 2 }, .src = (U8[]){0x01,0x80, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x00, .result = (U8[]){0x03, [1 ... _TestBufSize-1] = 0} },
       { .cpy = {.from = {0,0}, .to = {0,1}, .nBits = 2 }, .src = (U8[]){0xFE,0x7F, [2 ... _TestBufSize-1] = 0xFF}, .destFill = 0xFF, .result = (U8[]){0xFC, [1 ... _TestBufSize-1] = 0xFF} },
 
+      // src[(0,3:0)] -> dest[(0,1:0):(1,7:6)].
+      // Src and dest are not aligned. Read 1 src byte to fill 2 dest bytes.
+      { .cpy = {.from = {0,3}, .to = {0,1}, .nBits = 4 }, .src = (U8[]){[0 ... _TestBufSize-1] = 0xFF}, .destFill = 0x00, .result = (U8[]){0x03,0xC0, [2 ... _TestBufSize-1] = 0} },
+      { .cpy = {.from = {0,3}, .to = {0,1}, .nBits = 4 }, .src = (U8[]){[0 ... _TestBufSize-1] = 0x00}, .destFill = 0xFF, .result = (U8[]){0xFC,0x3F, [2 ... _TestBufSize-1] = 0xFF} },
+      // Make sure exactly src[(0,3:0)] are copied.
+      { .cpy = {.from = {0,3}, .to = {0,1}, .nBits = 4 }, .src = (U8[]){0x0F,[1 ... _TestBufSize-1] = 0x00}, .destFill = 0x00, .result = (U8[]){0x03,0xC0, [2 ... _TestBufSize-1] = 0} },
+      { .cpy = {.from = {0,3}, .to = {0,1}, .nBits = 4 }, .src = (U8[]){0xF0,[1 ... _TestBufSize-1] = 0xFF}, .destFill = 0xFF, .result = (U8[]){0xFC,0x3F, [2 ... _TestBufSize-1] = 0xFF} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
