@@ -46,32 +46,32 @@ static inline U16          getAddr(S_Bit64K bf) { return (U16)bf; }
 static inline S_Bit64K  putAddr(U16 n)          { return (S_Bit64K)n; }
 
 // ------------------------------------------------------------------------------
-PUBLIC S_Bit64K Bit64K_MakeBE(U16 _byte, U8 _bit)
+PUBLIC S_Bit64K bit64K_MakeBE(U16 _byte, U8 _bit)
    { return makeAddrBE(_byte, _bit); }
 
-PUBLIC S_Bit64K Bit64K_MakeLE(U16 _byte, U8 _bit)
+PUBLIC S_Bit64K bit64K_MakeLE(U16 _byte, U8 _bit)
    { return makeAddrLE(_byte, _bit); }
 
 // ------------------------------------------------------------------------------
-PUBLIC U8 Bit64K_BitBE(S_Bit64K bf)
+PUBLIC U8 bit64K_BitBE(S_Bit64K bf)
    { return bitsBE(bf); }
 
 // ------------------------------------------------------------------------------
-PUBLIC U8 Bit64K_BitLE(S_Bit64K bf)
+PUBLIC U8 bit64K_BitLE(S_Bit64K bf)
    { return bitsLE(bf); }
 
 // ------------------------------------------------------------------------------
-PUBLIC U16 Bit64K_Byte(S_Bit64K bf)
+PUBLIC U16 bit64K_Byte(S_Bit64K bf)
    { return bytes(bf); }
 
 // ------------------------------------------------------------------------------
-PUBLIC S_Bit64K Bit64K_AddBits(S_Bit64K src, S16 nbits) {
+PUBLIC S_Bit64K bit64K_AddBits(S_Bit64K src, S16 nbits) {
    S16 s = getAddr(src) + nbits;
    return putAddr(s < 0 ? 0 : s);
 }
 
 // ------------------------------------------------------------------------------
-PUBLIC S_Bit64K Bit64K_Add(S_Bit64K a, S_Bit64K b) {
+PUBLIC S_Bit64K bit64K_Add(S_Bit64K a, S_Bit64K b) {
    S16 s = getAddr(a) + getAddr(b);
    return putAddr(s < 0 ? 0 : s); }
 

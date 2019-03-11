@@ -126,27 +126,31 @@ PUBLIC U8  MakeAtoBSet_U8 (U8 msb, U8 lsb);
 PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
-/* ------------------------ Bits field, 64kbit ---------------------------- */
-
+/* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
 typedef U16 S_Bit64K;
 
-PUBLIC S_Bit64K   Bit64K_MakeLE(U16 _byte, U8 _bit);
-PUBLIC U8         Bit64K_BitLE(S_Bit64K bf);
+PUBLIC S_Bit64K   bit64K_MakeLE(U16 _byte, U8 _bit);
+PUBLIC U8         bit64K_BitLE(S_Bit64K bf);
 
-PUBLIC S_Bit64K   Bit64K_MakeBE(U16 _byte, U8 _bit);
-PUBLIC U8         Bit64K_BitBE(S_Bit64K bf);
+PUBLIC S_Bit64K   bit64K_MakeBE(U16 _byte, U8 _bit);
+PUBLIC U8         bit64K_BitBE(S_Bit64K bf);
 
-PUBLIC U16        Bit64K_Byte(S_Bit64K bf);
-PUBLIC S_Bit64K   Bit64K_AddBits(S_Bit64K src, S16 nbits);
-PUBLIC S_Bit64K   Bit64K_Add(S_Bit64K a, S_Bit64K b);
+PUBLIC U16        bit64K_Byte(S_Bit64K bf);
+PUBLIC S_Bit64K   bit64K_AddBits(S_Bit64K src, S16 nbits);     // Signed, so may subtract addresses.
+PUBLIC S_Bit64K   bit64K_Add(S_Bit64K a, S_Bit64K b);
+
+// ---- bit64K_Copy() source and destination ports.
+typedef U16 bit64K_T_ByteOfs;       // UP to 13 bit's for this; (3 for the bits in a byte)
+typedef U16 bit64K_T_Cnt;           // Enumerates bit addresses.
 
 typedef struct {
-   bool (*rdDest)(U8 *to, U8 from, U8 cnt );
-   bool (*wrDest)(U8 to, U8 const *from, U8 cnt);
-   bool (*getSrc)(U8 *to, U8 from, U8 cnt);
-} S_Bit64KPort;
+   // These return false if operation failed.
+   bool (*rdDest)(             U8 *to,  bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);      // Read from destination - so fields within a byte can be modified
+   bool (*wrDest)(bit64K_T_ByteOfs to,         U8 const *from, bit64K_T_Cnt cnt);      // Write-back to destination
+   bool (*getSrc)(             U8 *to,  bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);      // Read from source.
+} S_Bit64KPorts;
 
-PUBLIC void Bit64K_Copy(S_Bit64KPort const *port, S_Bit64K dest, S_Bit64K src, U16 numBits);
+PUBLIC void bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 
 
 /* ----------------------------- Endians ------------------------------------*/
