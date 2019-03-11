@@ -140,11 +140,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="../src/bits/bit_addr.c">
+		<Unit filename="../src/bits/bit64k_copy.c">
 			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Console" />
+		</Unit>
+		<Unit filename="../src/bits/bit_addr_64k.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/bits/idx_to_1st_bit_set_u16.c">
 			<Option compilerVar="CC" />
@@ -157,12 +157,6 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/bits/make_masks.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-			<Option target="Console" />
-		</Unit>
-		<Unit filename="../src/bits/memcpy_bits.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -537,7 +531,14 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/bits/bit64k.mak">
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/bits/bits.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bits/test-bit64k.c">
+			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/bits/test-bits.c">
