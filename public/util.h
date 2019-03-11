@@ -150,7 +150,7 @@ typedef struct {
    bool (*getSrc)(             U8 *to,  bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);      // Read from source.
 } S_Bit64KPorts;
 
-PUBLIC void bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
+PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 
 
 /* ----------------------------- Endians ------------------------------------*/
