@@ -42,8 +42,8 @@ static inline U16          bytes(S_Bit64K bf)   { return bf >> _BitRS; }
 
 // The internal representation of the bit-address is contiguous; so just return the
 // value of that.
-static inline U16          getAddr(S_Bit64K bf) { return (U16)bf; }
-static inline S_Bit64K  putAddr(U16 n)          { return (S_Bit64K)n; }
+static inline U16       getAddr(S_Bit64K bf) { return (U16)bf; }
+static inline S_Bit64K  putAddr(U16 n)       { return (S_Bit64K)n; }
 
 // ------------------------------------------------------------------------------
 PUBLIC S_Bit64K bit64K_MakeBE(U16 _byte, U8 _bit)
@@ -66,13 +66,10 @@ PUBLIC U16 bit64K_Byte(S_Bit64K bf)
 
 // ------------------------------------------------------------------------------
 PUBLIC S_Bit64K bit64K_AddBits(S_Bit64K src, S16 nbits) {
-   S16 s = getAddr(src) + nbits;
-   return putAddr(s < 0 ? 0 : s);
-}
+   return ClipS32toU16((S32)getAddr(src) + nbits); }
 
 // ------------------------------------------------------------------------------
 PUBLIC S_Bit64K bit64K_Add(S_Bit64K a, S_Bit64K b) {
-   S16 s = getAddr(a) + getAddr(b);
-   return putAddr(s < 0 ? 0 : s); }
+   return AplusB_U16(getAddr(a), getAddr(b)); }
 
 // ------------------------------------------ eof -------------------------------------------
