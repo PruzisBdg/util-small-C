@@ -143,15 +143,21 @@ PUBLIC S_Bit64K   bit64K_Add(S_Bit64K a, S_Bit64K b);
 typedef U16 bit64K_T_ByteOfs;       // UP to 13 bit's for this; (3 for the bits in a byte)
 typedef U16 bit64K_T_Cnt;           // Enumerates bit addresses.
 
+// These return false if an operation fails.
+typedef bool bit64K_Rds(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);
+typedef bool bit64K_Wrs(bit64K_T_ByteOfs to, U8 const *from, bit64K_T_Cnt cnt);
+
 typedef struct {
-   // These return false if operation failed.
-   bool (*rdDest)(             U8 *to,  bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);      // Read from destination - so fields within a byte can be modified
-   bool (*wrDest)(bit64K_T_ByteOfs to,         U8 const *from, bit64K_T_Cnt cnt);      // Write-back to destination
-   bool (*getSrc)(             U8 *to,  bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);      // Read from source.
+   bit64K_Rds  *rdDest,     // Read from destination - so fields within a byte can be modified
+               *getSrc;     // Read from source.
+   bit64K_Wrs  *wrDest;     // Write-back to destination
 } S_Bit64KPorts;
 
 PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 
+typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
+PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian);
+PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 srcEndian);
 
 /* ----------------------------- Endians ------------------------------------*/
 

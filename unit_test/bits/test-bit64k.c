@@ -169,7 +169,146 @@ void test_Bit64_Copy_StraddlesDestBytes(void)
 }
 
 
+/* ------------------------------- test_Bit64_Out_LE --------------------------------------------------- */
 
+void test_Bit64_Out_LE(void)
+{
+   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memset(srcBuf,  t->srcFill, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bit64K_Out(
+         &port1,
+         destBuf,
+         bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
+         cpy->nBits,
+         eLittleEndian);
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {(%d,%d){%d} -> dest[0]}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1], cpy->from._byte ,cpy->from._bit, cpy->nBits,
+            destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+   }
+}
+
+/* ------------------------------- test_Bit64_Out_BE --------------------------------------------------- */
+
+void test_Bit64_Out_BE(void)
+{
+   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memset(srcBuf,  t->srcFill, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bit64K_Out(
+         &port1,
+         destBuf,
+         bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
+         cpy->nBits,
+         eBigEndian);
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {(%d,%d){%d} -> dest[0]}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1], cpy->from._byte ,cpy->from._bit, cpy->nBits,
+            destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+   }
+}
+
+
+/* ------------------------------- test_Bit64_In_LE --------------------------------------------------- */
+
+void test_Bit64_In_LE(void)
+{
+   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memset(srcBuf,  t->srcFill, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bit64K_In(
+         &port1,
+         bit64K_MakeBE(cpy->to._byte, cpy->to._bit),
+         srcBuf,
+         cpy->nBits,
+         eLittleEndian);
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+   }
+}
+
+/* ------------------------------- test_Bit64_In_BE --------------------------------------------------- */
+
+void test_Bit64_In_BE(void)
+{
+   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memset(srcBuf,  t->srcFill, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bit64K_In(
+         &port1,
+         bit64K_MakeBE(cpy->to._byte, cpy->to._bit),
+         srcBuf,
+         cpy->nBits,
+         eBigEndian);
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+   }
+}
 
 
 // ----------------------------------------- eof --------------------------------------------
