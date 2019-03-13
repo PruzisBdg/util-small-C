@@ -103,11 +103,16 @@ typedef struct {
 } S_byteQ;
 
 PUBLIC void byteQ_Init  ( S_byteQ *q, U8 *buf, U8 size);
+PUBLIC BOOL byteQ_Exists(S_byteQ *q);
 PUBLIC void byteQ_Flush ( S_byteQ *q);
 PUBLIC BIT  byteQ_Write ( S_byteQ *q, U8 const *src, U8 bytesToWrite);
 PUBLIC BIT  byteQ_Read  ( S_byteQ *q, U8 *dest,      U8 bytesToRead);
 PUBLIC BIT  byteQ_Locked( S_byteQ *q);
 PUBLIC U8   byteQ_Count ( S_byteQ *q);
+PUBLIC U8   byteQ_Size  ( S_byteQ *q);
+PUBLIC U8 * byteQ_ToFill( S_byteQ *q, U8 cnt);
+PUBLIC void byteQ_Unlock(S_byteQ *q);
+
 
 
 // Wrapper for a for() loop.
@@ -137,6 +142,7 @@ PUBLIC U8         bit64K_BitBE(S_Bit64K bf);
 
 PUBLIC U16        bit64K_Byte(S_Bit64K bf);
 PUBLIC S_Bit64K   bit64K_AddBits(S_Bit64K src, S16 nbits);     // Signed, so may subtract addresses.
+PUBLIC S_Bit64K   bit64K_AddBytes(S_Bit64K src, S16 bytes);
 PUBLIC S_Bit64K   bit64K_Add(S_Bit64K a, S_Bit64K b);
 
 // ---- bit64K_Copy() source and destination ports.
@@ -151,6 +157,7 @@ typedef struct {
    bit64K_Rds  *rdDest,     // Read from destination - so fields within a byte can be modified
                *getSrc;     // Read from source.
    bit64K_Wrs  *wrDest;     // Write-back to destination
+   S_byteQ     *cache;
 } S_Bit64KPorts;
 
 PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
