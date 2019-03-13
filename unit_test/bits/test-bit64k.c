@@ -173,16 +173,41 @@ void test_Bit64_Copy_StraddlesDestBytes(void)
 
 void test_Bit64_Out_LE(void)
 {
-   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+   typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; } S_Tst;
 
    S_Tst const tsts[] = {
-      { .cpy = {.from = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      // --- Copy out from single source byte to just the 1st dest byte; remaining dest bytes should be undisturbed.
+
+      // Without shift; source bits already aligned.
+      #define _destFill 0x05A
+      // Just the lsb
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0x01, [1 ... _TestBufSize-1] = 0x00}, .destFill = _destFill, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = _destFill} },
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0xFE, [1 ... _TestBufSize-1] = 0xFF}, .destFill = _destFill, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = _destFill} },
+
+      // e.g b2:0 (lowest 3 bits)
+      { .cpy = {.from = {0,2}, .nBits = 3 }, .src = (U8[]){0xFF, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x00, .result = (U8[]){0x07, [1 ... _TestBufSize-1] = 0x00} },
+      { .cpy = {.from = {0,2}, .nBits = 3 }, .src = (U8[]){0x05, [1 ... _TestBufSize-1] = 0xFF}, .destFill = 0x55, .result = (U8[]){0x05, [1 ... _TestBufSize-1] = 0x55} },
+
+      // Whole byte
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x85, [1 ... _TestBufSize-1] = 0x00}, .destFill = _destFill, .result = (U8[]){0x85, [1 ... _TestBufSize-1] = _destFill} },
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x7B, [1 ... _TestBufSize-1] = 0xFF}, .destFill = _destFill, .result = (U8[]){0x7B, [1 ... _TestBufSize-1] = _destFill} },
+
+      // With shift; source bit field must be right-justified into dest byte.
+
+      // b1 -> b0
+      { .cpy = {.from = {0,1}, .nBits = 1 }, .src = (U8[]){0x02, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0x55} },
+      { .cpy = {.from = {0,1}, .nBits = 1 }, .src = (U8[]){0xFD, [1 ... _TestBufSize-1] = 0xFF}, .destFill = 0x55, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0x55} },
+      // b[7:6] -> b[1:0]
+      { .cpy = {.from = {0,7}, .nBits = 2 }, .src = (U8[]){0xC0, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x03, [1 ... _TestBufSize-1] = 0x55} },
+      { .cpy = {.from = {0,7}, .nBits = 2 }, .src = (U8[]){0x3F, [1 ... _TestBufSize-1] = 0xFF}, .destFill = 0x55, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0x55} },
+      // b[7:1] -> b[6:0]
+      { .cpy = {.from = {0,7}, .nBits = 7 }, .src = (U8[]){0xAA, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x55, [1 ... _TestBufSize-1] = 0x55} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
    {
       S_Tst const *t = &tsts[i];
-      memset(srcBuf,  t->srcFill, _TestBufSize );
+      memcpy(srcBuf,  t->src, _TestBufSize );
       memset(destBuf, t->destFill, _TestBufSize );
 
       S_CpySpec const * cpy = &t->cpy;
@@ -200,7 +225,7 @@ void test_Bit64_Out_LE(void)
             srcBuf[0], srcBuf[1], cpy->from._byte ,cpy->from._bit, cpy->nBits,
             destBuf[0], destBuf[1]);
 
-      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TestBufSize, b0);
    }
 }
 
