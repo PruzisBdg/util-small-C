@@ -53,6 +53,40 @@ static U8 maskAtoB(U8 msb, U8 lsb) {
 static U8 orInto(U8 dest, U8 src, U8 srcMask) {
    return dest | (src & srcMask); }
 
+/* ----------------------------- nextSrcByte --------------------------------------------------
+
+   Get next byte from 'port[src]' into 'out', either directly or via a cache . 'src' is a bit-address.
+
+   If there's a cache and it's not empty then get the byte from there. If the cache is empty
+   then refill the cache from 'port[src]' and return 1st byte from cache.
+
+   It's up to the caller to advance 'src' by one byte for every byte read. That so the cache
+   is not reloaded with same data as before.
+*/
+PRIVATE bool nextSrcByte(S_Bit64KPorts const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem)
+{
+   if(port->cache != NULL) {                                            // There's a cache?
+      S_byteQ *cc = port->cache;
+
+      if(byteQ_Exists(cc) == TRUE ) {                                   // That cache is made? i.e it has a buffer?
+         if( byteQ_Read(cc, out, 1) == 1) {                             // then (attempt to) read 1 byte from that cache?
+            return true; }                                              // Got that byte... we are done.
+         else {                                                         // else cache was empty...
+                                                                        // ... so will (re)fill it from 'port', taking up to all remaining bytes/bits
+            U8 reqBytes = MinU16( (bitsRem+1)/8, byteQ_Size(cc) );      // e.g 9 'bitsRem' require we read 2 'port' bytes
+
+            if( port->getSrc(byteQ_ToFill(cc, reqBytes), _byte(src), reqBytes) ) {  // Refilled cache from 'port'?
+               byteQ_Unlock(cc);                                        // Nope! Cache was locked before fill attempt. Unlock it.
+               byteQ_Flush(cc);                                         // Cache state is unknown - flush it!
+               return false; }                                          // then fail.
+            else {                                                      // else cache was filled from 'port'
+               byteQ_Unlock(cc);                                        // Was locked before fill. Unlock it.
+               byteQ_Read(cc, out, 1);                                  // Now return 1st byte from the (re)filled cache.
+               return true; }}}}                                        // Success.
+
+   return port->getSrc(out, _byte(src), 1);     // No cache; return 1 byte directly from 'port'.
+}
+
 
 /*-----------------------------------------------------------------------------------------
 |
@@ -124,7 +158,6 @@ PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, 
    return true;
 }
 
-
 /*-----------------------------------------------------------------------------------------
 |
 |  bit64K_Out()
@@ -175,20 +208,21 @@ PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K
          byte-reads from 'src', depending on whether the field to be copied crosses a byte
          boundary.
       */
+      // First, get 1st byte into 'sb', while maybe refilling any cache.
       U8 sb;
-      if(false == port->getSrc(&sb, _byte(src), 1))         // getSrc() into 's' the byte containing 'src'.
+      if(false == nextSrcByte(port, &sb, src, rem))         // Read 1st byte from 'port'? ..either directly or via cache
          { return false; }
 
       ask = rem > _8bits ? _8bits : rem;                   // This pass, from 1 or2 bytes, take (maybe all of) 'rem' but no more than 8 bits.
       U8 got = MinU8(ask, _bit(src)+1);                    // From the 1st byte take b[src:0], but no more than 'ask'.
 
-      sb = shiftLR(sb, ask-got);                           // (maybe) left-justify the 'got' bits (from 1st byte) to 'ask'...
+      sb = shiftLR(sb, (S8)ask-_bit(src)-1);               // (Maybe) left-justify or right-justify the 'got' bits (from 1st byte) to their position determined by 'ask'.
       U8 db = 0;                                           // ...any space to the right of these to b0 will be filled from 2nd byte.
       db = orInto(db, sb, mask(ask-1, got));               // Mask to select just that field and OR into dest byte.
 
       if(ask > got)                                        // Got a partial destination field from 1st byte?
-      {
-         if(false == port->getSrc(&sb, _byte(src)+1, 1))    // then get 2nd byte into 'sb'.
+      {                                                    // then get 2nd byte into 'sb', while maybe refilling any cache.
+         if(false == nextSrcByte(port, &sb, src+_8bits, rem-got)) // Read 2nd byte from 'port'? ..either directly or via cache
             { return false; }
 
          sb = rotL(sb, ask-got);                           // Rotate 2nd byte to fit in
