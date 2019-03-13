@@ -46,6 +46,9 @@ static U8 rotL(U8 n, U8 by) {
 static U8 mask(U8 msb, U8 width) {
    return MakeAtoBSet_U8(msb, width > msb ? 0 : msb-width+1); }
 
+static U8 maskAtoB(U8 msb, U8 lsb) {
+   return MakeAtoBSet_U8(msb, lsb); }
+
 // ----------------------------------------------------------------------------------------
 static U8 orInto(U8 dest, U8 src, U8 srcMask) {
    return dest | (src & srcMask); }
@@ -62,10 +65,10 @@ static U8 orInto(U8 dest, U8 src, U8 srcMask) {
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, U16 numBits)
+PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits)
 {
    U8 open;
-   for(U8 rem = numBits; rem > 0; rem -= open, src += open, dest += open)
+   for(bit64K_T_Cnt rem = numBits; rem > 0; rem -= open, src += open, dest += open)
    {
       // rdDest() byte containing 'dest'. Clear those bits which will be updated.
       U8 db;
@@ -162,40 +165,36 @@ PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K
       #define _bump(ptr)  (ptr)++
    #endif // __BYTE_ORDER__
 
-   U8 open;
-   for(U8 rem = numBits; rem > 0; rem -= open, src += open, _bump(dest))
+   /* Fill each dest byte from a bytes-worth of source bit-field. Depending on alignment, this will
+      be from a single source byte or 2 consecutive source bytes.
+   */
+   U8 ask;
+   for(bit64K_T_Cnt rem = numBits; rem > 0; rem -= ask, src += ask, _bump(dest))
    {
       /* Copy 'open' bits from 'src' into the 'dest' byte. This needs either 1 or 2
          byte-reads from 'src', depending on whether the field to be copied crosses a byte
          boundary.
       */
       U8 sb;
-      if(false == port->getSrc(&sb, _byte(src), 1))      // getSrc() into 's' the byte containing 'src'.
+      if(false == port->getSrc(&sb, _byte(src), 1))         // getSrc() into 's' the byte containing 'src'.
          { return false; }
 
-      /* 's' has _bit(src)+1 bits from 'src'. Take some or all of these, depending on how
-         much more we 'ask' for.
-      */
-      open = rem > _8bits ? _8bits : rem;
-      U8 got = MinU8(open, _bit(src)+1);                 // Take up to 'open' bits from 'src' forward to b0 of byte 't'
+      ask = rem > _8bits ? _8bits : rem;                   // This pass, from 1 or2 bytes, take (maybe all of) 'rem' but no more than 8 bits.
+      U8 got = MinU8(ask, _bit(src)+1);                    // From the 1st byte take b[src:0], but no more than 'ask'.
 
-      /* Align the bits from 'src' (in 's')
-      */
-      U8 msb = _msb7;                                    // This is the msbit of the 'dest' field..
-      sb = shiftLR(sb, msb-_bit(src));                   // Shift left or right to align the field from 'src' with 'dest'.
-      U8 db = 0;
-      db = orInto(db, sb, mask(msb, got));               // Mask to select just that field and OR into dest byte.
+      sb = shiftLR(sb, ask-got);                           // (maybe) left-justify the 'got' bits (from 1st byte) to 'ask'...
+      U8 db = 0;                                           // ...any space to the right of these to b0 will be filled from 2nd byte.
+      db = orInto(db, sb, mask(ask-1, got));               // Mask to select just that field and OR into dest byte.
 
-      if(open > got)                                     // Got a partial destination field from 1st byte?
+      if(ask > got)                                        // Got a partial destination field from 1st byte?
       {
-         if(false == port->getSrc(&sb, _byte(src)+1, 1)) // then the remainder of the field into 'sb'.
+         if(false == port->getSrc(&sb, _byte(src)+1, 1))    // then get 2nd byte into 'sb'.
             { return false; }
 
-         msb -= got;                                     // Move the 'dest' msb marker past the partial source field we already wrote.
-         sb = rotL(sb, msb+1);                           // Rotate partial field left to align with destination slot.
-         db = orInto(db, sb, mask(msb, open-got));       // Mask to select just that field and OR into dest byte.
+         sb = rotL(sb, ask-got);                           // Rotate 2nd byte to fit in
+         db = orInto(db, sb, maskAtoB(ask-got-1,0));       // Mask to select just that field and OR into dest byte.
       }
-      *dest = db;
+      *dest = db;                                          // Write out dest byte.
    } // for(U8 rem = numBits...
    return true;
 }
@@ -237,7 +236,7 @@ PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const * src, 
       #define _bump(ptr)  (ptr)++
    #endif // __BYTE_ORDER__
 
-   for(U8 rem = numBits; rem > 0; dest += _8bits, _bump(src))
+   for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, _bump(src))
    {
       /* If there's a port.rdDest() then will read current destination byte (into 'db'). Then clear
          and fill 'open' bits in 'db' from 'msb' rightward. If 'rem' > 'msb' this will be fully
