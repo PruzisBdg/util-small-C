@@ -202,6 +202,14 @@ void test_Bit64_Out_LE(void)
       { .cpy = {.from = {0,7}, .nBits = 2 }, .src = (U8[]){0x3F, [1 ... _TestBufSize-1] = 0xFF}, .destFill = 0x55, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0x55} },
       // b[7:1] -> b[6:0]
       { .cpy = {.from = {0,7}, .nBits = 7 }, .src = (U8[]){0xAA, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x55, [1 ... _TestBufSize-1] = 0x55} },
+
+      // Multiple bytes; no shift
+      { .cpy = {.from = {0,7}, .nBits = 16 }, .src = (U8[]){0x01, 0x02, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x01,0x02, [2 ... _TestBufSize-1] = 0x55} },
+
+      // Source bit field extends over 2-bytes but is < 8bits.  Field must be right-justified into dest byte.
+      { .cpy = {.from = {0,1}, .nBits = 4 }, .src = (U8[]){0x03,0xC0, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x0F, [1 ... _TestBufSize-1] = 0x55} },
+
+
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
@@ -233,16 +241,20 @@ void test_Bit64_Out_LE(void)
 
 void test_Bit64_Out_BE(void)
 {
-   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+   typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; } S_Tst;
 
    S_Tst const tsts[] = {
-      { .cpy = {.from = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0xFF}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+
+      // Multiple bytes; no shift
+      { .cpy = {.from = {0,7}, .nBits = 16 }, .src = (U8[]){1,2,     [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){2,1,     [2 ... _TestBufSize-1] = 0x55} },
+      { .cpy = {.from = {0,7}, .nBits = 32 }, .src = (U8[]){1,2,3,4, [4 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){4,3,2,1, [4 ... _TestBufSize-1] = 0x55} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
    {
       S_Tst const *t = &tsts[i];
-      memset(srcBuf,  t->srcFill, _TestBufSize );
+      memcpy(srcBuf,  t->src, _TestBufSize );
       memset(destBuf, t->destFill, _TestBufSize );
 
       S_CpySpec const * cpy = &t->cpy;

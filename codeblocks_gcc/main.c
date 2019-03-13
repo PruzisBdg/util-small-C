@@ -11,7 +11,7 @@ PRIVATE int prntBitAddr(C8 *out, S_Bit64K bf)
    { return sprintf( out, "(%u,%u)", bit64K_Byte(bf),  bit64K_BitBE(bf) ); }
 
 #define _BufSize 10
-PRIVATE U8 srcBuf[_BufSize] = {0x01,0x80, [2 ... _BufSize-1] = 0x00};
+PRIVATE U8 srcBuf[_BufSize] = {0x01,0x02, [2 ... _BufSize-1] = 0x00};
 PRIVATE U8 destBuf[_BufSize] = {0};
 
 PRIVATE bool rds(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt ) { memcpy(to, &destBuf[from], cnt); return true; }
@@ -31,8 +31,8 @@ int main (void)
           cp0.to._byte ,cp0.to._bit, destBuf[0], destBuf[1]);
 
 
-   S_Cpy cp1 = { .from = {._byte = 0, ._bit = 0}, .nBits = 2 };
-   bit64K_Out(&port1, destBuf, bit64K_MakeBE(cp1.from._byte ,cp1.from._bit), cp1.nBits, eLittleEndian);
+   S_Cpy cp1 = { .from = {._byte = 0, ._bit = 7}, .nBits = 16 };
+   bit64K_Out(&port1, destBuf, bit64K_MakeBE(cp1.from._byte ,cp1.from._bit), cp1.nBits, eBigEndian);
    printf("src[0x%x 0x%x] map {(%d,%d){%d} -> (%d,%d)} -> dest[0x%x 0x%x]\r\n",
           srcBuf[0], srcBuf[1], cp1.from._byte ,cp1.from._bit, cp1.nBits,
           cp1.to._byte ,cp1.to._bit, destBuf[0], destBuf[1]);
