@@ -69,6 +69,10 @@ PUBLIC S_Bit64K bit64K_AddBits(S_Bit64K src, S16 nbits) {
    return ClipS32toU16((S32)getAddr(src) + nbits); }
 
 // ------------------------------------------------------------------------------
+PUBLIC S_Bit64K bit64K_AddBytes(S_Bit64K src, S16 bytes) {
+   return bit64K_AddBits(src, 8*bytes); }
+
+// ------------------------------------------------------------------------------
 PUBLIC S_Bit64K bit64K_Add(S_Bit64K a, S_Bit64K b) {
    return AplusB_U16(getAddr(a), getAddr(b)); }
 
