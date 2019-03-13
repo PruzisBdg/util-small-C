@@ -192,7 +192,7 @@ PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K
          high address and will count backwards.
       */
       if(numBits > 8 && dir == _reverse)
-         { dest += numBits/8; }
+         { dest += (numBits-1)/8; }
    #else
       #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
       #define _bump(ptr)  (ptr)++
@@ -264,7 +264,7 @@ PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const * src, 
          high address and will count backwards.
       */
       if(numBits > 8 && dir == _reverse)
-         { src += numBits/8; }
+         { src += (numBits-1)/8; }
    #else
       #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
       #define _bump(ptr)  (ptr)++
