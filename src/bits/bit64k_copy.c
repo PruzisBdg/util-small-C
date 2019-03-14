@@ -87,6 +87,55 @@ PRIVATE bool nextSrcByte(S_Bit64KPorts const *port, U8 *out, S_Bit64K src, bit64
    return port->getSrc(out, _byte(src), 1);     // No cache; return 1 byte directly from 'port'.
 }
 
+// -------------------------- Endian-aware iterator for buffer ptrs. -----------------------
+
+typedef struct endianPtrTag T_EndianPtr;
+
+typedef struct endianPtrTag {
+   U8* (*next)(T_EndianPtr*);    // returns '_at', iterated.
+   U8 const * _at;               // Current ptr.
+   } T_EndianPtr;
+
+// Increment / decrement '_at'.
+PRIVATE U8 *epIncr(T_EndianPtr *di) {
+   di->_at++;
+   return (U8*)di->_at; }
+
+PRIVATE U8 *epDecr(T_EndianPtr *di) {
+   di->_at--;
+   return (U8*)di->_at; }
+
+// Pre-position buffer ptr and set direction, depending system endian vs target endian.
+PRIVATE U8* epNew(T_EndianPtr *ep, U8 const *bufStart, bit64K_T_Cnt nbits, E_EndianIs bitFieldEndian)
+{
+   ep->_at = bufStart;     // Start ptr at buffer start; may reposition it below.
+
+   // If the port/bit-field endian is opposite to system endian then reverse the bit-field bytes into the buffer.
+   #ifdef __BYTE_ORDER__
+      #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+         bool up = bitFieldEndian == eBigEndian ? false : true;
+      #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+         bool up = bitFieldEndian == eLittleEndian ? false : true;
+      #else
+         bool up = true;
+      #endif
+
+      /* If multiple byte transfer AND byte order is to be reversed then pre-position '_at' at the
+         high address and will count backwards.
+      */
+      if(nbits > 8 && up == false)
+         { ep->_at += (nbits-1)/8; }
+   #else
+      #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
+      #define _bump(ptr)  (ptr)++
+   #endif // __BYTE_ORDER__
+
+   ep->next = up == true ? epIncr : epDecr;
+   return (U8 *)ep->_at;
+}
+
+// ------------- ends: endian pointer. ----------------------
+
 
 /*-----------------------------------------------------------------------------------------
 |
@@ -174,35 +223,14 @@ PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, 
 
 PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian)
 {
-   // If 'srcEndian' is opposite to the system __BYTE_ORDER__ then will flip bytes on copy-out.
-   #define _fwd      1
-   #define _reverse  0
-
-   #ifdef __BYTE_ORDER__
-      #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-         bool dir = srcEndian == eBigEndian ? _reverse : _fwd;
-      #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-         bool dir = srcEndian == eLittleEndian ? _reverse : _fwd;
-      #else
-         bool dir = _fwd;
-      #endif
-      #define _bump(ptr)  dir == _fwd ? (ptr)++ : (ptr)--
-
-      /* If multiple byte transfer AND byte order is to be reversed then pre-position 'dest' at the
-         high address and will count backwards.
-      */
-      if(numBits > 8 && dir == _reverse)
-         { dest += (numBits-1)/8; }
-   #else
-      #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
-      #define _bump(ptr)  (ptr)++
-   #endif // __BYTE_ORDER__
+   T_EndianPtr di;
+   dest = epNew(&di, dest, numBits, srcEndian);            // Endian-aware 'dest'.
 
    /* Fill each dest byte from a bytes-worth of source bit-field. Depending on alignment, this will
       be from a single source byte or 2 consecutive source bytes.
    */
    U8 ask;
-   for(bit64K_T_Cnt rem = numBits; rem > 0; rem -= ask, src += ask, _bump(dest))
+   for(bit64K_T_Cnt rem = numBits; rem > 0; rem -= ask, src += ask, dest = di.next(&di))
    {
       /* Copy 'open' bits from 'src' into the 'dest' byte. This needs either 1 or 2
          byte-reads from 'src', depending on whether the field to be copied crosses a byte
@@ -244,33 +272,12 @@ PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 srcEndian)
+PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const *src, bit64K_T_Cnt numBits, U8 destEndian)
 {
-   // If 'srcEndian' is opposite to the system __BYTE_ORDER__ then will flip bytes on copy-out.
-   #define _fwd      1
-   #define _reverse  0
+   T_EndianPtr si;
+   src = epNew(&si, src, numBits, destEndian);                  // Endian-aware 'src'.
 
-   #ifdef __BYTE_ORDER__
-      #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-         bool dir = srcEndian == eBigEndian ? _reverse : _fwd;
-      #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-         bool dir = srcEndian == eLittleEndian ? _reverse : _fwd;
-      #else
-         bool dir = _fwd;
-      #endif
-      #define _bump(ptr)  dir == _fwd ? (ptr)++ : (ptr)--
-
-      /* If multiple byte transfer AND byte order is to be reversed then pre-position 'dest' at the
-         high address and will count backwards.
-      */
-      if(numBits > 8 && dir == _reverse)
-         { src += (numBits-1)/8; }
-   #else
-      #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
-      #define _bump(ptr)  (ptr)++
-   #endif // __BYTE_ORDER__
-
-   for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, _bump(src))
+   for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
    {
       /* If there's a port.rdDest() then will read current destination byte (into 'db'). Then clear
          and fill 'open' bits in 'db' from 'msb' rightward. If 'rem' > 'msb' this will be fully
@@ -328,7 +335,6 @@ PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const * src, 
       }
    } // for(U8 rem = numBits...
    return true;
-
 }
 
 // ---------------------------------- eof --------------------------------  -
