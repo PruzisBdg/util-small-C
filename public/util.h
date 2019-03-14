@@ -113,6 +113,31 @@ PUBLIC U8   byteQ_Size  ( S_byteQ *q);
 PUBLIC U8 * byteQ_ToFill( S_byteQ *q, U8 cnt);
 PUBLIC void byteQ_Unlock(S_byteQ *q);
 
+/* ----------------------- Basic byte buffer ------------------------------------
+
+   Unlike byteQ_, Read() does NOT remove from buffer.
+*/
+typedef struct {
+   U8 *buf,
+       size,
+       put,
+       get,
+       cnt,
+       locked;
+} S_byteBuf;
+
+PUBLIC void byteBuf_Init  ( S_byteBuf *b, U8 *buf, U8 size);
+PUBLIC BOOL byteBuf_Exists( S_byteBuf *b);
+PUBLIC void byteBuf_Flush ( S_byteBuf *b);
+PUBLIC BIT  byteBuf_Write ( S_byteBuf *b, U8 const *src, U8 bytesToWrite);
+PUBLIC BIT  byteBuf_Read  ( S_byteBuf *b, U8 *dest, U8 bytesToRead);
+PUBLIC BIT  byteBuf_ReadAt( S_byteBuf *b, U8 *dest, U8 from, U8 bytesToRead );
+PUBLIC BIT  byteBuf_Locked( S_byteBuf *b);
+PUBLIC U8   byteBuf_Count ( S_byteBuf *b);
+PUBLIC U8   byteBuf_Size  ( S_byteBuf *b);
+PUBLIC U8 * byteBuf_ToFill( S_byteBuf *b, U8 cnt);
+PUBLIC void byteBuf_Unlock(S_byteBuf *b);
+
 
 
 // Wrapper for a for() loop.
@@ -146,25 +171,43 @@ PUBLIC S_Bit64K   bit64K_AddBytes(S_Bit64K src, S16 bytes);
 PUBLIC S_Bit64K   bit64K_Add(S_Bit64K a, S_Bit64K b);
 
 // ---- bit64K_Copy() source and destination ports.
-typedef U16 bit64K_T_ByteOfs;       // UP to 13 bit's for this; (3 for the bits in a byte)
-typedef U16 bit64K_T_Cnt;           // Enumerates bit addresses.
+typedef U16 bit64K_atByte;       // UP to 13 bit's for this; (3 for the bits in a byte)
+typedef U16 bit64K_T_Cnt;        // Enumerates bit addresses.
 
+// Read / write to a logical byte-address. (Which is usually a memory-mapped peripheral over serial comms).
 // These return false if an operation fails.
-typedef bool bit64K_Rds(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt);
-typedef bool bit64K_Wrs(bit64K_T_ByteOfs to, U8 const *from, bit64K_T_Cnt cnt);
+typedef bool bit64K_Rds(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt);
+typedef bool bit64K_Wrs(bit64K_atByte to, U8 const *from, bit64K_T_Cnt cnt);
+
+//
+typedef union {
+   struct { S_Bit64K min, max; } bits;    // For a bit-addr, the range
+   bit64K_atByte maxBytes;                // for a byte-buffer, the max bytes to push.
+   } bit64K_Range;
 
 typedef struct {
-   bit64K_Rds  *rdDest,     // Read from destination - so fields within a byte can be modified
-               *getSrc;     // Read from source.
-   bit64K_Wrs  *wrDest;     // Write-back to destination
-   S_byteQ     *cache;
-} S_Bit64KPorts;
+   S_byteBuf      q;          // Use this 'S_byteBuf' for the cache.
+   bit64K_atByte  atByte;     // the byte of the bit-addr of the 1st cache element (if it exists)
+   } bit64K_Cache;
 
-PUBLIC bool bit64K_Copy(S_Bit64KPorts const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
+typedef struct {
+   struct {
+      bit64K_Rds     *get;       // When the source is a bit-field, this get()s from a logical byte address.
+      bit64K_Range   range;      // legal bit-addr for get() OR if source is a buffer, max bytes to read.
+      } src;
+   struct {
+      bit64K_Rds  *rd;           // When the destination is a bit-field, to read bytes from it (so they can be modified and put back).
+      bit64K_Wrs  *wr;           // When the destination is a bit-field, to write bytes to it.
+      bit64K_Range range;
+      } dest;
+   bit64K_Cache *cache;
+} bit64K_Ports;
+
+PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 
 typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
-PUBLIC bool bit64K_Out(S_Bit64KPorts const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian);
-PUBLIC bool bit64K_In(S_Bit64KPorts const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 srcEndian);
+PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian);
+PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 srcEndian);
 
 /* ----------------------------- Endians ------------------------------------*/
 
