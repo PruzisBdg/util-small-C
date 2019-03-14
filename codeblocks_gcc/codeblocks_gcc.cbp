@@ -361,6 +361,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/queues/byte_buf.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/queues/byte_queue.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
