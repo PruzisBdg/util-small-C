@@ -203,6 +203,8 @@ typedef struct {
    bit64K_Cache *cache;
 } bit64K_Ports;
 
+PUBLIC bool bit64K_NewPort(bit64K_Ports *p, bit64K_Cache *cache, U8 *cacheBuf, U8 cacheBytes);
+PUBLIC bool bit64K_ResetPort(bit64K_Ports *p);
 PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 
 typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;

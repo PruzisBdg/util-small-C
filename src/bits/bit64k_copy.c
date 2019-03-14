@@ -55,33 +55,35 @@ static U8 orInto(U8 dest, U8 src, U8 srcMask) {
    return dest | (src & srcMask); }
 
 // ----------------------------------------------------------------------------------------
-static bool reloadCache_RdByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem)
+
+#define _NoCacheAddr 0xFFFF      // This will not match any reasonable cache address.
+
+static bool reloadCache(bit64K_Ports const *port, S_Bit64K src, bit64K_T_Cnt bitsRem)
 {
    S_byteBuf *bb = &port->cache->q;
    U8 reqBytes = MinU16( (bitsRem+1)/8, byteBuf_Size(bb) );    // e.g 9 'bitsRem' require we read 2 'port' bytes
 
    if( port->src.get(byteBuf_ToFill(bb, reqBytes), _byte(src), reqBytes) ) {  // Refilled cache from 'port'?
-      port->cache->atByte = 0;
+      port->cache->atByte = _NoCacheAddr;
       byteBuf_Unlock(bb);                                      // Nope! Cache was locked before fill attempt. Unlock it.
       byteBuf_Flush(bb);                                       // Cache state is unknown - flush it!
       return false; }                                          // then fail.
    else {                                                      // else cache was filled from 'port'
       port->cache->atByte = _byte(src);                        // Mark that cache start from the byte containing 'src'.
       byteBuf_Unlock(bb);                                      // Was locked before fill. Unlock it.
-      byteBuf_Read(bb, out, 1);                                // Now return 1st byte from the (re)filled cache.
       return true; }
 }
 
-/* ----------------------------- first/nextSrcByte --------------------------------------------------
+// ----------------------------------------------------------------------------------------
+static bool reloadCache_RdByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem)
+{
+   if( true == reloadCache(port, src, bitsRem) ) {
+      byteBuf_Read(&port->cache->q, out, 1);                // Now return 1st byte from the (re)filled cache.
+      return true; }
+   return false;
+}
 
-   Get next byte from 'port[src]' into 'out', either directly or via a cache . 'src' is a bit-address.
-
-   If there's a cache and it's not empty then get the byte from there. If the cache is empty
-   then refill the cache from 'port[src]' and return 1st byte from cache.
-
-   It's up to the caller to advance 'src' by one byte for every byte read. That so the cache
-   is not reloaded with same data as before.
-*/
+// ----------------------------------------------------------------------------------------
 static bool readFromCache(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem)
 {
    if(_byte(src) >= port->cache->atByte) {                  // 'src' may be in this cache; address is high than cache start?
@@ -96,6 +98,16 @@ static bool readFromCache(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64
    return false;     // Some fail!
 }
 
+/* ----------------------------- first/nextSrcByte --------------------------------------------------
+
+   Get next byte from 'port[src]' into 'out', either directly or via a cache . 'src' is a bit-address.
+
+   If there's a cache and it's not empty then get the byte from there. If the cache is empty
+   then refill the cache from 'port[src]' and return 1st byte from cache.
+
+   It's up to the caller to advance 'src' by one byte for every byte read. That so the cache
+   is not reloaded with same data as before.
+*/
 PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem, bool firstRead)
 {
    if(port->cache != NULL) {                                            // There's a cache?
@@ -267,7 +279,9 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_
 {
    if( false == legalBitAddr(&port->src.range, src))           // 'src' not legal?
       { return false; }                                        // then fail!
-   else {                                                      // else continue.
+   else if(dest == NULL) {                                     // else no destination specified? ...
+         return reloadCache(port, src, numBits); }             // ... is an instruction to (re)load the cache at 'src'.
+   else {                                                      // else do a read.
       T_EndianPtr di;
       dest = epNew(&di, dest, numBits, srcEndian);            // Endian-aware 'dest'.
 
@@ -386,6 +400,38 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
       } // for(U8 rem = numBits...
       return true;
    }
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  bit64K_NewPort()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC bool bit64K_NewPort(bit64K_Ports *p, bit64K_Cache *cache, U8 *cacheBuf, U8 cacheBytes)
+{
+   if(cache == NULL || cacheBuf == NULL || cacheBytes == 0) { // No cache, no buffer supplied?
+      p->cache = NULL; }                                    // then say 'no cache'.
+   else {
+      p->cache = cache;                                     // else attach the cache.
+      byteBuf_Init( &p->cache->q, cacheBuf, cacheBytes);    // and attach buffer to cache, which starts flushed
+      p->cache->atByte = _NoCacheAddr; }
+   return true;
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  bit64K_ResetPort()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC bool bit64K_ResetPort(bit64K_Ports *p)
+{
+   if( p->cache != NULL ) {
+      byteBuf_Flush(&p->cache->q);
+      p->cache->atByte = _NoCacheAddr;
+      }
+   return true;
 }
 
 // ---------------------------------- eof --------------------------------  -
