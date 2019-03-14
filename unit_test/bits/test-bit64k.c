@@ -24,11 +24,11 @@ void tearDown(void) {
 PRIVATE U8 srcBuf[_TestBufSize] = {0};
 PRIVATE U8 destBuf[_TestBufSize] = {0};
 
-PRIVATE bool rds(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt )      { memcpy(to, &destBuf[from], cnt); return true; }
-PRIVATE bool wrs(bit64K_T_ByteOfs to, U8 const *from, bit64K_T_Cnt cnt) { memcpy(&destBuf[to], from, cnt); return true; }
-PRIVATE bool getss(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt)     { memcpy(to, &srcBuf[from], cnt); return true; }
+PRIVATE bool rds(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt )      { memcpy(to, &destBuf[from], cnt); return true; }
+PRIVATE bool wrs(bit64K_atByte to, U8 const *from, bit64K_T_Cnt cnt) { memcpy(&destBuf[to], from, cnt); return true; }
+PRIVATE bool getss(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt)     { memcpy(to, &srcBuf[from], cnt); return true; }
 
-PRIVATE S_Bit64KPorts const port1 = {.rdDest = rds, .wrDest = wrs, .getSrc = getss };
+PRIVATE bit64K_Ports const port1 = {.dest.rd = rds, .dest.wr = wrs, .src.get = getss };
 
 typedef struct { U8 _byte, _bit; } S_BitAddr;
 typedef struct { S_BitAddr from, to; U8 nBits; } S_CpySpec;

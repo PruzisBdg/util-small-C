@@ -14,10 +14,10 @@ PRIVATE int prntBitAddr(C8 *out, S_Bit64K bf)
 PRIVATE U8 srcBuf[_BufSize] = {0x01,0x02, [2 ... _BufSize-1] = 0x00};
 PRIVATE U8 destBuf[_BufSize] = {0};
 
-PRIVATE bool rds(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt ) { memcpy(to, &destBuf[from], cnt); return true; }
-PRIVATE bool wrs(bit64K_T_ByteOfs to, U8 const *from, bit64K_T_Cnt cnt) { memcpy(&destBuf[to], from, cnt); return true; }
-PRIVATE bool getss(U8 *to, bit64K_T_ByteOfs from, bit64K_T_Cnt cnt) { memcpy(to, &srcBuf[from], cnt); return true; }
-PRIVATE S_Bit64KPorts const port1 = {.rdDest = rds, .wrDest = wrs, .getSrc = getss };
+PRIVATE bool rds(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt ) { memcpy(to, &destBuf[from], cnt); return true; }
+PRIVATE bool wrs(bit64K_atByte to, U8 const *from, bit64K_T_Cnt cnt) { memcpy(&destBuf[to], from, cnt); return true; }
+PRIVATE bool getss(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt) { memcpy(to, &srcBuf[from], cnt); return true; }
+PRIVATE bit64K_Ports const port1 = {.rdDest = rds, .wrDest = wrs, .getSrc = getss };
 
 int main (void)
 {
