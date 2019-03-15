@@ -222,6 +222,16 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/endians/to_sys_endian_u16.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/endians/to_sys_endian_u32.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/heaps/heap_1way_u16.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -549,6 +559,13 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/bits/test-bits.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/endians/endians.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/endians/test-endians.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
