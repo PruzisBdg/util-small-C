@@ -84,12 +84,21 @@ PUBLIC BIT  ReadDirtyASCIIInt_ByCh(U8 ch, S16 *out);
 
 /* ------------------------------- Endian/Alignment conversions ---------------------- */
 
+typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
+
 // Conversions to LE, non-aligned.
 PUBLIC void u16ToLE(U8 *out, U16 n);
 PUBLIC void s16ToLE(U8 *out, S16 n);
 PUBLIC void u32ToLE(U8 *out, U32 n);
 PUBLIC U16 leToU16(U8 const * src);
 PUBLIC U32 leToU32(U8 const *src);
+
+PUBLIC U16 ReverseU16(U16 n);
+PUBLIC U32 ReverseU32(U32 n);
+
+// Convert to system endian.
+PUBLIC U16 ToSysEndian_U16(U16 n, E_EndianIs e);
+PUBLIC U32 ToSysEndian_U32(U32 n, E_EndianIs e);
 
 /* ----------------------- Basic byte queue ------------------------------- */
 
@@ -171,13 +180,14 @@ PUBLIC S_Bit64K   bit64K_AddBytes(S_Bit64K src, S16 bytes);
 PUBLIC S_Bit64K   bit64K_Add(S_Bit64K a, S_Bit64K b);
 
 // ---- bit64K_Copy() source and destination ports.
-typedef U16 bit64K_atByte;       // UP to 13 bit's for this; (3 for the bits in a byte)
-typedef U16 bit64K_T_Cnt;        // Enumerates bit addresses.
+typedef U16             bit64K_atByte;       // UP to 13 bit's for this; (3 for the bits in a byte)
+typedef bit64K_atByte   bit64K_byteCnt;      // The same type which specifies a byte.
+typedef U16             bit64K_T_Cnt;        // Enumerates bit addresses.
 
 // Read / write to a logical byte-address. (Which is usually a memory-mapped peripheral over serial comms).
 // These return false if an operation fails.
-typedef bool bit64K_Rds(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt);
-typedef bool bit64K_Wrs(bit64K_atByte to, U8 const *from, bit64K_T_Cnt cnt);
+typedef bool bit64K_Rds(U8 *to,       bit64K_atByte from, bit64K_byteCnt cnt);
+typedef bool bit64K_Wrs(bit64K_atByte to, U8 const *from, bit64K_byteCnt cnt);
 
 //
 typedef union {
@@ -207,14 +217,8 @@ PUBLIC bool bit64K_NewPort(bit64K_Ports *p, bit64K_Cache *cache, U8 *cacheBuf, U
 PUBLIC bool bit64K_ResetPort(bit64K_Ports *p);
 PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 
-typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
 PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian);
 PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 srcEndian);
-
-/* ----------------------------- Endians ------------------------------------*/
-
-PUBLIC U16 ReverseU16(U16 n);
-PUBLIC U32 ReverseU32(U32 n);
 
 /* --------------------- Time/Date, ISO8601 format -------------------------
 

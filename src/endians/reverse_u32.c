@@ -9,7 +9,7 @@
 
 PUBLIC U32 ReverseU32(U32 n)
 {
-    return (ReverseU16(n &0x0000FFFF) << 16) + (ReverseU16(n) >> 16);
+    return (ReverseU16(LOW_WORD(n)) << 16) + ReverseU16(HIGH_WORD(n));
 }
 
 // --------------------- eof --------------------------------  -
