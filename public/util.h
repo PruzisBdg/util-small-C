@@ -527,4 +527,18 @@ PUBLIC void		Heap1w_Untake(Heap1w_S *h, Heap1w_T_Size n);
 PUBLIC Heap1w_T_Size Heap1w_Used(Heap1w_S const *h);
 PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 
+/* --------------------------------- Macro Arg count --------------------------------------------- */
+
+// Counts zero or more parameters, but these must constants; can't be just token
+#define _NumParms(...)  (sizeof((int[]){__VA_ARGS__})/sizeof(int))
+
+
+// Counts 1-32 tokens the argument list. An empty list still counts as 1.
+#define _NumArgs(...) PP_NARG_(__VA_ARGS__,PP_RSEQ_N())
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_ARG_N(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,N,...) N
+#define PP_RSEQ_N() 32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
+
+
+
 #endif // UTIL_H

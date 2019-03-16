@@ -569,6 +569,13 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/macros/macros.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/macros/test-macros.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/network/network.mak">
 			<Option target="Unity TDD" />
 		</Unit>
