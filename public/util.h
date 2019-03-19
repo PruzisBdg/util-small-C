@@ -553,7 +553,6 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 /* -------------------------------------- Maps ----------------------------------------------- */
 
 // e.g _Map(op, a,b,c,d)  -> op4(a,b,c,d)
-//#define _Map(_root, ...) XCAT(_root, _NumArgs(__VA_ARGS__))(__VA_ARGS__)
 #define _Map(_f, ...) XCAT(_func, _NumArgs(__VA_ARGS__))(_f, __VA_ARGS__)
 
 #define _func1( _f, a) _f(a)
@@ -582,6 +581,30 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define _func24(_f, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x) _f(a), _f(b), _f(c), _f(d), _f(e), _f(f), _f(g), _f(h), _f(i), _f(j), _f(k), _f(l), _f(m), _f(n), _f(o), _f(p), _f(q), _f(r), _f(s), _f(t), _f(u), _f(v), _f(w), _f(x)
 #define _func25(_f, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y) _f(a), _f(b), _f(c), _f(d), _f(e), _f(f), _f(g), _f(h), _f(i), _f(j), _f(k), _f(l), _f(m), _f(n), _f(o), _f(p), _f(q), _f(r), _f(s), _f(t), _f(u), _f(v), _f(w), _f(x), _f(y)
 #define _func26(_f, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z) _f(a), _f(b), _f(c), _f(d), _f(e), _f(f), _f(g), _f(h), _f(i), _f(j), _f(k), _f(l), _f(m), _f(n), _f(o), _f(p), _f(q), _f(r), _f(s), _f(t), _f(u), _f(v), _f(w), _f(x), _f(y), _f(z)
+
+// 2 args per function.
+#define _MapPairs(_f, ...) XCAT(_func2_, _NumArgs(__VA_ARGS__))(_f, __VA_ARGS__)
+
+#define _func2_2( _f, a0,a1)    _f(a0,a1)
+#define _func2_4( _f, a0,a1,b0,b1)    _f(a0,a1), _f(b0,b1)
+#define _func2_6( _f, a0,a1,b0,b1,c0,c1)    _f(a0,a1), _f(b0,b1), _f(c0,c1)
+#define _func2_8( _f, a0,a1,b0,b1,c0,c1,d0,d1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1)
+#define _func2_10(_f, a0,a1,b0,b1,c0,c1,d0,d1,e0,e1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1), f(e0,e1)
+#define _func2_12(_f, a0,a1,b0,b1,c0,c1,d0,d1,e0,e1,f0,f1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1), f(e0,e1), f(f0,f1)
+
+// 1st arg is passed to every call, as it's 1st arg
+#define _Map1stRem(_f, p0, ...) XCAT(_funcp, _NumArgs(__VA_ARGS__))(_f, p0, __VA_ARGS__)
+#define _funcp1( _f, p0, a)  _f(p0,a)
+#define _funcp2( _f, p0, a,b)  _f(p0,a), _f(p0,b)
+#define _funcp3( _f, p0, a,b,c)  _f(p0,a), _f(p0,b), _f(p0,c)
+#define _funcp4( _f, p0, a,b,c,d)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d)
+#define _funcp5( _f, p0, a,b,c,d,e)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e)
+#define _funcp6( _f, p0, a,b,c,d,e,f)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f)
+#define _funcp7( _f, p0, a,b,c,d,e,f,g)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g)
+#define _funcp8( _f, p0, a,b,c,d,e,f,g,h)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g), _f(p0,h)
+#define _funcp9( _f, p0, a,b,c,d,e,f,g,h,i)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g), _f(p0,h), _f(p0,i)
+#define _funcp10(_f, p0, a,b,c,d,e,f,g,h,i,j)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g), _f(p0,h), _f(p0,i), _f(p0,j)
+
 
 // e.g _Infix(+, a,b,c,d)  -> _infix4(+, a,b,c,d) -> a+b+c+d
 #define _Infix(_op, ...) XCAT(_infix, _NumArgs(__VA_ARGS__))(_op, __VA_ARGS__)
