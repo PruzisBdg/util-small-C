@@ -546,7 +546,7 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
 #define PP_ARG_N(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,N,...) N
 // It's that cheesy reverse-trick...
-// ...A reverse-list of numbers (below) get shoved rightwards past 'N' (above) by an arg-list which we insert in front (of the list).
+// ...A reverse-list of numbers (below) get shoved rightwards past 'N' (above) by an arg-list which we insert in front (of the numbers).
 // e.g 11 args pushes the '11' under 'N'. That '11' is then returned by PP_ARG_N() (above) as the arg-count.
 #define PP_RSEQ_N() 32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
 
@@ -592,7 +592,7 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define _func2_10(_f, a0,a1,b0,b1,c0,c1,d0,d1,e0,e1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1), f(e0,e1)
 #define _func2_12(_f, a0,a1,b0,b1,c0,c1,d0,d1,e0,e1,f0,f1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1), f(e0,e1), f(f0,f1)
 
-// 1st arg is passed to every call, as it's 1st arg
+// 'p0' of the macro is passed to every call, as it's 1st arg
 #define _Map1stRem(_f, p0, ...) XCAT(_funcp, _NumArgs(__VA_ARGS__))(_f, p0, __VA_ARGS__)
 #define _funcp1( _f, p0, a)  _f(p0,a)
 #define _funcp2( _f, p0, a,b)  _f(p0,a), _f(p0,b)
