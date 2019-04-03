@@ -445,6 +445,9 @@ void test_Hex16(void)
       { .fmt = "abc%1x",   .n = 0,        .out = "abc0" },
       { .fmt = "abc%01x",  .n = 0,        .out = "abc0" },
 
+      { .fmt = "abc%2X",   .n = 0xab,        .out = "abcAB" },
+      { .fmt = "abc%02x",  .n = 0x23,        .out = "abc23" },
+
       { .fmt = "abc%3x",   .n = 0,        .out = "abc  0" },
       { .fmt = "abc%03x",  .n = 0,        .out = "abc000" },
 
@@ -496,6 +499,34 @@ void test_Hex16(void)
       sprintf(b0, "Wrong output string: fmt = \"%s\",0x%x", t->fmt, t->n);
       TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
       sprintf(b0, "Wrong output length: \"%s\",0x%x -> \"%s\"", t->fmt, t->n, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      //OStream_Print();
+   }
+}
+
+
+/* --------------------------------- test_Hex16_2 -------------------------------------- */
+
+void test_Hex16_2(void)
+{
+   typedef struct { C8 const *fmt; C8 const *out; U16 n0, n1; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Basic zero and range
+      { .fmt = "%02x %02x",  .n0 = 0xAB, .n1 = 0xCD,       .out = "ab cd" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->n0, t->n1);
+
+      C8 b0[100];
+      sprintf(b0, "Wrong output string: fmt = \"%s\",[0x%x,0x%x]", t->fmt, t->n0, t->n1);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Wrong output length: \"%s\",[0x%x,0x%x] -> \"%s\"", t->fmt, t->n0, t->n1, t->out);
       TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
       //OStream_Print();
    }

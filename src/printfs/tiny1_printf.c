@@ -306,6 +306,7 @@ PRIVATE void wrHex16at(U16 n, U8 digitIdx)
 
 PRIVATE void wrHex16(U16 n)
 {
+   wrZero = 0;
    // Hex16 is 4 digits. Print up to 3 left-spaces.
    printAnyLeftSpaces(4);
    // Print nibbles, msb to lsb. Will print digit, space or leadin zero, depending.
@@ -322,6 +323,7 @@ PRIVATE void wrHex16(U16 n)
 
 PRIVATE void wrHex32(U32 n)
 {
+   wrZero = 0;
    printAnyLeftSpaces(8);
    wrHex16at(HIGH_WORD(n), 7);
    wrHex16at(LOW_WORD(n), 3);
