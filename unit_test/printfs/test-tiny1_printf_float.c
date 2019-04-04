@@ -191,6 +191,33 @@ void test_Decimal16_Signed(void)
 
 }
 
+/* --------------------------------- test_Decimal16_Signed_Multi -------------------------------------- */
+
+void test_Decimal16_Signed_Multi(void)
+{
+   typedef struct { C8 const *fmt; C8 const *out; S16 n0, n1, n2; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .fmt = "%02d:%02d:%02d",      .n0 = 12, .n1 = 34, .n2 = 56,   .out = "12:34:56" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      OStream_Reset();
+      T_PrintCnt rtn = tiny1_printf(t->fmt, t->n0, t->n1, t->n2);
+
+      C8 b0[100];
+      sprintf(b0, "Wrong output string: fmt = \"%s\",[%d,%d,%d]", t->fmt, t->n0, t->n1, t->n2);
+      TEST_ASSERT_EQUAL_STRING_MESSAGE(t->out, OStream_Get(), b0);                  // Correct output.
+      sprintf(b0, "Wrong output length: \"%s\",[%d,%d,%d] -> \"%s\"", t->fmt, t->n0, t->n1, t->n2, t->out);
+      TEST_ASSERT_EQUAL_INT_MESSAGE(strlen(t->out), rtn, b0);                       // tiny1_printf() should return length of output string.
+      //OStream_Print();
+   }
+
+}
+
 /* --------------------------------- test_Decimal16_Unsigned -------------------------------------- */
 
 void test_Decimal16_Unsigned(void)
