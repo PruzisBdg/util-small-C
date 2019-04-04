@@ -1240,7 +1240,6 @@ PUBLIC T_PrintCnt tiny1_printf(C8 FMT_QUALIFIER *fmt, ...)
 }
 
 
-
 /*-----------------------------------------------------------------------------------
 |
 |  sprintf(), sprintf_safe()
@@ -1249,10 +1248,9 @@ PUBLIC T_PrintCnt tiny1_printf(C8 FMT_QUALIFIER *fmt, ...)
 |
 --------------------------------------------------------------------------------------*/
 
-
 // Your application must supply these
-extern C8 *TPrint_BufPtr;              // This ptr used internally  by TPrint_ChIntoBuf()
-extern void TPrint_ChIntoBuf(U8 ch);   // So can be a plain buffer or a stream.
+extern C8 *TPrint_BufPtr;                 // This ptr used internally  by TPrint_ChIntoBuf()
+extern void TPrint_ChIntoBuf(U8 ch);      // So can be a plain buffer or a stream.
 
 PUBLIC T_PrintCnt tiny1_sprintf(C8 *buf, C8 FMT_QUALIFIER *fmt, ...)
 {
@@ -1262,12 +1260,12 @@ PUBLIC T_PrintCnt tiny1_sprintf(C8 *buf, C8 FMT_QUALIFIER *fmt, ...)
    va_start(ap, fmt);
    TPrint_BufPtr = buf;
    cnt = tprintf_internal(TPrint_ChIntoBuf, fmt, ap);
-   putCh('\0');			// Output must be a string, so add terminating '\0'.
+   putChPtr('\0');			            // Output must be a string, so add terminating '\0'. Unconditionally i.e not using putCh().
    va_end(ap);
-   return cnt;			// Return number of chars in string, excluding '\0';
+   return cnt;			                  // Return number of chars in string, excluding '\0'.
 }
 
-extern tiny1_S_SafeSprintf TPrint_Safe;		// If using tiny1_sprintf_safe(), to limit chars added to output buffer.
+extern tiny1_S_SafeSprintf TPrint_Safe;		   // If using tiny1_sprintf_safe(), to limit chars added to output buffer.
 extern void TPrint_ChIntoBuf_Safe(U8 ch);			// So can be a plain buffer or a stream.
 
 PUBLIC T_PrintCnt tiny1_sprintf_safe(tiny1_S_SafeBuf const *out, C8 FMT_QUALIFIER *fmt, ...)
@@ -1277,13 +1275,13 @@ PUBLIC T_PrintCnt tiny1_sprintf_safe(tiny1_S_SafeBuf const *out, C8 FMT_QUALIFIE
    va_start(ap, fmt);
 
    TPrint_Safe.put = out->buf;			// Put form start of 'buf'
-   TPrint_Safe.cnt = 0;					// Counts characters added.
+   TPrint_Safe.cnt = 0;					   // Counts characters added.
    TPrint_Safe.maxCh = out->maxCh;		// Will add no more than.
 
    cnt = tprintf_internal(TPrint_ChIntoBuf_Safe, fmt, ap);
-   putCh('\0');			// Output must be a string, so add terminating '\0'.
+   putChPtr('\0');			            // Output must be a string, so add terminating '\0'. Unconditionally i.e not using putCh().
    va_end(ap);
-   return cnt;			// Return number of chars in string, excluding '\0';
+   return cnt;			                  // Return number of chars in string, excluding '\0'.
 }
 
 

@@ -7,6 +7,7 @@
 #include "tiny1_stdio.h"
 #include "tiny1_printf_test_support.h"
 
+#if 0
 PRIVATE int prntBitAddr(C8 *out, S_Bit64K bf)
    { return sprintf( out, "(%u,%u)", bit64K_Byte(bf),  bit64K_BitBE(bf) ); }
 
@@ -18,9 +19,11 @@ PRIVATE bool rds(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt ) { memcpy(to, &de
 PRIVATE bool wrs(bit64K_atByte to, U8 const *from, bit64K_T_Cnt cnt) { memcpy(&destBuf[to], from, cnt); return true; }
 PRIVATE bool getss(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt) { memcpy(to, &srcBuf[from], cnt); return true; }
 PRIVATE bit64K_Ports const port1 = {.rdDest = rds, .wrDest = wrs, .getSrc = getss };
+#endif
 
 int main (void)
 {
+   #if 0
    typedef struct { U8 _byte, _bit; } S_BA;
    typedef struct { S_BA from, to; U8 nBits; } S_Cpy;
 
@@ -36,5 +39,13 @@ int main (void)
    printf("src[0x%x 0x%x] map {(%d,%d){%d} -> (%d,%d)} -> dest[0x%x 0x%x]\r\n",
           srcBuf[0], srcBuf[1], cp1.from._byte ,cp1.from._bit, cp1.nBits,
           cp1.to._byte ,cp1.to._bit, destBuf[0], destBuf[1]);
+   #else
+
+   C8 b0[100];
+   strcpy(b0, "aaaaaaaaaaaaaaaaaaa");
+
+   tiny1_sprintf(b0, "%02d:%02d:%02d", 12, 34, 56);
+   printf("b0 = %s\r\n", b0);
+   #endif
 
 }
