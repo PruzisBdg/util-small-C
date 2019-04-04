@@ -1203,12 +1203,27 @@ skip:
    return printCnt;											 // Return number of chars written.
 }
 
-// exported just for tiny1_print_heap1w()
+
+/* ------------------------------- tprintf_PutCh ----------------------------------------------------
+
+	This is exported just for tiny1_print_heap1w(). It must output '\0' unconditionally as-is so
+	that tiny1_print_heap1w() can terminate it's output string.
+	
+	Returns the number of bytes actually output.
+*/
 PUBLIC T_PrintCnt tprintf_PutCh(U8 ch)
 {
-	T_PrintCnt was = printCnt;
-	putCh(ch);
-	return printCnt - was;
+	if(ch == '\0')
+	{
+		putChPtr(ch);					// Output 'ch' unconditonally; even if it's not-printable or '\0'.
+		return 1;
+	}
+	else
+	{
+		T_PrintCnt was = printCnt;
+		putCh(ch);						// Output 'ch', perhaps transformed e.g '\x34'
+		return printCnt - was;			// Return number of bytes actually output, e.g '\x34' -> 4 bytes.
+	}
 }
 
 /*-----------------------------------------------------------------------------------
