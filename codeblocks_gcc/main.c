@@ -41,10 +41,12 @@ int main (void)
           cp1.to._byte ,cp1.to._bit, destBuf[0], destBuf[1]);
    #else
 
+   bool rtn = bit64K_ParmFitsField( (U8[1]){0x3F}, 1, 6, false);
+
    C8 b0[100];
    strcpy(b0, "aaaaaaaaaaaaaaaaaaa");
 
-   tiny1_sprintf(b0, "%02d:%02d:%02d", 12, 34, 56);
+   tiny1_sprintf(b0, "%02d:%02d:%02d  rtn %d", 12, 34, 56, rtn);
    printf("b0 = %s\r\n", b0);
    #endif
 

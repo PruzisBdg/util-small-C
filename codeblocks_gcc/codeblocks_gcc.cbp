@@ -212,6 +212,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/endians/endian_iterator.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/endians/reverse_u16.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -359,6 +365,12 @@
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/printfs/array_print_line.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../src/printfs/tiny1_printf.c">
 			<Option compilerVar="CC" />

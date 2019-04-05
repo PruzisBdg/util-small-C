@@ -347,5 +347,114 @@ void test_Bit64_In_BE(void)
    }
 }
 
+/* ----------------------------------- test_Bit64_ParmFitsField ----------------------------------------- */
+PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian);
+
+void test_Bit64_ParmFitsField(void)
+{
+   typedef struct { U8 const *in; U8 inBytes; bit64K_T_Cnt fieldBits; bool isEndian; bool rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // No input or no destination field; always return true.
+      { .in = (U8[1]){0xFF}, .inBytes = 1, .fieldBits = 0, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0xFF}, .inBytes = 0, .fieldBits = 1, .isEndian = false, .rtn = true },
+
+      // Too many source bytes for dest field, even if bits clear (or no)
+      { .in = (U8[]){0xFF,0xFF},       .inBytes = 2, .fieldBits = 8,  .isEndian = false, .rtn = false },    // An 8 bit field takes just 1 byte.
+      { .in = (U8[]){0x00,0x00},       .inBytes = 2, .fieldBits = 9,  .isEndian = false, .rtn = true },     // A  9bit takes 1 or 2 bytes.
+      { .in = (U8[]){0x00,0x00,0x00},  .inBytes = 3, .fieldBits = 16, .isEndian = false, .rtn = false },    // A 16bit field will not accept 3 bytes.
+      { .in = (U8[]){0x00,0x00,0x00},  .inBytes = 3, .fieldBits = 17, .isEndian = false, .rtn = true },     // A 17 bit field accepts up to 3 bytes
+
+      // 1-byte.
+      { .in = (U8[1]){0xFF}, .inBytes = 1, .fieldBits = 8, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0xFF}, .inBytes = 1, .fieldBits = 7, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x7F}, .inBytes = 1, .fieldBits = 7, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0x7F}, .inBytes = 1, .fieldBits = 6, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x3F}, .inBytes = 1, .fieldBits = 6, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0x3F}, .inBytes = 1, .fieldBits = 5, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x1F}, .inBytes = 1, .fieldBits = 5, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0x1F}, .inBytes = 1, .fieldBits = 4, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x0F}, .inBytes = 1, .fieldBits = 4, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0x0F}, .inBytes = 1, .fieldBits = 3, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x07}, .inBytes = 1, .fieldBits = 3, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0x07}, .inBytes = 1, .fieldBits = 2, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x03}, .inBytes = 1, .fieldBits = 2, .isEndian = false, .rtn = true },
+      { .in = (U8[1]){0x03}, .inBytes = 1, .fieldBits = 1, .isEndian = false, .rtn = false },
+      { .in = (U8[1]){0x01}, .inBytes = 1, .fieldBits = 1, .isEndian = false, .rtn = true },
+
+      // 2-byte endian. - Picks from msb, down
+      { .in = (U8*)(U16[]){0xFFFF},    .inBytes = 2, .fieldBits = 16, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U16[]){0xFFFF},    .inBytes = 2, .fieldBits = 15, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U16[]){0x7FFF},    .inBytes = 2, .fieldBits = 15, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U16[]){0x7FFF},    .inBytes = 2, .fieldBits = 14, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U16[]){0x3FFF},    .inBytes = 2, .fieldBits = 14, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U16[]){0x3FFF},    .inBytes = 2, .fieldBits = 13, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U16[]){0x1FFF},    .inBytes = 2, .fieldBits = 13, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U16[]){0x1FFF},    .inBytes = 2, .fieldBits = 12, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U16[]){0x0FFF},    .inBytes = 2, .fieldBits = 12, .isEndian = true, .rtn = true },
+
+      { .in = (U8*)(U16[]){0x01FF},    .inBytes = 2, .fieldBits = 9, .isEndian = true, .rtn = true },
+
+
+      // 2-byte non-endian. - Picks from low address up
+      { .in = (U8[]){0xFF,0xFF},    .inBytes = 2, .fieldBits = 16, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0xFF,0xFF},    .inBytes = 2, .fieldBits = 15, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x7F,0xFF},    .inBytes = 2, .fieldBits = 15, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0x7F,0xFF},    .inBytes = 2, .fieldBits = 14, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x3F,0xFF},    .inBytes = 2, .fieldBits = 14, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0x3F,0xFF},    .inBytes = 2, .fieldBits = 13, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x1F,0xFF},    .inBytes = 2, .fieldBits = 13, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0x1F,0xFF},    .inBytes = 2, .fieldBits = 12, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x0F,0xFF},    .inBytes = 2, .fieldBits = 12, .isEndian = false, .rtn = true },
+
+      { .in = (U8[]){0x01,0xFF},    .inBytes = 2, .fieldBits = 9, .isEndian = false, .rtn = true },
+
+      // e.g 3-byte non-endian. - Picks from low address up
+      { .in = (U8[]){0xFF,0xFF,0xFF},    .inBytes = 3, .fieldBits = 24, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0xFF,0xFF,0xFF},    .inBytes = 3, .fieldBits = 23, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x7F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 23, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0x7F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 22, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x3F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 22, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0x3F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 21, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x1F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 21, .isEndian = false, .rtn = true },
+      { .in = (U8[]){0x1F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 20, .isEndian = false, .rtn = false },
+      { .in = (U8[]){0x0F,0xFF,0xFF},    .inBytes = 3, .fieldBits = 20, .isEndian = false, .rtn = true },
+
+      { .in = (U8[]){0x01,0xFF,0xFF},    .inBytes = 3, .fieldBits = 17, .isEndian = false, .rtn = true },
+
+      // 4-byte endian. - Picks from msb, down
+      { .in = (U8*)(U32[]){0xFFFFFFFF},    .inBytes = 4, .fieldBits = 32, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U32[]){0xFFFFFFFF},    .inBytes = 4, .fieldBits = 31, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U32[]){0x7FFFFFFF},    .inBytes = 4, .fieldBits = 31, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U32[]){0x7FFFFFFF},    .inBytes = 4, .fieldBits = 30, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U32[]){0x3FFFFFFF},    .inBytes = 4, .fieldBits = 30, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U32[]){0x3FFFFFFF},    .inBytes = 4, .fieldBits = 29, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U32[]){0x1FFFFFFF},    .inBytes = 4, .fieldBits = 29, .isEndian = true, .rtn = true },
+      { .in = (U8*)(U32[]){0x1FFFFFFF},    .inBytes = 4, .fieldBits = 28, .isEndian = true, .rtn = false },
+      { .in = (U8*)(U32[]){0x0FFFFFFF},    .inBytes = 4, .fieldBits = 28, .isEndian = true, .rtn = true },
+
+      { .in = (U8*)(U32[]){0x01FFFFFF},    .inBytes = 4, .fieldBits = 25, .isEndian = true, .rtn = true },
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = bit64K_ParmFitsField(t->in, t->inBytes, t->fieldBits, t->isEndian);
+
+      C8 b0[100];
+      #define _b1Len 50
+      C8 b1[_b1Len];
+      sprintf(b0, "tst #%d:  {%s}[%d] %s into {%d} -> %s",
+            i,
+            PrintU8s_1Line(b1, _b1Len, "0x%X,", t->in, t->inBytes), t->inBytes,
+            t->isEndian == true ? "(isEndian)" : "",
+            t->fieldBits,
+            rtn == true ? "true" : "false");
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(t->rtn, rtn, b0);
+   }
+}
+
 
 // ----------------------------------------- eof --------------------------------------------
