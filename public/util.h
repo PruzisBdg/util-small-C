@@ -100,6 +100,16 @@ PUBLIC U32 ReverseU32(U32 n);
 PUBLIC U16 ToSysEndian_U16(U16 n, E_EndianIs e);
 PUBLIC U32 ToSysEndian_U32(U32 n, E_EndianIs e);
 
+// Endian-aware iterator.
+typedef struct endianPtrTag T_EndianPtr;
+
+typedef struct endianPtrTag {
+   U8* (*next)(T_EndianPtr*);    // returns '_at', iterated.
+   U8 const * _at;               // Current ptr.
+   } T_EndianPtr;
+
+PUBLIC U8* EndianPtr_New(T_EndianPtr *ep, U8 const *bufStart, U16 nbytes, E_EndianIs bitFieldEndian);
+
 /* ----------------------- Basic byte queue ------------------------------- */
 
 typedef struct {
@@ -219,6 +229,7 @@ PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, b
 
 PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian);
 PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 srcEndian);
+PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian);
 
 /* --------------------- Time/Date, ISO8601 format -------------------------
 
@@ -285,7 +296,9 @@ extern S16 const     DaysToMonthStartTbl[];
 #define _ISO8601_HMS_MaxSpaces "           "
 #define _ISO8601_HMS_AsSpaces "        "
 
+/* --------------------------- Pretty Prints -------------------------------------- */
 PUBLIC C8 const * ArrayPrettyPrint(C8 *out, U16 outBufLen, C8 const *prefix, U8 const *src, size_t len, U16 maxLine);
+PUBLIC C8 const * PrintU8s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, U8 const *src, size_t numBytes);
 
 /* -------------------------- Table search ----------------------------------------- */
 
