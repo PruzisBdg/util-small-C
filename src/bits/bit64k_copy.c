@@ -128,56 +128,6 @@ PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K
 }
 
 
-// -------------------------- Endian-aware iterator for buffer ptrs. -----------------------
-
-typedef struct endianPtrTag T_EndianPtr;
-
-typedef struct endianPtrTag {
-   U8* (*next)(T_EndianPtr*);    // returns '_at', iterated.
-   U8 const * _at;               // Current ptr.
-   } T_EndianPtr;
-
-// Increment / decrement '_at'.
-PRIVATE U8 *epIncr(T_EndianPtr *di) {
-   di->_at++;
-   return (U8*)di->_at; }
-
-PRIVATE U8 *epDecr(T_EndianPtr *di) {
-   di->_at--;
-   return (U8*)di->_at; }
-
-// Pre-position buffer ptr and set direction, depending system endian vs target endian.
-PRIVATE U8* epNew(T_EndianPtr *ep, U8 const *bufStart, bit64K_T_Cnt nbits, E_EndianIs bitFieldEndian)
-{
-   ep->_at = bufStart;     // Start ptr at buffer start; may reposition it below.
-
-   // If the port/bit-field endian is opposite to system endian then reverse the bit-field bytes into the buffer.
-   #ifdef __BYTE_ORDER__
-      #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-         bool up = bitFieldEndian == eBigEndian ? false : true;
-      #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-         bool up = bitFieldEndian == eLittleEndian ? false : true;
-      #else
-         bool up = true;
-      #endif
-
-      /* If multiple byte transfer AND byte order is to be reversed then pre-position '_at' at the
-         high address and will count backwards.
-      */
-      if(nbits > 8 && up == false)
-         { ep->_at += (nbits-1)/8; }
-   #else
-      #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
-      #define _bump(ptr)  (ptr)++
-   #endif // __BYTE_ORDER__
-
-   ep->next = up == true ? epIncr : epDecr;
-   return (U8 *)ep->_at;
-}
-
-// ------------- ends: endian pointer. ----------------------
-
-
 // --------------------------------------------------------------------------------------
 static bool legalBitAddr(bit64K_Range const *r, S_Bit64K addr) {
    return                                             // 'addr' NOT legal if? ...
@@ -275,6 +225,8 @@ PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, b
 #define _msb7  7
 #define _8bits 8
 
+#define _numBytesFrom(b)  (((b)+1)/8)
+
 PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian)
 {
    if( false == legalBitAddr(&port->src.range, src))           // 'src' not legal?
@@ -283,7 +235,7 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_
          return reloadCache(port, src, numBits); }             // ... is an instruction to (re)load the cache at 'src'.
    else {                                                      // else do a read.
       T_EndianPtr di;
-      dest = epNew(&di, dest, numBits, srcEndian);            // Endian-aware 'dest'.
+      dest = EndianPtr_New(&di, dest, _numBytesFrom(numBits), srcEndian);     // Endian-aware 'dest'.
 
       /* Fill each dest byte from a bytes-worth of source bit-field. Depending on alignment, this will
          be from a single source byte or 2 consecutive source bytes.
@@ -339,7 +291,7 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
       { return false; }                                           // then fail!
    else {                                                         // else continue.
       T_EndianPtr si;
-      src = epNew(&si, src, numBits, destEndian);                 // Endian-aware 'src'.
+      src = EndianPtr_New(&si, src, _numBytesFrom(numBits), destEndian);         // Endian-aware 'src'.
 
       for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
       {
@@ -432,6 +384,49 @@ PUBLIC bool bit64K_ResetPort(bit64K_Ports *p)
       p->cache->atByte = _NoCacheAddr;
       }
    return true;
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  bit64K_ParmFitsField()
+|
+|  Return true if value in 'numBytes' from 'parm' will fit in 'fieldBits'. If 'parmHasEndian'
+|  then apply endian conversion if necessary.
+|
+------------------------------------------------------------------------------------------*/
+
+static bool bitsFit(U8 n, U8 nbits) {
+   U8 m = MakeAtoBSet_U8(nbits-1, 0);
+   //printf("n = 0x%X m = 0x%X not 0x%X and 0x%X\r\n", n, m, ~m, n & ~m);
+   return (n & ~MakeAtoBSet_U8(nbits-1, 0)) == 0 ? true : false; }
+
+PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian)
+{
+   if(fieldBits == 0 || parmBytes == 0  ||               // No destination field? OR no source bytes? OR
+      _8bits * fieldBits == parmBytes ||                 // field is exactly 'parmBytes'? OR
+      _numBytesFrom(fieldBits) > parmBytes ) {           // More field bytes than parm bytes?
+      return true; }                                     // then succeed.
+   else if(parmBytes > (fieldBits+7)/_8bits) {           // Too many 'parmBytes' for destination field?
+      return false; }                                    // then always fail, regardless of source content.
+   if(fieldBits <= 8 && parmBytes == 1) {                // Just 1 byte?
+      return bitsFit(parm[0], fieldBits); }              // then test just that byte
+   else {                                                // else check the msb of the parm fits top field bits.
+      // Choose the msb.
+      #ifdef __BYTE_ORDER__
+         #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+            U8 msb = parmHasEndian == true ? parm[parmBytes-1]: parm[0];
+         #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+            U8 msb = parm[0];
+         #else
+            U8 msb = parm[0];
+         #endif
+
+      #else
+         U8 msb = parm[0];
+         #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
+      #endif // __BYTE_ORDER__
+
+      return bitsFit(msb, fieldBits % _8bits); }
 }
 
 // ---------------------------------- eof --------------------------------  -
