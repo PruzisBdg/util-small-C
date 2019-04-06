@@ -85,6 +85,7 @@ PUBLIC BIT  ReadDirtyASCIIInt_ByCh(U8 ch, S16 *out);
 /* ------------------------------- Endian/Alignment conversions ---------------------- */
 
 typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
+static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false; }
 
 // Conversions to LE, non-aligned.
 PUBLIC void u16ToLE(U8 *out, U16 n);
