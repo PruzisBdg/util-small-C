@@ -21,6 +21,7 @@ PRIVATE bool getss(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt) { memcpy(to, &s
 PRIVATE bit64K_Ports const port1 = {.rdDest = rds, .wrDest = wrs, .getSrc = getss };
 #endif
 
+
 int main (void)
 {
    #if 0
@@ -48,6 +49,7 @@ int main (void)
 
    tiny1_sprintf(b0, "%02d:%02d:%02d  rtn %d", 12, 34, 56, rtn);
    printf("b0 = %s\r\n", b0);
+
    #endif
 
 }

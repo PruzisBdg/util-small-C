@@ -548,6 +548,9 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define CAT(x,y)  x##y
 #define XCAT(x,y)  CAT(x,y)
 
+#if 1
+#include "map_macros.h"
+#else
 /* --------------------------------- Counts Args --------------------------------------------- */
 
 // Counts zero or more parameters, but each must resolve to a C type.
@@ -566,7 +569,7 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 
 /* -------------------------------------- Maps ----------------------------------------------- */
 
-// e.g _Map(op, a,b,c,d)  -> op4(a,b,c,d)
+// e.g _Map(op, a,b,c,d)  -> op4(a,b,c,d) -> op(a), op(b), op(c) op(d)
 #define _Map(_f, ...) XCAT(_func, _NumArgs(__VA_ARGS__))(_f, __VA_ARGS__)
 
 #define _func1( _f, a) _f(a)
@@ -606,7 +609,7 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define _func2_10(_f, a0,a1,b0,b1,c0,c1,d0,d1,e0,e1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1), f(e0,e1)
 #define _func2_12(_f, a0,a1,b0,b1,c0,c1,d0,d1,e0,e1,f0,f1)    _f(a0,a1), _f(b0,b1), _f(c0,c1), _f(d0,d1), f(e0,e1), f(f0,f1)
 
-// 'p0' of the macro is passed to every call, as it's 1st arg
+// 'p0' of the macro is passed to every call as it's 1st arg
 #define _Map1stRem(_f, p0, ...) XCAT(_funcp, _NumArgs(__VA_ARGS__))(_f, p0, __VA_ARGS__)
 #define _funcp1( _f, p0, a)  _f(p0,a)
 #define _funcp2( _f, p0, a,b)  _f(p0,a), _f(p0,b)
@@ -618,6 +621,15 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define _funcp8( _f, p0, a,b,c,d,e,f,g,h)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g), _f(p0,h)
 #define _funcp9( _f, p0, a,b,c,d,e,f,g,h,i)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g), _f(p0,h), _f(p0,i)
 #define _funcp10(_f, p0, a,b,c,d,e,f,g,h,i,j)  _f(p0,a), _f(p0,b), _f(p0,c), _f(p0,d), _f(p0,e), _f(p0,f), _f(p0,g), _f(p0,h), _f(p0,i), _f(p0,j)
+
+// 'p0' of the macro is passed to every call as it's first arg. Then the arguments in pairs
+#define _Map1stRem2(_f, p0, ...) XCAT(_funcp2a, _NumArgs(__VA_ARGS__))(_f, p0, __VA_ARGS__)
+#define _funcp2a2( _f, p0, a,b)  _f(p0,a,b)
+#define _funcp2a4( _f, p0, a,b,c,d)  _f(p0,a,b), _f(p0,c,d)
+#define _funcp2a6( _f, p0, a,b,c,d,e,f)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f)
+#define _funcp2a8( _f, p0, a,b,c,d,e,f,g,h)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h)
+#define _funcp2a10(_f, p0, a,b,c,d,e,f,g,h,i,j)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j)
+#define _funcp2a12(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l)
 
 
 // e.g _Infix(+, a,b,c,d)  -> _infix4(+, a,b,c,d) -> a+b+c+d
@@ -706,6 +718,8 @@ PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 #define _postfix24(op, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x) a op b op c op d op e op f op g op h op i op j op k op l op m op n op o op p op q op r op s op t op u op v op w op x op
 #define _postfix25(op, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y) a op b op c op d op e op f op g op h op i op j op k op l op m op n op o op p op q op r op s op t op u op v op w op x op y op
 #define _postfix26(op, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z) a op b op c op d op e op f op g op h op i op j op k op l op m op n op o op p op q op r op s op t op u op v op w op x op y op z op
+
+#endif
 
 
 #endif // UTIL_H
