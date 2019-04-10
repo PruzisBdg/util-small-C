@@ -94,6 +94,10 @@
 #define _funcp2a8( _f, p0, a,b,c,d,e,f,g,h)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h)
 #define _funcp2a10(_f, p0, a,b,c,d,e,f,g,h,i,j)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j)
 #define _funcp2a12(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l)
+#define _funcp2a14(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n)
+#define _funcp2a16(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p)
+#define _funcp2a18(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r)
+#define _funcp2a20(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r)_f(p0,s,t)
 
 
 // e.g _Infix(+, a,b,c,d)  -> _infix4(+, a,b,c,d) -> a+b+c+d

@@ -89,6 +89,11 @@
 			<Option target="Release" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../public/map_macros.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../public/text_line_builder.h">
 			<Option target="Debug" />
 			<Option target="Release" />
