@@ -110,6 +110,7 @@ typedef struct endianPtrTag {
    } T_EndianPtr;
 
 PUBLIC U8* EndianPtr_New(T_EndianPtr *ep, U8 const *bufStart, U16 nbytes, E_EndianIs bitFieldEndian);
+PUBLIC C8 const * PrintEndian(E_EndianIs e);
 
 /* ----------------------- Basic byte queue ------------------------------- */
 
