@@ -223,6 +223,11 @@
 			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
+		<Unit filename="../src/endians/print_endian.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/endians/reverse_u16.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
