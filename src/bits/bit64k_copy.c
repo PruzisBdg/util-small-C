@@ -282,18 +282,23 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_
 |
 |  Using 'port', copy 'numBits' from 'src' to 'dest', where 'dest' is a 64K bitfield address.
 |
-|  If 'srcEndian' is opposite to the system __BYTE_ORDER__ then bytes from 'src' will be
-|  copied into endian in reverse order (relative to ascending source address).
+|  If 'srcIsEndian' == true AND 'destEndian' is opposite to the system __BYTE_ORDER__ AND
+|  multiple bytes are to be copied from 'src' then these bytes will be reversed from 'src'
+|  into 'dest'.
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bit64K_T_Cnt numBits, U8 destEndian)
+PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bit64K_T_Cnt numBits, U8 destEndian, bool srcIsEndian)
 {
    if( false == legalBitAddr(&port->dest.range, dest))            // 'dest' not legal?
       { return false; }                                           // then fail!
    else {                                                         // else continue.
+      /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
+         dest if they are different endians. Otherwise 'src' just counts up (into dest).
+      */
       T_EndianPtr si;
-      src = EndianPtr_New(&si, src, _numBytesFrom(numBits), destEndian);         // Endian-aware 'src'.
+      src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
+                  srcIsEndian == true ? destEndian : eNoEndian);         // Endian-aware 'src'.
 
       for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
       {
