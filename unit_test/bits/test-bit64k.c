@@ -276,7 +276,6 @@ void test_Bit64_Out_BE(void)
    }
 }
 
-
 /* ------------------------------- test_Bit64_In_LE --------------------------------------------------- */
 
 void test_Bit64_In_LE(void)
@@ -284,7 +283,30 @@ void test_Bit64_In_LE(void)
    typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
 
    S_Tst const tsts[] = {
+      // Into just one dest byte.... set lsbit
       { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0x01, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      // ...clear lsbit
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0x00, .destFill = 0xFF, .result = (U8[]){0xFE, [1 ... _TestBufSize-1] = 0xFF} },
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFE, .destFill = 0xFF, .result = (U8[]){0xFE, [1 ... _TestBufSize-1] = 0xFF} },
+      // Set msbit...
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x80, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0x01, .destFill = 0x00, .result = (U8[]){0x80, [1 ... _TestBufSize-1] = 0} },
+      // ... clear msbit
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0x00, .destFill = 0xFF, .result = (U8[]){0x7F, [1 ... _TestBufSize-1] = 0xFF} },
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0xFE, .destFill = 0xFF, .result = (U8[]){0x7F, [1 ... _TestBufSize-1] = 0xFF} },
+
+      { .cpy = {.to = {0,0}, .nBits = 2 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x03, [1 ... _TestBufSize-1] = 0x00} },
+
+      // Straddle 2 bytes .... Set all bits in the field
+      { .cpy = {.to = {0,6}, .nBits = 4 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0xC0, 0x03, [2 ... _TestBufSize-1] = 0x00} },
+      { .cpy = {.to = {0,6}, .nBits = 4 }, .srcFill = 0x0F, .destFill = 0x00, .result = (U8[]){0xC0, 0x03, [2 ... _TestBufSize-1] = 0x00} },
+      // Clear all bits in the field.
+      { .cpy = {.to = {0,6}, .nBits = 4 }, .srcFill = 0x00, .destFill = 0xFF, .result = (U8[]){0x3F, 0xFC, [2 ... _TestBufSize-1] = 0xFF} },
+      { .cpy = {.to = {0,6}, .nBits = 4 }, .srcFill = 0xF0, .destFill = 0xFF, .result = (U8[]){0x3F, 0xFC, [2 ... _TestBufSize-1] = 0xFF} },
+
+      // A pattern straddling 2 bytes
+      { .cpy = {.to = {0,4}, .nBits = 8 }, .srcFill = 0x5A, .destFill = 0x00, .result = (U8[]){0xA0, 0x05, [2 ... _TestBufSize-1] = 0x00} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
@@ -297,7 +319,7 @@ void test_Bit64_In_LE(void)
 
       bit64K_In(
          &port1,
-         bit64K_MakeBE(cpy->to._byte, cpy->to._bit),
+         bit64K_MakeLE(cpy->to._byte, cpy->to._bit),
          srcBuf,
          cpy->nBits,
          eLittleEndian);
@@ -319,7 +341,34 @@ void test_Bit64_In_BE(void)
    typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
 
    S_Tst const tsts[] = {
-      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      // Into just the 1st dest byte.... Set lsbit
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0x01, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0x00} },
+      // Clear lsbit.
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0xFE, .destFill = 0xFF, .result = (U8[]){0xFE, [1 ... _TestBufSize-1] = 0xFF} },
+      { .cpy = {.to = {0,0}, .nBits = 1 }, .srcFill = 0x00, .destFill = 0xFF, .result = (U8[]){0xFE, [1 ... _TestBufSize-1] = 0xFF} },
+      // Set msbit
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0x01, .destFill = 0x00, .result = (U8[]){0x80, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0xFF, .destFill = 0x00, .result = (U8[]){0x80, [1 ... _TestBufSize-1] = 0} },
+      // Clear msbit
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0xFE, .destFill = 0xFF, .result = (U8[]){0x7F, [1 ... _TestBufSize-1] = 0xFF} },
+      { .cpy = {.to = {0,7}, .nBits = 1 }, .srcFill = 0x00, .destFill = 0xFF, .result = (U8[]){0x7F, [1 ... _TestBufSize-1] = 0xFF} },
+      // Multiple bits in the middle.
+      { .cpy = {.to = {0,4}, .nBits = 4 }, .srcFill = 0x0F, .destFill = 0x00, .result = (U8[]){0x1E, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {0,5}, .nBits = 4 }, .srcFill = 0xF0, .destFill = 0xFF, .result = (U8[]){0xC3, [1 ... _TestBufSize-1] = 0xFF} },
+
+      // 2nd byte onward.
+      { .cpy = {.to = {1,4}, .nBits = 4 }, .srcFill = 0x0F, .destFill = 0x00, .result = (U8[]){0x00, 0x1E, [2 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {1,5}, .nBits = 4 }, .srcFill = 0xF0, .destFill = 0xFF, .result = (U8[]){0xFF, 0xC3, [2 ... _TestBufSize-1] = 0xFF} },
+
+      { .cpy = {.to = {2,0}, .nBits = 1 }, .srcFill = 0x01, .destFill = 0x00, .result = (U8[]){0x00, 0x00, 0x01, [3 ... _TestBufSize-1] = 0} },
+      { .cpy = {.to = {3,7}, .nBits = 1 }, .srcFill = 0x01, .destFill = 0x00, .result = (U8[]){0x00, 0x00, 0x00, 0x80, [4 ... _TestBufSize-1] = 0} },
+
+      // Straddling 2 bytes
+      { .cpy = {.to = {0,1}, .nBits = 4 }, .srcFill = 0x0F, .destFill = 0x00, .result = (U8[]){0x03, 0xC0, [2 ... _TestBufSize-1] = 0} },
+      // A pattern (straddling 2 bytes)
+      { .cpy = {.to = {0,3}, .nBits = 8 }, .srcFill = 0x5A, .destFill = 0x00, .result = (U8[]){0x05, 0xA0, [2 ... _TestBufSize-1] = 0x00} },
+      { .cpy = {.to = {0,3}, .nBits = 8 }, .srcFill = 0x5A, .destFill = 0xFF, .result = (U8[]){0xF5, 0xAF, [2 ... _TestBufSize-1] = 0xFF} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
