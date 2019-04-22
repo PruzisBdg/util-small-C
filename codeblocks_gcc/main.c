@@ -38,7 +38,8 @@ static void cpyIn(S_CpyIn const *in, U8 const *src)
          : bit64K_MakeLE(in->to._byte, in->to._bit),
       src,
       in->nBits,
-      in->destEndian);
+      in->destEndian,
+      false);
 
    printf("CpyIn: src[0x%x 0x%x](%s) -> (%d,%d){%d}} -> dest[0x%x 0x%x]\r\n",
           src[0], src[1], PrintEndian(in->destEndian),

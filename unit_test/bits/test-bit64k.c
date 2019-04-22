@@ -94,11 +94,13 @@ void test_Bit64_Copy_1Bit(void)
 
       S_CpySpec const * cpy = &t->cpy;
 
-      bit64K_Copy(
+      bool rtn = bit64K_Copy(
          &port1,
          bit64K_MakeBE(cpy->to._byte,   cpy->to._bit),
          bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
          cpy->nBits);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_Copy_1Bit() should return true");
 
       C8 b0[100];
       sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {(%d,%d){%d} -> (%d,%d)} -> dest[0x%x 0x%x]",
@@ -152,11 +154,13 @@ void test_Bit64_Copy_StraddlesDestBytes(void)
 
       S_CpySpec const * cpy = &t->cpy;
 
-      bit64K_Copy(
+      bool rtn = bit64K_Copy(
          &port1,
          bit64K_MakeBE(cpy->to._byte,   cpy->to._bit),
          bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
          cpy->nBits);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_Copy_StraddlesDestBytes() should return true");
 
       C8 b0[100];
       sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {(%d,%d){%d} -> (%d,%d)} -> dest[0x%x 0x%x]",
@@ -220,12 +224,14 @@ void test_Bit64_Out_LE(void)
 
       S_CpySpec const * cpy = &t->cpy;
 
-      bit64K_Out(
+      bool rtn = bit64K_Out(
          &port1,
          destBuf,
          bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
          cpy->nBits,
          eLittleEndian);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_Out_LE() should return true");
 
       C8 b0[100];
       sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {(%d,%d){%d} -> dest[0]}.  dest[0x%x 0x%x]",
@@ -276,11 +282,14 @@ void test_Bit64_Out_BE(void)
    }
 }
 
+#define _SrcIsNotEndian false
+#define _SrcIsEndian    true
+
 /* ------------------------------- test_Bit64_In_LE --------------------------------------------------- */
 
 void test_Bit64_In_LE(void)
 {
-   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
 
    S_Tst const tsts[] = {
       // Into just one dest byte.... set lsbit
@@ -317,12 +326,15 @@ void test_Bit64_In_LE(void)
 
       S_CpySpec const * cpy = &t->cpy;
 
-      bit64K_In(
+      bool rtn = bit64K_In(
          &port1,
          bit64K_MakeLE(cpy->to._byte, cpy->to._bit),
          srcBuf,
          cpy->nBits,
-         eLittleEndian);
+         eLittleEndian,
+         _SrcIsNotEndian);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_LE() should return true");
 
       C8 b0[100];
       sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
@@ -330,7 +342,53 @@ void test_Bit64_In_LE(void)
             srcBuf[0], srcBuf[1],
             cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
 
-      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TestBufSize, b0);
+   }
+}
+
+/* ------------------------------- test_Bit64_In_LE_multiSrc ---------------------------------------------------
+
+   Same as test_Bit64_In_LE() but with an array of (different) source bytes.
+*/
+
+void test_Bit64_In_LE_multiSrc(void)
+{
+   typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Straddling 3 or 4 bytes..
+      { .cpy = {.to = {0,4}, .nBits = 16 }, .src = (U8[]){0x5A, 0x3C, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0xA0, 0xC5, 0x03, [3 ... _TestBufSize-1] = 0x00} },
+
+      { .cpy = {.to = {1,4}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TestBufSize-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0x00, 0xA0, 0xC5, 0x63, 0x09, [5 ... _TestBufSize-1] = 0x00} }
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memcpy(srcBuf,  t->src, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bool rtn = bit64K_In(
+         &port1,
+         bit64K_MakeLE(cpy->to._byte, cpy->to._bit),
+         srcBuf,
+         cpy->nBits,
+         eLittleEndian,
+         _SrcIsNotEndian);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_LE_multiSrc() should return true");
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TestBufSize, b0);
    }
 }
 
@@ -338,7 +396,7 @@ void test_Bit64_In_LE(void)
 
 void test_Bit64_In_BE(void)
 {
-   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; } S_Tst;
+   typedef struct { S_CpySpec cpy; U8 srcFill, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
 
    S_Tst const tsts[] = {
       // Into just the 1st dest byte.... Set lsbit
@@ -379,12 +437,15 @@ void test_Bit64_In_BE(void)
 
       S_CpySpec const * cpy = &t->cpy;
 
-      bit64K_In(
+      bool rtn = bit64K_In(
          &port1,
          bit64K_MakeBE(cpy->to._byte, cpy->to._bit),
          srcBuf,
          cpy->nBits,
-         eBigEndian);
+         eBigEndian,
+         _SrcIsNotEndian );
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_BE() should return true");
 
       C8 b0[100];
       sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
@@ -392,7 +453,53 @@ void test_Bit64_In_BE(void)
             srcBuf[0], srcBuf[1],
             cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
 
-      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TestBufSize, b0);
+   }
+}
+
+/* ------------------------------- test_Bit64_In_BE_multiSrc ---------------------------------------------------
+
+   Same as test_Bit64_In_BE() but with an array of (different) source bytes.
+*/
+
+void test_Bit64_In_BE_multiSrc(void)
+{
+   typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Straddling 3 or 4 bytes..
+      { .cpy = {.to = {0,3}, .nBits = 16 }, .src = (U8[]){0x5A, 0x3C, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0x05, 0xA3, 0xC0, [3 ... _TestBufSize-1] = 0x00} },
+
+      { .cpy = {.to = {1,3}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TestBufSize-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0x00, 0x05, 0xA3, 0xC9, 0x60, [5 ... _TestBufSize-1] = 0x00} },
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memcpy(srcBuf,  t->src, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bool rtn = bit64K_In(
+         &port1,
+         bit64K_MakeBE(cpy->to._byte, cpy->to._bit),
+         srcBuf,
+         cpy->nBits,
+         eBigEndian,
+         _SrcIsNotEndian );
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_BE_multiSrc() should return true");
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TestBufSize, b0);
    }
 }
 
