@@ -30,6 +30,13 @@ PRIVATE bool getss(U8 *to, bit64K_atByte from, bit64K_T_Cnt cnt)     { memcpy(to
 
 PRIVATE bit64K_Ports const port1 = {.dest.rd = rds, .dest.wr = wrs, .src.get = getss };
 
+// Cache is added with bit64K_NewPort().
+#define _RdCacheBufSize 3                 // A weeny 3-byte cache; just for our tests.
+PRIVATE U8 rdCacheBuf[_RdCacheBufSize];
+PRIVATE bit64K_Cache rdCache;
+PRIVATE bit64K_Ports portWCache = {.dest.rd = rds, .dest.wr = wrs, .src.get = getss, .cache = NULL };
+
+
 typedef struct { U8 _byte, _bit; } S_BitAddr;
 typedef struct { S_BitAddr from, to; U8 nBits; } S_CpySpec;
 
@@ -213,8 +220,6 @@ void test_Bit64_Out_LE(void)
 
       // Source bit field extends over 2-bytes but is < 8bits.  Field must be right-justified into dest byte.
       { .cpy = {.from = {0,1}, .nBits = 4 }, .src = (U8[]){0x03,0xC0, [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){0x0F, [1 ... _TestBufSize-1] = 0x55} },
-
-
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
@@ -264,6 +269,9 @@ void test_Bit64_Out_BE(void)
       { .cpy = {.from = {0,2}, .nBits = 3 }, .src = (U8[]){0xFF, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x00, .result = (U8[]){0x07, [1 ... _TestBufSize-1] = 0x00} },
       { .cpy = {.from = {0,2}, .nBits = 3 }, .src = (U8[]){0x05, [1 ... _TestBufSize-1] = 0xFF}, .destFill = 0x55, .result = (U8[]){0x05, [1 ... _TestBufSize-1] = 0x55} },
 
+      // A whole byte.
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x5A}, .destFill = 0x00, .result = (U8[]){0x5A, [1 ... _TestBufSize-1] = 0} },
+
       // msbit... same tests as lsbit above.
       { .cpy = {.from = {0,7}, .nBits = 1 }, .src = (U8[]){0x80}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
       { .cpy = {.from = {0,7}, .nBits = 1 }, .src = (U8[]){0xFF}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
@@ -284,8 +292,61 @@ void test_Bit64_Out_BE(void)
 
       S_CpySpec const * cpy = &t->cpy;
 
-      bit64K_Out(
+      bool rtn = bit64K_Out(
          &port1,
+         destBuf,
+         bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
+         cpy->nBits,
+         eBigEndian);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_Out_BE() should return true");
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {(%d,%d){%d} -> dest[0]}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1], cpy->from._byte ,cpy->from._bit, cpy->nBits,
+            destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, 3, b0);
+   }
+}
+
+/* ------------------------------- test_Bit64_Out_BE_wCache ---------------------------------------------------
+
+   This test checks the read cache. The cache is bytes, so not much need to re-check bit addressing.
+*/
+void test_Bit64_Out_BE_wCache(void)
+{
+   typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool preFlushCache; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // 1. Read a byte from 'src'. That byte should get cached.
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x5A}, .destFill = 0x00, .result = (U8[]){0x5A, [1 ... _TestBufSize-1] = 0} },
+      // 2. Clear 'src' then re-read the same byte.  We should get the previous byte (0x5A) back from the cache.
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x22}, .destFill = 0x00, .result = (U8[]){0x5A, [1 ... _TestBufSize-1] = 0} },
+      // 3. Same as 2. but force a cache-flush. Now should get updated value from 'src'
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x33}, .destFill = 0x00, .result = (U8[]){0x33, [1 ... _TestBufSize-1] = 0}, .preFlushCache = true },
+      // 4. Change 'src' and re-read. Should get cache-value (again).
+      { .cpy = {.from = {0,7}, .nBits = 8 }, .src = (U8[]){0x99}, .destFill = 0x00, .result = (U8[]){0x33, [1 ... _TestBufSize-1] = 0} },
+   };
+
+   bool newPortRtn = bit64K_NewPort(&portWCache, &rdCache, rdCacheBuf, _RdCacheBufSize);
+
+   TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, newPortRtn, "test_Bit64_Out_BE_wCache() bit64K_NewPort() should return true");
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memcpy(srcBuf,  t->src, _TestBufSize );
+      memset(destBuf, t->destFill, _TestBufSize );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      if(t->preFlushCache == true) {
+         bit64K_FlushCache(&portWCache); }
+
+      bit64K_Out(
+         &portWCache,
          destBuf,
          bit64K_MakeBE(cpy->from._byte, cpy->from._bit),
          cpy->nBits,
