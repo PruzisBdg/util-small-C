@@ -63,14 +63,18 @@ static U8 orInto(U8 dest, U8 src, U8 srcMask) {
 static bool reloadCache(bit64K_Ports const *port, S_Bit64K src, bit64K_T_Cnt bitsRem)
 {
    S_byteBuf *bb = &port->cache->q;
-   U8 reqBytes = MinU16( (bitsRem+1)/8, byteBuf_Size(bb) );    // e.g 9 'bitsRem' require we read 2 'port' bytes
+   U8 reqBytes = MinU16( (bitsRem+7)/8, byteBuf_Size(bb) );    // e.g 9 'bitsRem' require we read 2 'port' bytes
 
-   if( port->src.get(byteBuf_ToFill(bb, reqBytes), _byte(src), reqBytes) ) {  // Refilled cache from 'port'?
-      port->cache->atByte = _NoCacheAddr;
-      byteBuf_Unlock(bb);                                      // Nope! Cache was locked before fill attempt. Unlock it.
+   /* To refill cache from 'port', get() from the port directly into the byteBuf_ buffer (which is
+      returned by byteBuf_ToFill(). Normally this is unsafe way of filling byteBuf_. But we prechecked
+      above that 'reqBytes' will not overfill the buffer.
+   */
+   if( port->src.get(byteBuf_ToFill(bb, reqBytes), _byte(src), reqBytes) == false) {  // Failed get() from 'port'?
+      port->cache->atByte = _NoCacheAddr;                      // then cache state is unknown; Mark that we have nothing...
+      byteBuf_Unlock(bb);                                      // Cache was locked before fill attempt. Unlock it.
       byteBuf_Flush(bb);                                       // Cache state is unknown - flush it!
-      return false; }                                          // then fail.
-   else {                                                      // else cache was filled from 'port'
+      return false; }
+   else {                                                      // else cache buffer was filled from 'port'
       port->cache->atByte = _byte(src);                        // Mark that cache start from the byte containing 'src'.
       byteBuf_Unlock(bb);                                      // Was locked before fill. Unlock it.
       return true; }
@@ -401,6 +405,20 @@ PUBLIC bool bit64K_NewPort(bit64K_Ports *p, bit64K_Cache *cache, U8 *cacheBuf, U
       byteBuf_Init( &p->cache->q, cacheBuf, cacheBytes);    // and attach buffer to cache, which starts flushed
       p->cache->atByte = _NoCacheAddr; }
    return true;
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  bit64K_FlushCache()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC bool bit64K_FlushCache(bit64K_Ports *p)
+{
+   if( p->cache != NULL ) {                  // There's a cache?
+      byteBuf_Flush(&p->cache->q);           // Flush it!
+      p->cache->atByte = _NoCacheAddr; }     // and the cache now does not point to any source address.
+   return true;      // Return true even if there's no cache.
 }
 
 /*-----------------------------------------------------------------------------------------
