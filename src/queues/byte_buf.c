@@ -174,7 +174,8 @@ PUBLIC BIT byteBuf_Locked(S_byteBuf *b)
 |
 |  byteBuf_ToFill()
 |
-|  Return the buffer for a naked fill of the queue.
+|  Return the buffer for a naked fill of the queue. Preset indices and count for how the
+|  buffer will be after the fill is done.
 |
 ------------------------------------------------------------------------------------------*/
 
@@ -183,6 +184,7 @@ PUBLIC U8 * byteBuf_ToFill(S_byteBuf *b, U8 cnt)
    byteBuf_Flush(b);
    b->locked = 1;
    b->cnt = cnt;
+   b->put = cnt;     // 'put' at next free slot.
    return b->buf;
 }
 
