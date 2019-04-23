@@ -227,8 +227,9 @@ typedef struct {
 
 PUBLIC bool bit64K_NewPort(bit64K_Ports *p, bit64K_Cache *cache, U8 *cacheBuf, U8 cacheBytes);
 PUBLIC bool bit64K_ResetPort(bit64K_Ports *p);
-PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
+PUBLIC bool bit64K_FlushCache(bit64K_Ports *p);
 
+PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
 PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian);
 PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, U8 destEndian, bool srcIsEndian);
 PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian);
