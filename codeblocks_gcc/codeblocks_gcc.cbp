@@ -83,7 +83,13 @@
 		<Unit filename="../../unity_tdd/tdd_common_pre_build.mak">
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../private/bit64k_copy_tests_inline.h">
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../private/libs_support.h" />
+		<Unit filename="../private/util_tests_support.h">
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../public/bit_field.h">
 			<Option target="Debug" />
 			<Option target="Release" />

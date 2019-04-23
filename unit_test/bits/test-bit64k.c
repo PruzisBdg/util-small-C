@@ -186,6 +186,7 @@ void test_Bit64_Out_LE(void)
       #define _destFill 0x05A
       // Just the lsb
       { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0x01, [1 ... _TestBufSize-1] = 0x00}, .destFill = _destFill, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = _destFill} },
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0xFF, [1 ... _TestBufSize-1] = 0x00}, .destFill = _destFill, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = _destFill} },
       { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0xFE, [1 ... _TestBufSize-1] = 0xFF}, .destFill = _destFill, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = _destFill} },
 
       // e.g b2:0 (lowest 3 bits)
@@ -250,7 +251,25 @@ void test_Bit64_Out_BE(void)
    typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; } S_Tst;
 
    S_Tst const tsts[] = {
+      // Read lsbit '1' from 1 byte
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0x01}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      // Ensure just b0<-1 is copied to out
       { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0xFF}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      // read lsbit '0' .
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0x00}, .destFill = 0xFF, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0xFF} },
+      // Ensure just b0<-0 is copied to out
+      { .cpy = {.from = {0,0}, .nBits = 1 }, .src = (U8[]){0xFE}, .destFill = 0xFF, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0xFF} },
+
+      // e.g b2:0 (lowest 3 bits)
+      { .cpy = {.from = {0,2}, .nBits = 3 }, .src = (U8[]){0xFF, [1 ... _TestBufSize-1] = 0x00}, .destFill = 0x00, .result = (U8[]){0x07, [1 ... _TestBufSize-1] = 0x00} },
+      { .cpy = {.from = {0,2}, .nBits = 3 }, .src = (U8[]){0x05, [1 ... _TestBufSize-1] = 0xFF}, .destFill = 0x55, .result = (U8[]){0x05, [1 ... _TestBufSize-1] = 0x55} },
+
+      // msbit... same tests as lsbit above.
+      { .cpy = {.from = {0,7}, .nBits = 1 }, .src = (U8[]){0x80}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+      { .cpy = {.from = {0,7}, .nBits = 1 }, .src = (U8[]){0xFF}, .destFill = 0x00, .result = (U8[]){0x01, [1 ... _TestBufSize-1] = 0} },
+
+      { .cpy = {.from = {0,7}, .nBits = 1 }, .src = (U8[]){0x00}, .destFill = 0xFF, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0xFF} },
+      { .cpy = {.from = {0,7}, .nBits = 1 }, .src = (U8[]){0x7F}, .destFill = 0xFF, .result = (U8[]){0x00, [1 ... _TestBufSize-1] = 0xFF} },
 
       // Multiple bytes; no shift
       { .cpy = {.from = {0,7}, .nBits = 16 }, .src = (U8[]){1,2,     [2 ... _TestBufSize-1] = 0x00}, .destFill = 0x55, .result = (U8[]){2,1,     [2 ... _TestBufSize-1] = 0x55} },
