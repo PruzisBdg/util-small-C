@@ -26,12 +26,14 @@
 #define _NumArgs(...) PP_NARG_(__VA_ARGS__,PP_RSEQ_N())
 #define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
 #define PP_ARG_N(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,_31,_32,\
-                 _33,_34,_35,_36,_37,_38,_39,_40,_41,_42,_43,_44,_45,_46,_47,_48,_49,_50,_51,_52,_53,_54,_55,_56,_57,_58,_59,_60,N,...) N
+                 _33,_34,_35,_36,_37,_38,_39,_40,_41,_42,_43,_44,_45,_46,_47,_48,_49,_50,_51,_52,_53,_54,_55,_56,_57,_58,_59,_60,_61,_62,_63,_64,\
+                 _65,_66,_67,_68,_69,_70,_71,_72,_73,_74,_75,_76,_77,_78,_79,_80,_81,_82,_83,_84,_85,_86,_87,_88,_89,_90, N,...) N
 // It's that cheesy reverse-trick...
 // ...A reverse-list of numbers (below) get shoved rightwards past 'N' (above) by an arg-list which we insert in front (of the numbers).
 // e.g 11 args pushes the '11' under 'N'. That '11' is then returned by PP_ARG_N() (above) as the arg-count.
 #define PP_RSEQ_N() \
-   60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,\
+   90,89,88,87,86,85,84,83,82,81,80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65, \
+   64,63,62,61,60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,\
    32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
 
 /* -------------------------------------- Maps ----------------------------------------------- */
@@ -102,6 +104,11 @@
 #define _funcp2a18(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r)
 #define _funcp2a20(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t)
 #define _funcp2a22(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t),_f(p0,u,v)
+#define _funcp2a24(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t),_f(p0,u,v),_f(p0,w,x)
+#define _funcp2a26(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t),_f(p0,u,v),_f(p0,w,x),_f(p0,y,z)
+#define _funcp2a28(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,bb)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t),_f(p0,u,v),_f(p0,w,x),_f(p0,y,z),_f(p0,aa,bb)
+#define _funcp2a30(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,bb,cc,dd)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t),_f(p0,u,v),_f(p0,w,x),_f(p0,y,z),_f(p0,aa,bb),_f(p0,cc,dd)
+#define _funcp2a32(_f, p0, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,bb,cc,dd,ee,ff)  _f(p0,a,b), _f(p0,c,d), _f(p0,e,f), _f(p0,g,h), _f(p0,i,j), _f(p0,k,l),_f(p0,m,n),_f(p0,o,p),_f(p0,q,r),_f(p0,s,t),_f(p0,u,v),_f(p0,w,x),_f(p0,y,z),_f(p0,aa,bb),_f(p0,cc,dd),_f(p0,ee,ff)
 
 
 // e.g _Infix(+, a,b,c,d)  -> _infix4(+, a,b,c,d) -> a+b+c+d
