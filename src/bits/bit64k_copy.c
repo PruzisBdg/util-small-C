@@ -476,8 +476,6 @@ PUBLIC bool bit64K_ResetPort(bit64K_Ports *p)
 ------------------------------------------------------------------------------------------*/
 
 static bool bitsFit(U8 n, U8 nbits) {
-   U8 m = MakeAtoBSet_U8(nbits-1, 0);
-   //printf("n = 0x%X m = 0x%X not 0x%X and 0x%X\r\n", n, m, ~m, n & ~m);
    return (n & ~MakeAtoBSet_U8(nbits-1, 0)) == 0 ? true : false; }
 
 PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian)
