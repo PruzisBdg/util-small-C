@@ -98,11 +98,11 @@ static void cpyOutCache(S_CpyOut const *out, U8 const *src)
       out->nBits,
       out->srcEndian);
 
-   printf("CpyOutCache: src[0x%x 0x%x](%d,%d){%d}} (%s) -> dest[0x%x 0x%x]\r\n",
-          src[0], src[1],
+   printf("CpyOutCache: src[0x%x 0x%x 0x%x 0x%x](%d,%d){%d}} (%s) -> dest[0x%x 0x%x 0x%x 0x%x]\r\n",
+          src[0], src[1], src[2], src[3],
           out->from._byte ,out->from._bit, out->nBits,
           PrintEndian(out->srcEndian),
-          destBuf[0], destBuf[1]);
+          destBuf[0], destBuf[1], destBuf[2], destBuf[3]);
 
 }
 
@@ -163,7 +163,8 @@ static void cpyOuts(void)
 // -------------------------------------------------------------------------------------------------
 static void cpyOutsCached(void)
 {
-   cpyOutCache( (S_CpyOut[]){{.from = {._byte = 0, ._bit = 0}, .nBits = 1, .destFill = 0x00, .srcEndian = eBigEndian}}, (U8[]){0x01, [1 ... _BufSize-1] = 0x00} );
+   cpyOutCache( (S_CpyOut[]){{.from = {._byte = 0, ._bit = 0}, .nBits = 1,  .destFill = 0x00, .srcEndian = eBigEndian}}, (U8[]){0x01, [1 ... _BufSize-1] = 0x00} );
+   cpyOutCache( (S_CpyOut[]){{.from = {._byte = 0, ._bit = 7}, .nBits = 24, .destFill = 0x00, .srcEndian = eBigEndian}}, (U8[]){1,2,3, [3 ... _BufSize-1] = 0x00} );
 }
 
 // ============================================== eof ========================================================
