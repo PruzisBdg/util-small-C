@@ -56,8 +56,11 @@ static U8 maskAtoB(U8 msb, U8 lsb) {
 static U8 orInto(U8 dest, U8 src, U8 srcMask) {
    return dest | (src & srcMask); }
 
-// ----------------------------------------------------------------------------------------
+/* ============================== Read Cache ==============================================
 
+   To query multiple clustered items in a bit-address space without generating a (SPI) transaction
+   for each read.
+*/
 #define _NoCacheAddr 0xFFFF      // This will not match any reasonable cache address.
 
 static bool reloadCache(bit64K_Ports const *port, S_Bit64K src, bit64K_T_Cnt bitsRem)
@@ -107,6 +110,9 @@ static bool readFromCache(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64
 
    return false;     // Some fail!
 }
+
+// ============================ ends: read cache =================================================
+
 
 /* ----------------------------- first/nextSrcByte --------------------------------------------------
 
@@ -326,6 +332,8 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
 {
    if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
       { return false; }                                           // then fail!
+   else if(numBits == 0) {                                        // else nothing to write?
+      return true; }                                              // then succeed in doing nothing
    else {                                                         // else continue.
       /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
          dest if they are different endians. Otherwise 'src' just counts up (into dest).
