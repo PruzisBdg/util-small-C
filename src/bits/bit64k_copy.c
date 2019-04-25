@@ -62,22 +62,26 @@ static U8 orInto(U8 dest, U8 src, U8 srcMask) {
 
 static bool reloadCache(bit64K_Ports const *port, S_Bit64K src, bit64K_T_Cnt bitsRem)
 {
-   S_byteBuf *bb = &port->cache->q;
-   U8 reqBytes = MinU16( (bitsRem+7)/8, byteBuf_Size(bb) );    // e.g 9 'bitsRem' require we read 2 'port' bytes
+   if(port->cache == NULL) {                 // This port has no cache, actually?
+      return true; }                         // then succeed in doing nothing.
+   else {                                    // else continue.
+      S_byteBuf *bb = &port->cache->q;
+      U8 reqBytes = MinU16( (bitsRem+7)/8, byteBuf_Size(bb) );    // e.g 9 'bitsRem' require we read 2 'port' bytes
 
-   /* To refill cache from 'port', get() from the port directly into the byteBuf_ buffer (which is
-      returned by byteBuf_ToFill(). Normally this is unsafe way of filling byteBuf_. But we prechecked
-      above that 'reqBytes' will not overfill the buffer.
-   */
-   if( port->src.get(byteBuf_ToFill(bb, reqBytes), _byte(src), reqBytes) == false) {  // Failed get() from 'port'?
-      port->cache->atByte = _NoCacheAddr;                      // then cache state is unknown; Mark that we have nothing...
-      byteBuf_Unlock(bb);                                      // Cache was locked before fill attempt. Unlock it.
-      byteBuf_Flush(bb);                                       // Cache state is unknown - flush it!
-      return false; }
-   else {                                                      // else cache buffer was filled from 'port'
-      port->cache->atByte = _byte(src);                        // Mark that cache start from the byte containing 'src'.
-      byteBuf_Unlock(bb);                                      // Was locked before fill. Unlock it.
-      return true; }
+      /* To refill cache from 'port', get() from the port directly into the byteBuf_ buffer (which is
+         returned by byteBuf_ToFill(). Normally this is unsafe way of filling byteBuf_. But we prechecked
+         above that 'reqBytes' will not overfill the buffer.
+      */
+      if( port->src.get(byteBuf_ToFill(bb, reqBytes), _byte(src), reqBytes) == false) {  // Failed get() from 'port'?
+         port->cache->atByte = _NoCacheAddr;                      // then cache state is unknown; Mark that we have nothing...
+         byteBuf_Unlock(bb);                                      // Cache was locked before fill attempt. Unlock it.
+         byteBuf_Flush(bb);                                       // Cache state is unknown - flush it!
+         return false; }
+      else {                                                      // else cache buffer was filled from 'port'
+         port->cache->atByte = _byte(src);                        // Mark that cache start from the byte containing 'src'.
+         byteBuf_Unlock(bb);                                      // Was locked before fill. Unlock it.
+         return true; }
+   }
 }
 
 // ----------------------------------------------------------------------------------------
@@ -134,12 +138,22 @@ PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K
 }
 
 
-// --------------------------------------------------------------------------------------
-static bool legalBitAddr(bit64K_Range const *r, S_Bit64K addr) {
-   return                                             // 'addr' NOT legal if? ...
-      r->bits.max > r->bits.min &&                    // Did set a bit-range for this 'port'? i.e 'min' and 'max' not both zero, AND
-      (addr < r->bits.min && addr > r->bits.max)      // 'addr' is outside that range?
-         ? false : true; }
+/* ---------------------------- legalRange -------------------------------------------------
+
+  Return true if [addr... addr+numBits] is inside the bit-address range 'r'.
+  If r.min and r.max are both zero then there's no check; always return true.
+
+  Note that 'min' == 'max' is a legal range, encompassing just 1 bit.
+*/
+static bool legalRange(bit64K_Range const *r, S_Bit64K addr, bit64K_T_Cnt numBits) {
+   return                                                   // 'addr' NOT legal if? ...
+      (r->bits.min > 0 || r->bits.max > 0) &&               // Set a range for this 'port'? ...i.e 'min', 'max' not both zero, AND
+      r->bits.max >= r->bits.min &&                         // that min/max pair is legal? AND
+      (
+         addr < r->bits.min ||                              // Low end of range below limit? OR
+         (numBits > 0 && (addr+numBits) > (r->bits.max+1) ) // high end of range above upper limit?
+      )
+         ? false : true; }          // then out-of-range -> false.
 
 
 /*-----------------------------------------------------------------------------------------
@@ -155,8 +169,8 @@ static bool legalBitAddr(bit64K_Range const *r, S_Bit64K addr) {
 
 PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits)
 {
-   if( false == legalBitAddr(&port->dest.range, dest) ||
-       false == legalBitAddr(&port->src.range, src))
+   if( false == legalRange(&port->dest.range, dest, numBits) ||
+       false == legalRange(&port->src.range, src, numBits))
       { return false; }
    else {
       U8 open;
@@ -222,9 +236,20 @@ PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, b
 |  bit64K_Out()
 |
 |  Using 'port', copy 'numBits' from 'src' to 'dest', where 'src' is a 64K bitfield address.
+|  If 'dest' is NULL there's no copy; just reloads the read cache.
+|  If no bits requested then do nothing.
 |
 |  If 'srcEndian' is opposite to the system __BYTE_ORDER__ then bytes from 'src' will be
 |  copied into endian in reverse order (relative to ascending source address).
+|     To copy bytes non-reversed regardless of __BYTE_ORDER__ set 'srcEndian' to 'eNoEndian'.
+|
+|  Returns 'false' if:
+|     - 'numBits' is too large to fit in 'dest'
+|           The size of 'dest' is set by 'port.src.maxOutBytes'. If 'maxOutBytes' is zero there's no size-check.
+|     - 'src' is not a legal bit-address
+|     - the read range 'src'...'src'+'numBits' is outside the source address range set on 'port'
+|           Source address range is 'port.src.range.min ... max'. If both 'min' and 'max' are 0 the there's no range-check.
+|     - port.src.get() fails.
 |
 ------------------------------------------------------------------------------------------*/
 
@@ -233,15 +258,20 @@ PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, b
 
 #define _numBytesFrom(b)  (((b)+1)/8)
 
-PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, U8 srcEndian)
+PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, E_EndianIs srcEndian)
 {
-   if( false == legalBitAddr(&port->src.range, src))           // 'src' not legal?
+   if( false == legalRange(&port->src.range, src, numBits))    // 'src' (bit address) outside stated range?
       { return false; }                                        // then fail!
    else if(dest == NULL) {                                     // else no destination specified? ...
          return reloadCache(port, src, numBits); }             // ... is an instruction to (re)load the cache at 'src'.
+   else if(numBits == 0) {                                     // else zero data requested?
+      return true; }                                           // then, maybe reloaded cache, but do nothing else. Always true.
+   else if(port->src.maxOutBytes > 0 &&                        // Test if 'numBits' will fit in 'dest'? AND...
+           bit64K_Byte(numBits) > port->src.maxOutBytes)       // ...too many 'numBits' to fit in dest?
+      { return false; }                                        // then fail!
    else {                                                      // else do a read.
       T_EndianPtr di;
-      dest = EndianPtr_New(&di, dest, _numBytesFrom(numBits), srcEndian);     // Endian-aware 'dest'.
+      dest = EndianPtr_New(&di, dest, _numBytesFrom(numBits), srcEndian);     // Endian-aware 'src'.
 
       /* Fill each dest byte from a bytes-worth of source bit-field. Depending on alignment, this will
          be from a single source byte or 2 consecutive source bytes.
@@ -255,26 +285,26 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_
          */
          // First, get 1st byte into 'sb', while maybe refilling any cache.
          U8 sb;
-         if(false == nextSrcByte(port, &sb, src, rem, is1st))         // Read 1st byte from 'port'? ..either directly or via cache
+         if(false == nextSrcByte(port, &sb, src, rem, is1st))  // Read 1st byte from 'port'? ..either directly or via cache
             { return false; }
          is1st = false;
 
-         ask = rem > _8bits ? _8bits : rem;                   // This pass, from 1 or2 bytes, take (maybe all of) 'rem' but no more than 8 bits.
-         U8 got = MinU8(ask, _bitBE(src)+1);                    // From the 1st byte take b[src:0], but no more than 'ask'.
+         ask = rem > _8bits ? _8bits : rem;                    // This pass, from 1 or2 bytes, take (maybe all of) 'rem' but no more than 8 bits.
+         U8 got = MinU8(ask, _bitBE(src)+1);                   // From the 1st byte take b[src:0], but no more than 'ask'.
 
-         sb = shiftLR(sb, (S8)ask-_bitBE(src)-1);               // (Maybe) left-justify or right-justify the 'got' bits (from 1st byte) to their position determined by 'ask'.
-         U8 db = 0;                                           // ...any space to the right of these to b0 will be filled from 2nd byte.
-         db = orInto(db, sb, mask(ask-1, got));               // Mask to select just that field and OR into dest byte.
+         sb = shiftLR(sb, (S8)ask-_bitBE(src)-1);              // (Maybe) left-justify or right-justify the 'got' bits (from 1st byte) to their position determined by 'ask'.
+                                                               // ...any space to the right of these to b0 will be filled from 2nd byte.
+         U8 db = sb & mask(ask-1, got);                        // Mask to select just that field and OR into dest byte.
 
-         if(ask > got)                                        // Got a partial destination field from 1st byte?
-         {                                                    // then get 2nd byte into 'sb', while maybe refilling any cache.
+         if(ask > got)                                         // Got a partial destination field from 1st byte?
+         {                                                     // then get 2nd byte into 'sb', while maybe refilling any cache.
             if(false == nextSrcByte(port, &sb, src+_8bits, rem-got, false)) // Read 2nd byte from 'port'? ..either directly or via cache
                { return false; }
 
-            sb = rotL(sb, ask-got);                           // Rotate 2nd byte to fit in
-            db = orInto(db, sb, maskAtoB(ask-got-1,0));       // Mask to select just that field and OR into dest byte.
+            sb = rotL(sb, ask-got);                            // Rotate 2nd byte to fit in
+            db = orInto(db, sb, maskAtoB(ask-got-1,0));        // Mask to select just that field and OR into dest byte.
          }
-         *dest = db;                                          // Write out dest byte.
+         *dest = db;                                           // Write out dest byte.
       } // for(U8 rem = numBits...
       return true;
    }
@@ -292,9 +322,9 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bit64K_T_Cnt numBits, U8 destEndian, bool srcIsEndian)
+PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
 {
-   if( false == legalBitAddr(&port->dest.range, dest))            // 'dest' not legal?
+   if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
       { return false; }                                           // then fail!
    else {                                                         // else continue.
       /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
@@ -302,7 +332,7 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
       */
       T_EndianPtr si;
       src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
-                  srcIsEndian == true ? destEndian : eNoEndian);         // Endian-aware 'src'.
+                  srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
 
       for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
       {
@@ -328,10 +358,10 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
          bit64K_atByte destAt = _byte(dest);
 
          U8 db;
-         if(port->dest.rd == NULL) {                               // No rdDest()?
+         if(port->dest.rd == NULL) {                              // No rdDest()?
             db = 0; }                                             // then start with dest byte clear.
          else {
-            if( false == port->dest.rd(&db, destAt, 1))            // Get 'dest' into 'db'.
+            if( false == port->dest.rd(&db, destAt, 1))           // Get 'dest' into 'db'.
                { return false; }
             CLRB(db, mask(msb, open)); }                          // Clear 'open' bits from 'msb' downward.
 
@@ -340,11 +370,11 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
          if(destEndian == eBigEndian) {
             sb = shiftLR(*src, msb+1-MinU8(_8bits, rem)); }
          else {
-            sb = shiftLR(*src, msb+1-open); }                      // Align the left (msbit) of the source field with left of dest.
+            sb = shiftLR(*src, msb+1-open); }                     // Align the left (msbit) of the source field with left of dest.
 
           db = orInto(db, sb, mask(msb, open));                   // Mask to select just that field and OR into dest byte.
 
-         if(false == port->dest.wr(destAt, &db, 1))                // Destination byte updated; put it back.
+         if(false == port->dest.wr(destAt, &db, 1))               // Destination byte updated; put it back.
             { return false; }
 
          rem -= open;                                             // These many bits remaining.
@@ -363,10 +393,10 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
             else {                                                // else will use all remaining bits from 'src'.
                rem -= write; }                                    // Zero or more bits left to complete whole transfer.
 
-            if(port->dest.rd == NULL) {                            // No rdDest()?
+            if(port->dest.rd == NULL) {                           // No rdDest()?
                db = 0; }                                          // then start with dest byte all-cleared.
             else {
-               if( false == port->dest.rd(&db, destAt+1, 1))       // else get destination
+               if( false == port->dest.rd(&db, destAt+1, 1))      // else get destination
                   { return false; }
                else {
                   if(destEndian == eBigEndian)
@@ -376,13 +406,13 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
                }}              // Clear 'open' bits from 'msb'.
 
             if(destEndian == eBigEndian) {
-               sb = shiftLR(*src, _8bits-write);                       // Shift partial field left to align with destination slot.
-               db = orInto(db, sb, mask(_msb7, write)); }             // Mask to select just that field and OR into dest byte.
+               sb = shiftLR(*src, _8bits-write);                  // Shift partial field left to align with destination slot.
+               db = orInto(db, sb, mask(_msb7, write)); }         // Mask to select just that field and OR into dest byte.
             else {
-               sb = shiftLR(*src, -write);                       // Shift partial field left to align with destination slot.
-               db = orInto(db, sb, mask(write-1, write)); }             // Mask to select just that field and OR into dest byte.
+               sb = shiftLR(*src, -write);                        // Shift partial field left to align with destination slot.
+               db = orInto(db, sb, mask(write-1, write)); }       // Mask to select just that field and OR into dest byte.
 
-            if(false == port->dest.wr(destAt+1, &db, 1))           // Destination byte updated; put it back.
+            if(false == port->dest.wr(destAt+1, &db, 1))          // Destination byte updated; put it back.
                { return false; }
          }
       } // for(U8 rem = numBits...
