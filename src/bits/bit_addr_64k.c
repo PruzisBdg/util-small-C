@@ -14,6 +14,14 @@
       ----------------------------------------------------------------------------------------
         e.g 0x03F0    0 0 0 0 0 0 1 1   1 1 1 1 0 0 0 0      0 0 0 0 1 1 1 1   1 1 0 0 0 0 0 0
 
+ Public:
+      bit64K_MakeBE(),  bit64K_MakeLE()      - Construct a bit address from a (byte,bit).
+      bit64K_BitBE(),   bit64K_BitLE()       - Return the bit compnent of a bit address.
+      bit64K_Byte()                          - Return the byte component of a bit address.
+      bit64K_AddBits()                       - Add bits to a bit address.
+      bit64K_AddBytes()                      - Add bytes to a bit-address
+      bit64K_Add()                           - Add 2 bit addresses.
+
 ---------------------------------------------------------------------------------------------*/
 
 #include "libs_support.h"

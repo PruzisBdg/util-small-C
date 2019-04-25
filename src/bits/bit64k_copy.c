@@ -19,6 +19,15 @@
 | be byte-readable, so sub-byte fields can be inserted and the resulting byte written
 | back.
 |
+| Public:
+|     bit64K_NewPort()
+|     bit64K_ResetPort()
+|     bit64K_FlushCache()
+|     bit64K_ParmFitsField()
+|     bit64K_In()
+|     bit64K_Out()
+|     bit64K_Copy()
+|
 |--------------------------------------------------------------------------*/
 
 #include "libs_support.h"
