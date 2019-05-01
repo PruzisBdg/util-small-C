@@ -38,8 +38,13 @@
 
 #define _revBit(b)  (7-(b))
 
+#if 0
 static inline S_Bit64K makeAddrBE(U16 _byte, U8 _bit) {
    return ( (S_Bit64K)MinU16(_byte, _MaxByte) << _BitRS) + _revBit(MinU8(_bit, _MaxBit)); }
+#else
+static inline S_Bit64K makeAddrBE(U16 _byte, U8 _bit) {
+   return AplusB_U16( (U16)_byte << _BitRS, (_bit & ~_BitMask) + _revBit(_bit &_BitMask) ); }
+#endif
 
 static inline S_Bit64K makeAddrLE(U16 _byte, U8 _bit) {
    return ( (S_Bit64K)MinU16(_byte, _MaxByte) << _BitRS) + MinU8(_bit, _MaxBit); }
