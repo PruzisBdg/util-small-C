@@ -412,7 +412,9 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bi
             else {                                                // else will use all remaining bits from 'src'.
                rem -= write; }                                    // Zero or more bits left to complete whole transfer.
 
-            if(port->dest.rd == NULL) {                           // No rdDest()?
+            // Read the destination byte and mask out to bits to be updated. However, don't bother if the
+            // whole byte will be overwritten.
+            if(port->dest.rd == NULL || write == _8bits) {        // No rdDest()? OR will write the whole byte?
                db = 0; }                                          // then start with dest byte all-cleared.
             else {
                if( false == port->dest.rd(&db, destAt+1, 1))      // else get destination
