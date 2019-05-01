@@ -4,6 +4,7 @@ run-*.c
 # unit test coverage files.
 *.gcda
 *.gcno
+*.gcov
 # gcovr results (for now)
 gcovr*.html
 # in projects
