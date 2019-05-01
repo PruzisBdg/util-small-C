@@ -579,10 +579,17 @@
 		<Unit filename="../unit_test/bits/bit64k.mak">
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/bits/bit_addr_64k.mak">
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/bits/bits.mak">
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/bits/test-bit64k.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bits/test-bit_addr_64k.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
