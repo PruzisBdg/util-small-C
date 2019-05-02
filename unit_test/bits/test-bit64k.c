@@ -428,7 +428,7 @@ void test_Bit64_Out_NoEndian_wCache(void)
 void test_Bit64_Out_AddrRange(void)
 {
    typedef struct { S_CpySpec cpy; U8 const *src; U8 destFill; U8 const *result;
-                     struct{S_Bit64K lo, hi;}bitRange; bit64K_atByte maxOutBytes;
+                     struct{T_bit64K lo, hi;}bitRange; bit64K_atByte maxOutBytes;
                      bool rtn, destIsNull; } S_Tst;
 
    S_Tst const tsts[] = {
@@ -507,7 +507,7 @@ void test_Bit64_Out_AddrRange(void)
 void test_Bit64_Out_OutputBytesLimit(void)
 {
    typedef struct { S_CpySpec cpy; U8 const *src; U8 destFill; U8 const *result;
-                     struct{S_Bit64K lo, hi;}bitRange; bit64K_atByte maxOutBytes;
+                     struct{T_bit64K lo, hi;}bitRange; bit64K_atByte maxOutBytes;
                      bool rtn, destIsNull; } S_Tst;
 
    S_Tst const tsts[] = {

@@ -6,7 +6,7 @@
 |
 ----------------------------------------------------------------------------- */
 
-PRIVATE int prntBitAddr(C8 *out, S_Bit64K bf)
+PRIVATE int prntBitAddr(C8 *out, T_bit64K bf)
    { return sprintf( out, "(%u,%u)", bit64K_Byte(bf),  bit64K_BitBE(bf) ); }
 
 // Test buffers

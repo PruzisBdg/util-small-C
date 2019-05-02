@@ -178,18 +178,18 @@ PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
 /* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
-typedef U16 S_Bit64K;
+typedef U16 T_bit64K;
 
-PUBLIC S_Bit64K   bit64K_MakeLE(U16 _byte, U8 _bit);
-PUBLIC U8         bit64K_BitLE(S_Bit64K bf);
+PUBLIC T_bit64K   bit64K_MakeLE(U16 _byte, U8 _bit);
+PUBLIC U8         bit64K_BitLE(T_bit64K bf);
 
-PUBLIC S_Bit64K   bit64K_MakeBE(U16 _byte, U8 _bit);
-PUBLIC U8         bit64K_BitBE(S_Bit64K bf);
+PUBLIC T_bit64K   bit64K_MakeBE(U16 _byte, U8 _bit);
+PUBLIC U8         bit64K_BitBE(T_bit64K bf);
 
-PUBLIC U16        bit64K_Byte(S_Bit64K bf);
-PUBLIC S_Bit64K   bit64K_AddBits(S_Bit64K src, S16 nbits);     // Signed, so may subtract addresses.
-PUBLIC S_Bit64K   bit64K_AddBytes(S_Bit64K src, S16 bytes);
-PUBLIC S_Bit64K   bit64K_Add(S_Bit64K a, S_Bit64K b);
+PUBLIC U16        bit64K_Byte(T_bit64K bf);
+PUBLIC T_bit64K   bit64K_AddBits(T_bit64K src, S16 nbits);     // Signed, so may subtract addresses.
+PUBLIC T_bit64K   bit64K_AddBytes(T_bit64K src, S16 bytes);
+PUBLIC T_bit64K   bit64K_Add(T_bit64K a, T_bit64K b);
 
 // ---- bit64K_Copy() source and destination ports.
 typedef U16             bit64K_atByte;       // UP to 13 bit's for this; (3 for the bits in a byte)
@@ -203,7 +203,7 @@ typedef bool bit64K_Wrs(bit64K_atByte to, U8 const *from, bit64K_byteCnt cnt);
 
 typedef union {
    // Source bit-address limits for bit64K_Out(); destination bit-address limits for bit64K_In(). Ignored if both zero.
-   struct { S_Bit64K min, max; } bits;
+   struct { T_bit64K min, max; } bits;
    } bit64K_Range;
 
 typedef struct {
@@ -229,9 +229,9 @@ PUBLIC bool bit64K_NewPort(bit64K_Ports *p, bit64K_Cache *cache, U8 *cacheBuf, U
 PUBLIC bool bit64K_ResetPort(bit64K_Ports *p);
 PUBLIC bool bit64K_FlushCache(bit64K_Ports *p);
 
-PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits);
-PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, E_EndianIs srcEndian);
-PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const * src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian);
+PUBLIC bool bit64K_Copy(bit64K_Ports const *port, T_bit64K dest, T_bit64K src, bit64K_T_Cnt numBits);
+PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_T_Cnt numBits, E_EndianIs srcEndian);
+PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const * src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian);
 PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian);
 
 /* --------------------- Time/Date, ISO8601 format -------------------------

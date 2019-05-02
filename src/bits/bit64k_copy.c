@@ -72,7 +72,7 @@ static U8 orInto(U8 dest, U8 src, U8 srcMask) {
 */
 #define _NoCacheAddr 0xFFFF      // This will not match any reasonable cache address.
 
-static bool reloadCache(bit64K_Ports const *port, S_Bit64K src, bit64K_T_Cnt bitsRem)
+static bool reloadCache(bit64K_Ports const *port, T_bit64K src, bit64K_T_Cnt bitsRem)
 {
    if(port->cache == NULL) {                 // This port has no cache, actually?
       return true; }                         // then succeed in doing nothing.
@@ -97,7 +97,7 @@ static bool reloadCache(bit64K_Ports const *port, S_Bit64K src, bit64K_T_Cnt bit
 }
 
 // ----------------------------------------------------------------------------------------
-static bool reloadCache_RdByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem)
+static bool reloadCache_RdByte(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64K_T_Cnt bitsRem)
 {
    if( true == reloadCache(port, src, bitsRem) ) {
       byteBuf_Read(&port->cache->q, out, 1);                // Now return 1st byte from the (re)filled cache.
@@ -106,7 +106,7 @@ static bool reloadCache_RdByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, 
 }
 
 // ----------------------------------------------------------------------------------------
-static bool readFromCache(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem)
+static bool readFromCache(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64K_T_Cnt bitsRem)
 {
    if(_byte(src) >= port->cache->atByte) {                  // 'src' may be in this cache; address is high than cache start?
       S_byteBuf *bb = &port->cache->q;
@@ -133,7 +133,7 @@ static bool readFromCache(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64
    It's up to the caller to advance 'src' by one byte for every byte read. That so the cache
    is not reloaded with same data as before.
 */
-PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K_T_Cnt bitsRem, bool firstRead)
+PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64K_T_Cnt bitsRem, bool firstRead)
 {
    if(port->cache != NULL) {                                            // There's a cache?
       S_byteBuf *bb = &port->cache->q;
@@ -160,7 +160,7 @@ PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, S_Bit64K src, bit64K
 
   Note that 'min' == 'max' is a legal range, encompassing just 1 bit.
 */
-static bool legalRange(bit64K_Range const *r, S_Bit64K addr, bit64K_T_Cnt numBits) {
+static bool legalRange(bit64K_Range const *r, T_bit64K addr, bit64K_T_Cnt numBits) {
    return                                                   // 'addr' NOT legal if? ...
       (r->bits.min > 0 || r->bits.max > 0) &&               // Set a range for this 'port'? ...i.e 'min', 'max' not both zero, AND
       r->bits.max >= r->bits.min &&                         // that min/max pair is legal? AND
@@ -182,7 +182,7 @@ static bool legalRange(bit64K_Range const *r, S_Bit64K addr, bit64K_T_Cnt numBit
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, bit64K_T_Cnt numBits)
+PUBLIC bool bit64K_Copy(bit64K_Ports const *port, T_bit64K dest, T_bit64K src, bit64K_T_Cnt numBits)
 {
    if( false == legalRange(&port->dest.range, dest, numBits) ||
        false == legalRange(&port->src.range, src, numBits))
@@ -273,7 +273,7 @@ PUBLIC bool bit64K_Copy(bit64K_Ports const *port, S_Bit64K dest, S_Bit64K src, b
 
 #define _numBytesFrom(b)  (((b)+1)/8)
 
-PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_T_Cnt numBits, E_EndianIs srcEndian)
+PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_T_Cnt numBits, E_EndianIs srcEndian)
 {
    if( false == legalRange(&port->src.range, src, numBits))    // 'src' (bit address) outside stated range?
       { return false; }                                        // then fail!
@@ -337,7 +337,7 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, S_Bit64K src, bit64K_
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC bool bit64K_In(bit64K_Ports const *port, S_Bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
+PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
 {
    if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
       { return false; }                                           // then fail!

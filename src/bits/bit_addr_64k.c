@@ -3,7 +3,7 @@
    64K bit-addressing:
 
    A bit address is U16, 2^13 bytes * 2^3 bits per byte.  This internal format allows addresses
-   to be added directly.
+   to be added with just an arithmetic sum.
 
    Big-Endian (BE) and little-endian (LE) have the internal bit addresses count through the
    bits of multi-byte variables in the order of the bits in those variables.
@@ -28,65 +28,76 @@
 #include "util.h"
 #include "arith.h"
 
-#define _MaxUcnt(typ)  (sizeof(type) == 1 ? MAX_U8 ? (sizeof(type) == 2 ? MAX_U16 : MAX_U32) )
+// The low 3 bits of 'T_bit64K' count the bit component of the address.
+#define _BitRS    3
+#define _MaxBit   ((1 << _BitRS)-1)       // i.e bit-count of address is 0..7
+#define _BitMask  _MaxBit                 // 0x07
 
-#define _BitRS 3
-#define _MaxBit ((1 << _BitRS)-1)
-#define _BitMask _MaxBit
+#define _revBit(b)  (7-(b))      // Map [0..7] -> [7..0]
 
-#define _MaxByte ((1U << ((8*sizeof(S_Bit64K)) - 1 - _BitRS)) - 1)
-
-#define _revBit(b)  (7-(b))
-
-#if 0
-static inline S_Bit64K makeAddrBE(U16 _byte, U8 _bit) {
-   return ( (S_Bit64K)MinU16(_byte, _MaxByte) << _BitRS) + _revBit(MinU8(_bit, _MaxBit)); }
-#else
-static inline S_Bit64K makeAddrBE(U16 _byte, U8 _bit) {
-   return AplusB_U16( (U16)_byte << _BitRS, (_bit & ~_BitMask) + _revBit(_bit &_BitMask) ); }
-#endif
-
-static inline S_Bit64K makeAddrLE(U16 _byte, U8 _bit) {
-   return ( (S_Bit64K)MinU16(_byte, _MaxByte) << _BitRS) + MinU8(_bit, _MaxBit); }
-
-static inline U8           bitsLE(S_Bit64K bf)  { return bf & _BitMask; }
-static inline U8           bitsBE(S_Bit64K bf)  { return _revBit(bf & _BitMask); }
-static inline U16          bytes(S_Bit64K bf)   { return bf >> _BitRS; }
+// Return the byte or byte component of a bit address
+static inline U8     bitsLE(T_bit64K ba)  { return ba & _BitMask; }
+static inline U8     bitsBE(T_bit64K ba)  { return _revBit(ba & _BitMask); }
+static inline U16    bytes(T_bit64K ba)   { return ba >> _BitRS; }
 
 // The internal representation of the bit-address is contiguous; so just return the
 // value of that.
-static inline U16       getAddr(S_Bit64K bf) { return (U16)bf; }
-static inline S_Bit64K  putAddr(U16 n)       { return (S_Bit64K)n; }
+static inline U16       getAddr(T_bit64K ba) { return (U16)ba; }
+static inline T_bit64K  putAddr(U16 n)       { return (T_bit64K)n; }
+
+/* ----------------------------- bit64K_MakeBE ----------------------------------------------
+
+   Return the bit-address for ('_byte', '_bit') big-endian. If '_byte' + '_bit' exceeds 0xFFFF
+   (16bit) clip to 0xFFFF.
+*/
+PUBLIC T_bit64K bit64K_MakeBE(U16 _byte, U8 _bit) {
+   return
+      AplusB_U16(                                        // Add, clipping to 0xFFFF...
+         (U16)_byte << _BitRS,                           // the byte-part, plus
+         (_bit & ~_BitMask) +                            // any of _bit to add to the byte part, plus
+               _revBit(_bit &_BitMask) ); }              // the bit-part, with count reversed.
+
+/* ----------------------------- bit64K_MakeLE ----------------------------------------------
+
+   Return the bit-address for ('_byte', '_bit') little-endian. If '_byte' + '_bit' exceeds
+   0xFFFF (16bit) clip to 0xFFFF.
+*/
+PUBLIC T_bit64K bit64K_MakeLE(U16 _byte, U8 _bit) {
+   return
+      AplusB_U16(                   // Add, clipping to 0xFFFF...
+         (U16)_byte << _BitRS,      // the byte-part, plus...
+         _bit); }                   // ...the bit part.
+
+// ---- Extract the bit and byte parts of a bit-address. Bit-extraction is endian-dependent;
+// same as on the way in.
 
 // ------------------------------------------------------------------------------
-PUBLIC S_Bit64K bit64K_MakeBE(U16 _byte, U8 _bit)
-   { return makeAddrBE(_byte, _bit); }
-
-PUBLIC S_Bit64K bit64K_MakeLE(U16 _byte, U8 _bit)
-   { return makeAddrLE(_byte, _bit); }
-
-// ------------------------------------------------------------------------------
-PUBLIC U8 bit64K_BitBE(S_Bit64K bf)
+PUBLIC U8 bit64K_BitBE(T_bit64K bf)
    { return bitsBE(bf); }
 
 // ------------------------------------------------------------------------------
-PUBLIC U8 bit64K_BitLE(S_Bit64K bf)
+PUBLIC U8 bit64K_BitLE(T_bit64K bf)
    { return bitsLE(bf); }
 
 // ------------------------------------------------------------------------------
-PUBLIC U16 bit64K_Byte(S_Bit64K bf)
+PUBLIC U16 bit64K_Byte(T_bit64K bf)
    { return bytes(bf); }
 
-// ------------------------------------------------------------------------------
-PUBLIC S_Bit64K bit64K_AddBits(S_Bit64K src, S16 nbits) {
+/* ---- Add bits and bytes to a bit-address. Add two bit-addresses.
+
+   Overrange after addition or subtraction is clipped to limits of T_bit64K (0 - 0xFFFF).
+*/
+
+// ------ Note: 'nbits' signed so may subtract ---------------------------------
+PUBLIC T_bit64K bit64K_AddBits(T_bit64K src, S16 nbits) {
    return ClipS32toU16((S32)getAddr(src) + nbits); }
 
-// ------------------------------------------------------------------------------
-PUBLIC S_Bit64K bit64K_AddBytes(S_Bit64K src, S16 bytes) {
-   return bit64K_AddBits(src, 8*bytes); }
+// ------ Note: 'bytes' signed so may subtract ---------------------------------
+PUBLIC T_bit64K bit64K_AddBytes(T_bit64K src, S16 bytes) {
+   return ClipS32toU16((S32)getAddr(src) + (8 * (S32)bytes)); }
 
 // ------------------------------------------------------------------------------
-PUBLIC S_Bit64K bit64K_Add(S_Bit64K a, S_Bit64K b) {
+PUBLIC T_bit64K bit64K_Add(T_bit64K a, T_bit64K b) {
    return AplusB_U16(getAddr(a), getAddr(b)); }
 
 // ------------------------------------------ eof -------------------------------------------
