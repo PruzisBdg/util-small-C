@@ -14,6 +14,7 @@ include ../util_common_pre.mak
 # The complete files list
 SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)str_find_word.c \
+								$(SRCDIR)str_tail_after_word.c \
 								$(SRCDIR)str_1st_word_has_char.c \
 								$(SRCDIR)str_word_char_cnt.c \
 								$(SRCDIR)str_word_cnt.c \

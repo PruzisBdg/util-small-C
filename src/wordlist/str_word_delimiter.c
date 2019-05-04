@@ -96,7 +96,7 @@ PUBLIC U8 Str_1stDelimiter(void)
    }
    else
    {
-      if(Str_Delimiters[0] == '\0')          // else define dbut empty?
+      if(Str_Delimiters[0] == '\0')          // else defined but empty?
       {
          return ' ';                         // then, again, default to SPC.
       }

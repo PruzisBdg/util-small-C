@@ -111,6 +111,57 @@ void test_Str_FindWord_Delimiters(void)
     }
 }
 
+/* --------------------------------- test_Str_TailAfterWord ------------------------------------ */
+
+void test_Str_TailAfterWord(void)
+{
+    typedef struct { C8 const *lst; C8 const *str; C8 const *tail; } S_Tst;
+
+    S_Tst const tsts[] = {                                                  // Looking for...
+        { .lst = "abc,def,ghi",         .str = "abc",   .tail = ",def,ghi" },   // Matched 1st word; tail is remainder of 'lst'.
+        { .lst = "abc,def,ghi",         .str = "def",   .tail = ",ghi" },       // Matched 2nd word; ...
+        { .lst = "abc,def,ghi",         .str = "ghi",   .tail = "" },           //     "   3nd word; only the end of  'lst' remains.
+
+        { .lst = "",                    .str = "",      .tail = "" },           // nothing in nothing -> end of 'lst'.
+
+        // Failure to match.
+        { .lst = "",                    .str = "abc",   .tail = NULL },         // Something in nothing -> NULL (not found)
+        { .lst = "abc,def,ghi",         .str = "123",   .tail = NULL },         // No match -> NULL
+        { .lst = "abc,def,ghi",         .str = "ab",    .tail = NULL },         // Partial match -> NULL
+        { .lst = "abc,def,ghi",         .str = "abcd",  .tail = NULL },         // Over-match -> NULL
+
+    };
+
+    Str_Delimiters = " ,;:";
+
+    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+    {
+        S_Tst const *t = &tsts[i];
+        U8 const * res = Str_TailAfterWord(t->lst, t->str);
+
+        if(res == NULL && t->tail == NULL)
+        {
+            continue;
+        }
+        else if(t->tail != NULL && res == NULL)
+        {
+            C8 b0[100];
+            sprintf(b0, "tst #%d expected %s, got NULL", i, t->tail);
+            TEST_FAIL_MESSAGE(b0);
+        }
+        else if(t->tail == NULL && res != NULL)
+        {
+            C8 b0[100];
+            sprintf(b0, "tst #%d expected NULL, got %s", i, res);
+            TEST_FAIL_MESSAGE(b0);
+        }
+        else
+        {
+            TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, res, t->lst);
+        }
+    }
+}
+
 /* --------------------------------- test_Str_1stWordHasChar ------------------------------------ */
 
 PRIVATE C8 const * printMsg(C8 const *lst, C8 ch, U8 res) {

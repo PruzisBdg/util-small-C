@@ -151,6 +151,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/ascii_num/read_tagged_int.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/bits/bit64k_copy.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -548,6 +554,11 @@
 		</Unit>
 		<Unit filename="../src/wordlist/str_replace.c">
 			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/wordlist/str_tail_after_word.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/wordlist/str_word_char_cnt.c">
 			<Option compilerVar="CC" />

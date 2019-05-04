@@ -16,6 +16,7 @@
 PUBLIC U8           Str_WordCnt(     U8 GENERIC const *str );
 PUBLIC U8           Str_FindWord(    U8 GENERIC const *lst, U8 GENERIC const *str);
 PUBLIC U8           Str_FindWord_CC( U8 CONST *lst, U8 CONST *str );
+PUBLIC U8 GENERIC const * Str_TailAfterWord( U8 GENERIC const *lst, U8 GENERIC const *str );
 PUBLIC U8 GENERIC * Str_GetNthWord(  U8 GENERIC const *lst, U8 n );
 PUBLIC U8           Str_CopyNthWord( U8 GENERIC const *lst, U8 *out, U8 n, U8 maxChars );
 PUBLIC BIT          Str_WordInStr(   U8 GENERIC const *str, U8 GENERIC const *theWord );
