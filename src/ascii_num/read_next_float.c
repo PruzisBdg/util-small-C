@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------
 |
-|  
-|   
+|
+|
 |--------------------------------------------------------------------------*/
 
 #include "libs_support.h"
 #include "util.h"
 #include <ctype.h>      // isdigit()
 #include "arith.h"      // GetPwr10Float()
+#include <float.h>
 
 // Module-local vars. Avoid the overhead of passing these to subroutines.
 PRIVATE BIT isNeg;               // Manitssa or exponent is negative
@@ -30,20 +31,20 @@ PRIVATE void finishMantissa(float *m)
 |
 |  ReadASCIIToFloat()
 |
-|  Return the next number from 'inStr' into 'out', skipping any spaces. The number
-|  can be an integer, hex (0xnn), or floating point as 123.45, 1.67E5.
+|  Return the next number from 'inStr' as a float into 'out', skipping any spaces.
+|  The number can be an integer, hex (0xnn), or floating point as 123.45, 1.67E5.
 |
 |  This parser takes the largest sequence which complete's a number (maximal match).
 |  This is necessarily so, as e.g 234E5 musn't return 234.0
 |
-|  Returns pointer to the first char after the last byte read, else 0 if could not 
-|  parse a number.
+|  Returns pointer to the first char after the last byte translated to a number, else NULL
+|  if could not parse a number.
 |
 |  Note: If a number is NOT parsed '*out' is undefined. It may have been modified.
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out) 
+PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
 {
    U8 DATA ch;                   // the current char
    U8 IDATA digitCnt = 0;        // digits so ofr in mantissa or exponent
@@ -54,9 +55,9 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
    BIT   readMantissa = 0;       // am reading the maintissa
    BIT   readHex = 0;            // is '0xnnnnn'
    BIT   gotDP = 0;              // mantissa has a decimal point
-   
-   *out = 0;                     // Zero the output.
-   
+
+   //*out = 0;                     // Zero the output.
+
    // Init these module-local vars.
    digitsAfterDP = 0;
    isNeg = 0;
@@ -66,31 +67,44 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
       ch = *inTxt;                        // char to be handled this pass
 
       if( !readMantissa && !readExp && !readHex )     // Haven't reached mantissa?
-      {     
-         readMantissa = 1;                // Will be true unless get SPC (below)
-      
-         if( ch == ' ' )                  // SPC?
+      {
+         if( ch == ' ' )                        // SPC?
          {
-            readMantissa = 0;             // then continue until reach mantissa
+            if(gotSign)                         // Already read '+' or '-'?
+            {                                   // then '-' or '+' is not connected to a number.
+               return NULL;                     // so fail.
+            }
+            else
+            {
+               readMantissa = 0;                // else continue until reach mantissa
+            }
          }
-         else if(isdigit(ch) )            // 0-9?
-         {                                // then we are at the mantissa
-            *out = (ch - '0');            // and this is the 1st digit
+         else if(isdigit(ch) )                  // 0-9?
+         {                                      // then we are at the mantissa
+            *out = (ch - '0');                  // and this is the 1st digit
             digitCnt = 1;
+            readMantissa = 1;
          }
-         else if(ch == '+' )              // '+'?
-         {                                // then we are at mantissa
-            gotSign = 1;                  // then note the sign (which must NOT) be followed by a HEX number)
+         else if(ch == '+' )                    // '+'?
+         {                                      // then we are at mantissa
+            gotSign = 1;                        // then note the sign (which must NOT) be followed by a HEX number)
+            isNeg = 0;                          // override any preceding '-' (i.e -+123 -> +123)
          }
-         else if(ch == '-' )              // '-'
+         else if(ch == '-' )                    // '-'
          {
-            isNeg = 1;                    // it's a negtive number
+            isNeg = 1;                          // it's a negative number
             gotSign = 1;
          }
-         else                             // else none of the above
+         else if(ch == '.')
          {
-            return 0;                     // so there's no number to parse. Return 0.
-         }         
+            *out = 0;
+            readMantissa = 1;
+            gotDP = 1;
+         }
+         else                                   // else none of the above
+         {
+            return NULL;                        // so there's no number to parse. Return 0.
+         }
       }
       else if( readMantissa )                   // Reading mantissa now?
       {
@@ -98,7 +112,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
          {
             gotDP = 1;                          // then mark it. Note. Leading DP's are allowed
          }
-         else if( ch == 'x' || ch == 'X' )      // Hex, perhaps?   
+         else if( ch == 'x' || ch == 'X' )      // Hex, perhaps?
          {
             if(digitCnt == 1 && *out == 0.0 && !gotDP )  // Only if it was just '0x'?
             {
@@ -117,7 +131,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             if( digitCnt >= 1 )                 // Was preceded complete non-Hex number?
             {                                   // then it's a legal 'E' starting an exponent
                readMantissa = 0;                // so stop processing mantissa
-               readExp = 1;                     // and start doing processing exponent                                                
+               readExp = 1;                     // and start doing processing exponent
                finishMantissa(out);             // Calculate mantissa from digits, sign and DP
                isNeg = 0;                       // Reset 'neg' flags prior to parsing the exponent
                exponent = 0;                    // Also zero the exponent itself
@@ -125,14 +139,14 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             }
             else                                // else wasn't preceded by a complete non-Hex e.g '+E' or '0x44E'
             {
-               return 0;                        // so there's no number here, return 0
+               return NULL;                     // so there's no number here, return 0
             }
          }
          else if( isdigit(ch) )                 // Another manitissa digit
          {
             *out = (10.0 * *out) + (ch - '0');  // then update mantissa and count
             digitCnt++;
-            
+
             if( gotDP)                          // Got DP?
             {
                digitsAfterDP++;                 // then also update DP count.
@@ -140,11 +154,11 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
          }
          else                                   // else not a (Hex) digit or an exponent
          {                                      // so that's the end of the number
-            finishMantissa(out);                // Calculate mantissa from digits, sign and DP
-            return inTxt++;                     // and return ptr to next char
+            finishMantissa(out);                // Calculate mantissa from digits, sign and DP.
+            return inTxt;                       // return tail on first non-digit.
          }
       }              // end: reading mantissa
-      
+
       else if( readExp )                        // Reading exponent?
       {
          if( ch == '+' )                        // '+'?
@@ -160,33 +174,39 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             {
                return 0;                        // Illegal number, return 0;
             }
-            else                                // else it's a legal addition ot the exponent
+            else                                // else it's a legal addition to the exponent
             {
                exponent = 10 * exponent + (ch - '0');    // Update the value
                digitCnt++;                      // and the count
             }
-            
          }
          else                                   // else not '+', '-' or '0-9'?
          {
             if( digitCnt == 0 )                 // There were no digits?  Was just 'E' followed by no numbers
             {                                   // then it wasn't an exponent; just the mantissa was the number
-               return inTxt++;                  // So return (at next char) with mantissa as it was.                       
-            }
+               return inTxt-1;                  // So return with mantissa as it was and with tail on the 'E'...
+            }                                   // which wasn't an exponent after all.
             else                                // else terminated legal exponent
             {                                   // so scale 'out' by exponent
-               *out = *out * GetPwr10Float( isNeg ? -exponent : exponent);
-               return inTxt++;                  // and return at next char  
+               if( (isNeg == 0 && exponent > FLT_MAX_10_EXP) || (isNeg == 1 && exponent > -FLT_MIN_10_EXP))
+               {
+                  return NULL;
+               }
+               else
+               {
+                  *out = *out * GetPwr10Float( isNeg ? -exponent : exponent);
+                  return inTxt;                  // and return at next char
+               }
             }
          }
       }                 // end: reading exponent
-      
+
       else if(readHex)                          // Reading Hex?
       {
          if( !isxdigit(ch) )                    // NOT 0-9 A-F?
          {                                      // then this terminates a legal number, whether there were hex digits
                                                 // after 'X' or no ('0X' read as zero)
-            return inTxt++;                     // so return with what we've got  
+            return inTxt++;                     // so return with what we've got
          }
          else                                   // else (another) Hex digit
          {                                      // Add it latest total
@@ -194,19 +214,19 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             {
                return 0;                        // then be sensible, say we're lost
             }
-            else                                
+            else
             {                                   // else add the digit to the total
                *out = (16 * *out) + HexToNibble(ch);
                digitCnt++;                      // and update digit count
             }
          }
       }                 // end: reading Hex
-      
+
       inTxt++;       // next char
    }                 //  end: while(1)
-   return 0;      
+   return 0;
 }
 
 // -------------------------------------- eof ------------------------------------------------
 
- 
+
