@@ -5,6 +5,7 @@
 #include "tdd_common.h"
 #include "util.h"
 #include <string.h>
+#include "wordlist.h"
 
 // =============================== Tests start here ==================================
 
@@ -21,8 +22,9 @@ void tearDown(void) {
 }
 
 /* ------------------------------------------------------------------------------------------- */
-PRIVATE C8 const *catRtn(C8 *out, U8 testNum, C8 const *preamble, C8 const *inStr) {
-    sprintf(out, "tst #%d. %s. testStr = \"%s\"", testNum, preamble, inStr == NULL ? "NULL" : inStr);
+PRIVATE C8 const *catRtn(C8 *out, U8 testNum, C8 const *preamble, C8 const *inStr, C8 const *tail) {
+    sprintf(out, "tst #%d. %s. testStr = \"%s\" tail = \"%s\"",
+                testNum, preamble, inStr == NULL ? "NULL" : inStr, tail == NULL ? "NULL" : tail);
     return out; }
 
 /* ---------------------------- test_ReadDirtyASCIIInt ------------------------------------------- */
@@ -78,7 +80,7 @@ void test_ReadDirtyASCIIInt(void)
         C8 const * ret = ReadDirtyASCIIInt(t->inStr, &out);
 
         C8 b0[100];
-        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr)
+        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
 
         if(t->outModified == false)
             { TEST_ASSERT_EQUAL_INT16_MESSAGE(was, out, _msg("Output should not have been modified", t)); }
@@ -100,13 +102,13 @@ void test_ReadDirtyASCIIInt(void)
 
 void test_ReadASCIIToFloat(void)
 {
-    typedef struct { C8 const *inStr; float result; C8    const *tail; bool outModified; } S_Tst;
+    typedef struct { C8 const *inStr; float result; C8 const *tail; bool outModified; C8 const *delimiters; } S_Tst;
 
     S_Tst const tsts[] = {
         // No number
-        { .inStr = "",              .result = 0,      .tail = NULL,       .outModified = false },     // Empty string -> return NULL, output unchanged.
-        { .inStr = "abc",           .result = 0,      .tail = NULL,       .outModified = false },     // No number -> return NULL, output unchanged.
-        { .inStr = "-abc",          .result = 0,      .tail = NULL,       .outModified = false },    // A lone '-' is not a number.
+        { .inStr = "",              .result = 0,        .tail = NULL,       .outModified = false },     // Empty string -> return NULL, output unchanged.
+        { .inStr = "abc",           .result = 0,        .tail = NULL,       .outModified = false },     // No number -> return NULL, output unchanged.
+        { .inStr = "-abc",          .result = 0,        .tail = NULL,       .outModified = false },    // A lone '-' is not a number.
 
         // Integers
         { .inStr = "0",             .result = 0.0,      .tail = "",         .outModified = true },      // "0" -> 0, output at end of string.
@@ -116,50 +118,59 @@ void test_ReadASCIIToFloat(void)
         { .inStr = "23pqr",         .result = 23,       .tail = "pqr",      .outModified = true },
         { .inStr = "23xyz",         .result = 23,       .tail = "xyz",      .outModified = true },
 
-        { .inStr = "000000450xyz",  .result = 450,       .tail = "xyz",      .outModified = true },      // Bazillion leading zeros are OK.
-        { .inStr = "-+456xyz",      .result = 456,       .tail = "xyz",      .outModified = true },     // The '-' isn't next to number is is ignored.
+        // To get e.g TAG = 23.4"
+        { .inStr = ", = 23pqr",     .result = 23.0,     .tail = "pqr",      .outModified = true, .delimiters = " ,=" },
 
-        { .inStr = "  123xyz",     .result = 123,        .tail = "xyz",      .outModified = true },      // Ignore leading spaces.
+        { .inStr = "000000450xyz",  .result = 450,      .tail = "xyz",      .outModified = true },      // Bazillion leading zeros are OK.
+        { .inStr = "-+456xyz",      .result = 456,      .tail = "xyz",      .outModified = true },     // The '-' isn't next to number is is ignored.
 
-        { .inStr = " -234",         .result = -234,      .tail = "",         .outModified = true },
-        { .inStr = " +234",         .result =  234,      .tail = "",         .outModified = true },
+        { .inStr = "  123xyz",     .result = 123,       .tail = "xyz",      .outModified = true },      // Ignore leading spaces.
 
-        { .inStr = "- 234",         .result = 0,         .tail = NULL,         .outModified = false },   // '-' must be connected to number.
+        { .inStr = " -234",         .result = -234,     .tail = "",         .outModified = true },
+        { .inStr = " +234",         .result =  234,     .tail = "",         .outModified = true },
+
+        { .inStr = "- 234",         .result = 0,        .tail = NULL,       .outModified = false },   // '-' must be connected to number.
 
         // Fixed point
-        { .inStr = " 12.345abc",    .result =  12.345,   .tail = "abc",         .outModified = true },
-        { .inStr = "-12.345abc",    .result =  -12.345,  .tail = "abc",         .outModified = true },
+        { .inStr = " 12.345abc",    .result =  12.345,   .tail = "abc",     .outModified = true },
+        { .inStr = "-12.345abc",    .result =  -12.345,  .tail = "abc",     .outModified = true },
 
-        { .inStr = " 0.345abc",    .result =  0.345,   .tail = "abc",         .outModified = true },
-        { .inStr = "  .345abc",    .result =  0.345,   .tail = "abc",         .outModified = true },
+        { .inStr = " 0.345abc",    .result =  0.345,   .tail = "abc",       .outModified = true },
+        { .inStr = "  .345abc",    .result =  0.345,   .tail = "abc",       .outModified = true },
 
         // Incomplete fixed point; the trailing '.' is considered part of the number.
-        { .inStr = " 12.abc",       .result =  12.0,      .tail = "abc",         .outModified = true },
+        { .inStr = " 12.abc",       .result =  12.0,      .tail = "abc",    .outModified = true },
 
         // Float
-        { .inStr = " 1.23E4abc",    .result =  12300.0,  .tail = "abc",         .outModified = true },
-        { .inStr = " -5.67E1abc",   .result =  -56.7,    .tail = "abc",         .outModified = true },
-        { .inStr = " 0.123E2abc",   .result =  12.3,     .tail = "abc",         .outModified = true },
-        { .inStr = " 4.567E-5abc",  .result =  4.567E-5, .tail = "abc",         .outModified = true },
+        { .inStr = " 1.23E4abc",    .result =  12300.0,  .tail = "abc",     .outModified = true },
+        { .inStr = " -5.67E1abc",   .result =  -56.7,    .tail = "abc",     .outModified = true },
+        { .inStr = " 0.123E2abc",   .result =  12.3,     .tail = "abc",     .outModified = true },
+        { .inStr = " 4.567E-5abc",  .result =  4.567E-5, .tail = "abc",     .outModified = true },
         // Also recognises 'e'
-        { .inStr = " 1.23e4abc",    .result =  12300.0,  .tail = "abc",         .outModified = true },
+        { .inStr = " 1.23e4abc",    .result =  12300.0,  .tail = "abc",     .outModified = true },
 
         // Incomplete float - just mantissa as int.
-        { .inStr = " 1.23Eabc",     .result =  1.23,     .tail = "Eabc",         .outModified = true },
+        { .inStr = " 1.23Eabc",     .result =  1.23,     .tail = "Eabc",    .outModified = true },
 
         // Hex
-        { .inStr = "0x00 abc",      .result = 0.0,       .tail = " abc",         .outModified = true },
-        { .inStr = "0xFE abc",      .result = 254.0,     .tail = " abc",         .outModified = true },
-        { .inStr = "0x12ACxyz",     .result = 4780.0,    .tail = "xyz",         .outModified = true },
-        { .inStr = "0xFFFF",        .result = 65535.0,   .tail = "",         .outModified = true },
+        { .inStr = "0x00 abc",      .result = 0.0,       .tail = " abc",    .outModified = true },
+        { .inStr = "0xFE abc",      .result = 254.0,     .tail = " abc",    .outModified = true },
+        { .inStr = "0x12ACxyz",     .result = 4780.0,    .tail = "xyz",     .outModified = true },
+        { .inStr = "0xFFFF",        .result = 65535.0,   .tail = "",        .outModified = true },
         // 'X' is also hex.
-        { .inStr = "0XFE abc",      .result = 254.0,     .tail = " abc",         .outModified = true },      // "0" -> 0, output at end of string.
+        { .inStr = "0XFE abc",      .result = 254.0,     .tail = " abc",    .outModified = true },      // "0" -> 0, output at end of string.
         // Must be '0x..' or '0X..'
-        { .inStr = "xFE abc",       .result = 0,          .tail = NULL,       .outModified = false },     // No number -> return NULL, output unchanged.
+        { .inStr = "xFE abc",       .result = 0,          .tail = NULL,     .outModified = false },     // No number -> return NULL, output unchanged.
     };
 
     U8 i; for(i = 0; i < RECORDS_IN(tsts); i++) {
         S_Tst const *t = &tsts[i];
+
+        // If delimiters are specified for this test then use them; else will use default (SPC).
+        if(t->delimiters != NULL) {
+            Str_Delimiters = t->delimiters; }
+        else {
+            Str_Delimiters = NULL; }
 
         // Prime 'out' with some value other than the correct result. So can tell if was modified or no.
         float was = t->result + 1;
@@ -167,7 +178,7 @@ void test_ReadASCIIToFloat(void)
         C8 const * ret = ReadASCIIToFloat(t->inStr, &out);
 
         C8 b0[100];
-        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr)
+        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
 
         if(t->outModified == false)
             { TEST_ASSERT_EQUAL_FLOAT_MESSAGE(was, out, _msg("Output should not have been modified", t)); }
@@ -183,7 +194,177 @@ void test_ReadASCIIToFloat(void)
             { TEST_FAIL_MESSAGE(_msg("NULL return (wrong)",t)); }
         else
             { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
+}
 
+/* --------------------------------- test_ReadASCIIToNum ----------------------------------------- */
+
+void test_ReadASCIIToNum(void)
+{
+    typedef struct {
+        C8 const *inStr;
+        float outFlt; S32 outS32; U32 outU32;
+        C8 const *tail;
+        bool outModified; bool reqFloat, gaveHex, gotInt, gotUnsigned; C8 const *delimiters; } S_Tst;
+
+    // To require a float and test we got that.
+    #define _ReqFloat_GotFloat  .reqFloat = true,  .gaveHex = false, .gotInt = false,  .gotUnsigned = false
+    #define _ReqFloat_GaveHex   .reqFloat = true,  .gaveHex = true,  .gotInt = true,   .gotUnsigned = true
+    #define _GotSignedInt       .reqFloat = false, .gaveHex = false, .gotInt = true,   .gotUnsigned = false
+    #define _GotUnsignedInt     .reqFloat = false, .gaveHex = false, .gotInt = true,   .gotUnsigned = true
+
+    S_Tst const tsts[] = {
+        // No number
+        { .inStr = "",              .outFlt = 0,        .tail = NULL,       .outModified = false },     // Empty string -> return NULL, output unchanged.
+        { .inStr = "abc",           .outFlt = 0,        .tail = NULL,       .outModified = false },     // No number -> return NULL, output unchanged.
+        { .inStr = "-abc",          .outFlt = 0,        .tail = NULL,       .outModified = false },    // A lone '-' is not a number.
+
+        // ---- Request Floating point conversion.
+
+        // Integers
+        { .inStr = "0",             .outFlt = 0.0,      .tail = "",         .outModified = true, _ReqFloat_GotFloat },      // "0" -> 0, output at end of string.
+        { .inStr = "-0",            .outFlt = 0.0,      .tail = "",         .outModified = true, _ReqFloat_GotFloat },      // "0" -> 0, output at end of string.
+        { .inStr = "23",            .outFlt = 23.0,     .tail = "",         .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = "234",           .outFlt = 234,      .tail = "",         .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = "23pqr",         .outFlt = 23,       .tail = "pqr",      .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = "23xyz",         .outFlt = 23,       .tail = "xyz",      .outModified = true, _ReqFloat_GotFloat },
+
+        // To get e.g TAG = 23.4"
+        { .inStr = ", = 23pqr",     .outFlt = 23.0,     .tail = "pqr",      .outModified = true, _ReqFloat_GotFloat, .delimiters = " ,=" },
+
+        { .inStr = "000000450xyz",  .outFlt = 450,      .tail = "xyz",      .outModified = true, _ReqFloat_GotFloat },      // Bazillion leading zeros are OK.
+        { .inStr = "-+456xyz",      .outFlt = 456,      .tail = "xyz",      .outModified = true, _ReqFloat_GotFloat },     // The '-' isn't next to number is is ignored.
+
+        { .inStr = "  123xyz",     .outFlt = 123,       .tail = "xyz",      .outModified = true, _ReqFloat_GotFloat },      // Ignore leading spaces.
+
+        { .inStr = " -234",         .outFlt = -234,     .tail = "",         .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = " +234",         .outFlt =  234,     .tail = "",         .outModified = true, _ReqFloat_GotFloat },
+
+        { .inStr = "- 234",         .outFlt = 0,        .tail = NULL,       .outModified = false },   // '-' must be connected to number.
+
+        // Fixed point
+        { .inStr = " 12.345abc",    .outFlt =  12.345,   .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = "-12.345abc",    .outFlt =  -12.345,  .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+
+        { .inStr = " 0.345abc",    .outFlt =  0.345,   .tail = "abc",       .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = "  .345abc",    .outFlt =  0.345,   .tail = "abc",       .outModified = true, _ReqFloat_GotFloat },
+
+        // Incomplete fixed point; the trailing '.' is considered part of the number.
+        { .inStr = " 12.abc",       .outFlt =  12.0,      .tail = "abc",    .outModified = true, _ReqFloat_GotFloat },
+
+        // Float
+        { .inStr = " 1.23E4abc",    .outFlt =  12300.0,  .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = " -5.67E1abc",   .outFlt =  -56.7,    .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = " 0.123E2abc",   .outFlt =  12.3,     .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = " 4.567E-5abc",  .outFlt =  4.567E-5, .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        // Also recognises 'e'
+        { .inStr = " 1.23e4abc",    .outFlt =  12300.0,  .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+
+        // Incomplete float - just mantissa as int.
+        { .inStr = " 1.23Eabc",     .outFlt =  1.23,     .tail = "Eabc",    .outModified = true, _ReqFloat_GotFloat },
+
+        // Hex - are returned as integers even if float requested.
+        { .inStr = "0x00 abc",      .outU32 = 0x0,       .tail = " abc",    .outModified = true, _ReqFloat_GaveHex },
+        { .inStr = "0xFE abc",      .outU32 = 0xFE,      .tail = " abc",    .outModified = true, _ReqFloat_GaveHex },
+        { .inStr = "0x12ACxyz",     .outU32 = 0x12AC,    .tail = "xyz",     .outModified = true, _ReqFloat_GaveHex },
+        { .inStr = "0xFFFF",        .outU32 = 0xFFFF,    .tail = "",        .outModified = true, _ReqFloat_GaveHex },
+        // 'X' is also hex.
+        { .inStr = "0XFE abc",      .outU32 = 0xFE,      .tail = " abc",    .outModified = true, _ReqFloat_GaveHex },      // "0" -> 0, output at end of string.
+        // Must be '0x..' or '0X..' Incomplete hex defaults to float if that was requested.
+        { .inStr = "xFE abc",       .outFlt = 0.0,       .tail = NULL,     .outModified = false, _ReqFloat_GotFloat},
+
+        // ---- Do not request floating point conversion.
+
+        // Give integers, get integers.
+        { .inStr = "234abc",        .outS32 = 234,       .tail = "abc",    .outModified = true, _GotSignedInt },
+        { .inStr = "-567abc",       .outS32 = -567,      .tail = "abc",    .outModified = true, _GotSignedInt },
+
+        // Give MAX_S32+1; get it back as U32.
+        { .inStr = "2147483648abc", .outU32 = 0x80000000, .tail = "abc",    .outModified = true, _GotUnsignedInt },
+        { .inStr = "4294967295abc", .outU32 = 0xFFFFFFFF, .tail = "abc",    .outModified = true, _GotUnsignedInt },
+        { .inStr = "0xFFFFFFFFpqr", .outU32 = 0xFFFFFFFF, .tail = "pqr",    .outModified = true, _GotUnsignedInt },
+
+        // Too many hex digits for U32.
+        { .inStr = "0x800000000pqr", .outU32 = 0,         .tail = NULL,    .outModified = true, _GotUnsignedInt },
+
+    };
+
+    U8 i; for(i = 0; i < RECORDS_IN(tsts); i++) {
+        S_Tst const *t = &tsts[i];
+
+        // If delimiters are specified for this test then use them; else will use default (SPC).
+        if(t->delimiters != NULL) {
+            Str_Delimiters = t->delimiters; }
+        else {
+            Str_Delimiters = NULL; }
+
+        T_FloatOrInt out;
+
+        // Prime was 'out's with some value other than the correct result. So can tell if was modified or no.
+        float was    = t->outFlt + 1;
+        S32   wasS32 = t->outS32 + 1;
+        S32   wasU32 = t->outU32 + 1;
+
+        out.reqFloat = t->reqFloat;
+        out.num.asFloat = was;
+
+        // Set output flags to opposite expected by test; can be sure they were written.
+        #define _not(b)  (b) == false ? true : false
+        out.gotInt = _not(t->gotInt);
+        out.gotUnsigned = _not(t->gotUnsigned);
+
+
+        C8 const * ret = ReadASCIIToNum(t->inStr, &out);
+
+        C8 b0[100];
+        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
+
+        if(t->outModified == false)
+            { TEST_ASSERT_EQUAL_FLOAT_MESSAGE(was, out.num.asFloat, _msg("Output should not have been modified", t)); }
+        else {
+            // If function did NOT return NULL (fail) then proceed to check contents of 'out'. Otherwise don't
+            // check because out is undefined.
+
+            if(ret != NULL) {
+               // If requested a float regardless, then ReadASCIIToNum() should not return an Int.
+               if(out.reqFloat == true && t->gaveHex == false) {
+                   TEST_ASSERT_FALSE_MESSAGE(out.gotInt, _msg("Requested float, but returned int", t)); }
+
+               if(out.gotInt == true)
+               {
+                   // The test must agree that an int is correct.
+                   TEST_ASSERT_TRUE_MESSAGE(t->gotInt, _msg("Expected float but got int", t));
+
+                   if(out.gotUnsigned == true) {
+                       TEST_ASSERT_TRUE_MESSAGE(t->gotUnsigned, _msg("Expected signed int but got unsigned", t));
+
+                       if(out.num.asU32 == wasU32) {
+                          TEST_FAIL_MESSAGE(_msg("Expected result (in 'out') but 'out' was not modified", t)); }
+                       else {
+                          TEST_ASSERT_EQUAL_UINT32_MESSAGE(t->outU32, out.num.asU32,  _msg("Incorrect output", t)); }}
+                   else {
+                       TEST_ASSERT_FALSE_MESSAGE(t->gotUnsigned, _msg("Expected unsigned int but got signed", t));
+
+                       if(out.num.asS32 == wasS32) {
+                          TEST_FAIL_MESSAGE(_msg("Expected result (in 'out') but 'out' was not modified", t)); }
+                       else {
+                          TEST_ASSERT_EQUAL_UINT32_MESSAGE(t->outS32, out.num.asS32,  _msg("Incorrect output", t)); }}
+               }
+               else {
+                   TEST_ASSERT_FALSE_MESSAGE(t->gotInt, _msg("Expected int but got float", t));
+
+                   if(out.num.asFloat == was) {
+                      TEST_FAIL_MESSAGE(_msg("Expected result (in 'out') but 'out' was not modified", t)); }
+                   else {
+                      TEST_ASSERT_EQUAL_FLOAT_MESSAGE(t->outFlt, out.num.asFloat,  _msg("Incorrect output", t)); }
+                   }}}
+
+        // Check 'tail' is correct.
+        if(t->tail == NULL && ret != NULL)
+            { TEST_FAIL_MESSAGE( _msg("Return should been NULL but wasn't",t)); }
+        else if(t->tail != NULL && ret == NULL)
+            { TEST_FAIL_MESSAGE(_msg("NULL return (wrong)",t)); }
+        else
+            { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
 }
 
 /* ---------------------------- test_ReadDirtyASCIIInt_ByCh ------------------------------------------- */
@@ -230,7 +411,7 @@ void test_ReadTaggedASCIIInt(void)
         C8 const * ret = ReadTaggedASCIIInt(t->inStr, t->tag, &out);
 
         C8 b0[100];
-        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr)
+        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
 
         if(t->outModified == false)
             { TEST_ASSERT_EQUAL_INT16_MESSAGE(was, out, _msg("Output should not have been modified", t)); }

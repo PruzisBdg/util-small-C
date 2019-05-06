@@ -15,6 +15,7 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 							$(SRCDIR)read_dirty_int.c \
 							$(SRCDIR)read_dirty_int_pass_char.c \
 							$(SRCDIR)read_next_float.c \
+							$(SRCDIR)read_next_number.c \
 							$(SRCDIR)read_tagged_int.c \
 							$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 

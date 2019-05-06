@@ -22,18 +22,80 @@ PRIVATE U8 IDATA digitsAfterDP;
 |
 ------------------------------------------------------------------------------------------*/
 
-PRIVATE void finishMantissa(float *m)
+PRIVATE float finishMantissa(float *m)
 {
    *m = *m * (isNeg ? -1.0 : 1.0) * GetPwr10Float(-digitsAfterDP);
+   return *m;
 }
 
+/*-----------------------------------------------------------------------------------------
+|
+|  finishInt()
+|
+|  Insert 'n' into 'fi' as a signed or unsigned int, depending on sign 'isNeg'.
+|  Return false if 'n' won't fit
+|
+------------------------------------------------------------------------------------------*/
+
+PRIVATE bool finishInt(T_FloatOrInt *fi, U32 n, BIT _isNeg)
+{
+   fi->gotInt = true;               // Is integer, signed or unsigned.
+
+   if(isNeg == 1)                   // Negative?
+   {
+      if(n > (U32)MAX_S32+1)        // But will not fit in S32?
+      {
+         return false;              // fail.
+      }
+      else
+      {
+         fi->num.asS32 = -(S32)n;   // else make negative an put in S32
+         fi->gotUnsigned = false;   // and it is signed.
+      }
+   }
+   else                             // else positive number.
+   {
+      if(n > MAX_S32)               // Will not fit in S32?
+      {
+         fi->num.asU32 = n;         // then put it in U32
+         fi->gotUnsigned = true;    // and is unsigned.
+      }
+      else
+      {
+         fi->num.asS32 = n;         // else it's signed in S32.
+         fi->gotUnsigned = false;
+      }
+   }
+   return true;      // Success; made an integer in 'fi'.
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  finishFloat()
+|
+------------------------------------------------------------------------------------------*/
+
+PRIVATE bool finishFloat(T_FloatOrInt *out, float f)
+{
+   if( fpclassify(f) & (FP_INFINITE | FP_NAN) != 0)
+   {
+      return false;
+   }
+   else
+   {
+      out->num.asFloat = f;        // then return it as float
+      out->gotInt = false;          // Say its a float (i.e not an int)
+      out->gotUnsigned = false;     // Park to be tidy.
+      return true;
+   }
+}
 
 
 /*-----------------------------------------------------------------------------------------
 |
-|  ReadASCIIToFloat()
+|  ReadASCIIToNum()
 |
-|  Return the next number from 'inStr' as a float into 'out', skipping any spaces/delimiters.
+|  Return the next number from 'inStr' into 'out', skipping any spaces/delimiters.
 |  The number can be an integer, hex (0xnn), or floating point as 123.45, 1.67E5.
 |
 |  Delimiters to be skipped are defined in Str_Delimiters (from the wordlist package).
@@ -46,11 +108,29 @@ PRIVATE void finishMantissa(float *m)
 |  Returns pointer to the first char after the last byte translated to a number, else NULL
 |  if could not parse a number.
 |
+|  'T_FloatOrInt *out' can hold a float, U32 or S32. Rules are:
+|     - A hex number e.g 0x1234 is always returned as U32 i.e
+|          out.gotInt <- true AND out.gotUnsigned <- true
+|
+|     - else, if out.alwaysOutputFloat == true, output a float
+|
+|     - else, if the number is e.g '12.34' or '12E34' output a float
+|
+|     - else the number is an int e.g '1234'. If that number is positive and > MAX_S32
+|       then output a U32 (out.gotUnsigned <- true)
+|
+|     - else output as S32 (out.gotUnsigned <- false)
+|
+|  Return NULL if could not parse a number into out, which may be because:
+|     - there was no number.
+|     - number was a fixed or floating point format but was too large for float
+|     - number was positive integer but > MAX_U32
+|     - number was negative integer but < MIN_S32
+|
 |  Note: If a number is NOT parsed '*out' is undefined. It may have been modified.
 |
 ------------------------------------------------------------------------------------------*/
-
-PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
+PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out)
 {
    U8 DATA ch;                   // the current char
    U8 IDATA digitCnt = 0;        // digits so ofr in mantissa or exponent
@@ -65,6 +145,9 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
    // Init these module-local vars.
    digitsAfterDP = 0;
    isNeg = 0;
+
+   float fl;
+   U32 _u32;
 
    while(1)                               // Process 1 char each loop....
    {                                      // until parsed the largest number or until definitely can't complete any number
@@ -85,7 +168,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
          }
          else if(isdigit(ch) )                  // 0-9?
          {                                      // then we are at the mantissa
-            *out = (ch - '0');                  // and this is the 1st digit
+            fl = _u32 = (ch - '0');             // and this is the 1st digit, (as both int and float as we don't yet know which the output will be).
             digitCnt = 1;
             readMantissa = 1;
          }
@@ -101,7 +184,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
          }
          else if(ch == '.')
          {
-            *out = 0;
+            fl = 0;
             readMantissa = 1;
             gotDP = 1;
          }
@@ -118,7 +201,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
          }
          else if( ch == 'x' || ch == 'X' )      // Hex, perhaps?
          {
-            if(digitCnt == 1 && *out == 0.0 && !gotDP )  // Only if it was just '0x'?
+            if(digitCnt == 1 && fl == 0.0 && !gotDP )  // Only if it was just '0x'?
             {
                readMantissa = 0;                // then stop doing this
                readHex = 1;                     // and will read following chars as hex
@@ -126,7 +209,18 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             }
             else                                // else this 'X' terminates a non-hexadecimal number
             {                                   // which is than mantissa * sign (no DP)
-               finishMantissa(out);             // Calculate mantissa from digits, sign and DP
+               if(gotDP || out->reqFloat)
+               {
+                  out->num.asFloat = finishMantissa(&fl);             // Calculate mantissa from digits, sign and DP
+                  out->gotInt = false;
+               }
+               else
+               {
+                  if( finishInt(out, _u32, isNeg) == false)
+                  {
+                     return NULL;
+                  }
+               }
                return inTxt;
             }
          }
@@ -136,7 +230,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             {                                   // then it's a legal 'E' starting an exponent
                readMantissa = 0;                // so stop processing mantissa
                readExp = 1;                     // and start doing processing exponent
-               finishMantissa(out);             // Calculate mantissa from digits, sign and DP
+               finishMantissa(&fl);             // Calculate mantissa from digits, sign and DP
                isNeg = 0;                       // Reset 'neg' flags prior to parsing the exponent
                exponent = 0;                    // Also zero the exponent itself
                digitCnt = 0;                    // and reset the digit count.
@@ -146,19 +240,31 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
                return NULL;                     // so there's no number here, return 0
             }
          }
-         else if( isdigit(ch) )                 // Another manitissa digit
+         else if( isdigit(ch) )                 // Another mantissa digit
          {
-            *out = (10.0 * *out) + (ch - '0');  // then update mantissa and count
+            fl = (10.0 * fl) + (ch - '0');      // then update mantissa and count
+            _u32 = 10 * _u32 + (ch - '0');
             digitCnt++;
 
-            if( gotDP)                          // Got DP?
+            if(gotDP)                           // Got DP?
             {
                digitsAfterDP++;                 // then also update DP count.
             }
          }
          else                                   // else not a (Hex) digit or an exponent
          {                                      // so that's the end of the number
-            finishMantissa(out);                // Calculate mantissa from digits, sign and DP.
+            if(gotDP || out->reqFloat)
+            {
+               out->num.asFloat = finishMantissa(&fl);                // Calculate mantissa from digits, sign and DP.
+               out->gotInt = false;
+            }
+            else
+            {
+               if( finishInt(out, _u32, isNeg) == false)
+               {
+                  return NULL;
+               }
+            }
             return inTxt;                       // return tail on first non-digit.
          }
       }              // end: reading mantissa
@@ -188,18 +294,33 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
          {
             if( digitCnt == 0 )                 // There were no digits?  Was just 'E' followed by no numbers
             {                                   // then it wasn't an exponent; just the mantissa was the number
+               if(digitsAfterDP > 0 || out->reqFloat)    // Was a decimal fraction? OR requested float regardless?
+               {
+                  if( finishFloat(out, fl) == false)
+                  {
+                     return NULL;
+                  }
+               }
+               else                             // else it's an integer AND did not request float regardless
+               {
+                  if(finishInt(out, _u32, isNeg) == false)
+                  {
+                     return NULL;
+                  }
+               }
                return inTxt-1;                  // So return with mantissa as it was and with tail on the 'E'...
             }                                   // which wasn't an exponent after all.
             else                                // else terminated legal exponent
-            {                                   // so scale 'out' by exponent
-               *out = *out * GetPwr10Float( isNeg ? -exponent : exponent);
+            {                                   // so scale 'fl' by exponent to give the final float output.
+               fl = fl * GetPwr10Float( isNeg ? -exponent : exponent);
 
-               if( fpclassify(*out) & (FP_INFINITE | FP_NAN) != 0) {    // Final 'float' is overrange?
-                  return NULL;                  // then fail
+               if( finishFloat(out, fl) == false)
+               {
+                  return NULL;
                }
                else
                {
-                  return inTxt;                  // and return at next char
+                  return inTxt;
                }
             }
          }
@@ -207,20 +328,24 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
 
       else if(readHex)                          // Reading Hex?
       {
-         if( !isxdigit(ch) )                    // NOT 0-9 A-F?
-         {                                      // then this terminates a legal number, whether there were hex digits
-                                                // after 'X' or no ('0X' read as zero)
-            return inTxt++;                     // so return with what we've got
+         if( digitCnt > 8 )                     // More than 32bit?
+         {                                      // then the Hex number is larger then 32 bit...
+            out->gotInt = true;                 // A fail, but at least say it was an unsigned int.
+            out->gotUnsigned = true;
+            return NULL;                        // Too big for 'out'. Fail!
          }
-         else                                   // else (another) Hex digit
-         {                                      // Add it latest total
-            if( digitCnt > 8 )                  // More than 32bit?
-            {
-               return 0;                        // then be sensible, say we're lost
+         else                                   // else, if a digit, add that digit to the total
+         {
+            if( !isxdigit(ch) )                 // NOT 0-9 A-F?
+            {                                   // then this terminates a legal number, whether there were hex digits after 'X'.
+               out->num.asU32 = _u32;
+               out->gotInt = true;              // A Hex number is an unsigned int.
+               out->gotUnsigned = true;
+               return inTxt;                    // Return the tail after the last hex digit.
             }
-            else
-            {                                   // else add the digit to the total
-               *out = (16 * *out) + HexToNibble(ch);
+            else                                // else (another) Hex digit
+            {                                   // Add it latest total
+               _u32 = 16 * _u32 + HexToNibble(ch);
                digitCnt++;                      // and update digit count
             }
          }

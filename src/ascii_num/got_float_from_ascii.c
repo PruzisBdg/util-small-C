@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------
 |
-|   
+|
 |--------------------------------------------------------------------------*/
 
 #include "libs_support.h"
@@ -15,14 +15,14 @@
 |
 |  Return 1 if a number was parsed, else zero.
 |
-|  This function is wrapper for ReadASCIIToFloat(), returnign a boolean instead of 
+|  This function is wrapper for ReadASCIIToFloat(), returning a boolean instead of
 |  a pointer to the remainder of 'inTxt'.
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC BIT GotFloatFromASCII(U8 const *inTxt, float *out) 
+PUBLIC BIT GotFloatFromASCII(U8 const *inTxt, float *out)
 {
    return ReadASCIIToFloat(inTxt, out) != 0;
-} 
+}
 
 // --------------------------------- eof --------------------------------------

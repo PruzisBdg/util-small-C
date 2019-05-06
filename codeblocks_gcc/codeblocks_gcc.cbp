@@ -151,6 +151,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/ascii_num/read_next_number.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/ascii_num/read_tagged_int.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

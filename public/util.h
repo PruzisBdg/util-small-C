@@ -72,6 +72,15 @@ PUBLIC U32 HexASCII_ToU32(U8 const *hexStr);
 
 // -------------------------- ACSII to Number Parsers ------------------------
 
+// A multi-type 32-bit number;
+typedef struct {
+    union { float asFloat; S32 asS32; U32 asU32; } num;
+    bool gotInt;
+    bool gotUnsigned;
+    bool reqFloat;
+} T_FloatOrInt;
+
+PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out);
 PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out);
 PUBLIC BIT        GotFloatFromASCII(U8 const *inTxt, float *out);
 PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out);
