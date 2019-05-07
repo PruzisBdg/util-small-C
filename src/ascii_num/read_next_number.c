@@ -77,7 +77,7 @@ PRIVATE bool finishInt(T_FloatOrInt *fi, U32 n, BIT _isNeg)
 
 PRIVATE bool finishFloat(T_FloatOrInt *out, float f)
 {
-   if( fpclassify(f) & (FP_INFINITE | FP_NAN) != 0)
+   if( fpclassify(f) == FP_INFINITE || fpclassify(f) == FP_NAN)
    {
       return false;
    }
@@ -280,14 +280,13 @@ PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out)
          }
          else if( isdigit(ch) )                 // Next digit (of exponent)?
          {
-            if( digitCnt > 3 )                  // Can't be > +/-999
+            if( ++digitCnt > 3 )                  // Can't be > +/-999
             {
-               return 0;                        // Illegal number, return 0;
+               return NULL;                     // Illegal number, return 0;
             }
             else                                // else it's a legal addition to the exponent
             {
                exponent = 10 * exponent + (ch - '0');    // Update the value
-               digitCnt++;                      // and the count
             }
          }
          else                                   // else not '+', '-' or '0-9'?

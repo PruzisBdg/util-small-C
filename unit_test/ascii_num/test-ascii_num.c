@@ -157,6 +157,9 @@ void test_ReadASCIIToFloat(void)
         { .inStr = "0xFE abc",      .result = 254.0,     .tail = " abc",    .outModified = true },
         { .inStr = "0x12ACxyz",     .result = 4780.0,    .tail = "xyz",     .outModified = true },
         { .inStr = "0xFFFF",        .result = 65535.0,   .tail = "",        .outModified = true },
+        // Lowercase OK.
+        { .inStr = "0xabcdefpqr",   .result = 11259375.0,.tail = "pqr",     .outModified = true },     // Kinda suprised float does this.
+
         // 'X' is also hex.
         { .inStr = "0XFE abc",      .result = 254.0,     .tail = " abc",    .outModified = true },      // "0" -> 0, output at end of string.
         // Must be '0x..' or '0X..'
@@ -211,6 +214,7 @@ void test_ReadASCIIToNum(void)
     #define _ReqFloat_GaveHex   .reqFloat = true,  .gaveHex = true,  .gotInt = true,   .gotUnsigned = true
     #define _GotSignedInt       .reqFloat = false, .gaveHex = false, .gotInt = true,   .gotUnsigned = false
     #define _GotUnsignedInt     .reqFloat = false, .gaveHex = false, .gotInt = true,   .gotUnsigned = true
+    #define _GotFloat           .reqFloat = false, .gaveHex = false, .gotInt = false,  .gotUnsigned = true
 
     S_Tst const tsts[] = {
         // No number
@@ -252,6 +256,10 @@ void test_ReadASCIIToNum(void)
         { .inStr = " 12.abc",       .outFlt =  12.0,      .tail = "abc",    .outModified = true, _ReqFloat_GotFloat },
 
         // Float
+        { .inStr = " 0.0abc",       .outFlt =  0.0,      .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = " 0.5abc",       .outFlt =  0.5,      .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = " 5.abc",        .outFlt =  5.0,      .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
+        { .inStr = "  .5abc",       .outFlt =  0.5,      .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
         { .inStr = " 1.23E4abc",    .outFlt =  12300.0,  .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
         { .inStr = " -5.67E1abc",   .outFlt =  -56.7,    .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
         { .inStr = " 0.123E2abc",   .outFlt =  12.3,     .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
@@ -262,26 +270,51 @@ void test_ReadASCIIToNum(void)
         // Incomplete float - just mantissa as int.
         { .inStr = " 1.23Eabc",     .outFlt =  1.23,     .tail = "Eabc",    .outModified = true, _ReqFloat_GotFloat },
 
+        // Overrange -> INF
+        { .inStr = " 1.23E999abc",     .outFlt =  1.23,     .tail = NULL,    .outModified = true, _ReqFloat_GotFloat },
+        // Too many exponent digits.
+        { .inStr = " 1.23E9999abc",     .outFlt =  1.23,     .tail = NULL,    .outModified = true, _ReqFloat_GotFloat },
+
         // Hex - are returned as integers even if float requested.
         { .inStr = "0x00 abc",      .outU32 = 0x0,       .tail = " abc",    .outModified = true, _ReqFloat_GaveHex },
         { .inStr = "0xFE abc",      .outU32 = 0xFE,      .tail = " abc",    .outModified = true, _ReqFloat_GaveHex },
         { .inStr = "0x12ACxyz",     .outU32 = 0x12AC,    .tail = "xyz",     .outModified = true, _ReqFloat_GaveHex },
         { .inStr = "0xFFFF",        .outU32 = 0xFFFF,    .tail = "",        .outModified = true, _ReqFloat_GaveHex },
+        // Lowercase OK
+        { .inStr = "0xabcdefpqr",   .outU32 = 0xabcdef,  .tail = "pqr",     .outModified = true, _ReqFloat_GaveHex },
         // 'X' is also hex.
         { .inStr = "0XFE abc",      .outU32 = 0xFE,      .tail = " abc",    .outModified = true, _ReqFloat_GaveHex },      // "0" -> 0, output at end of string.
         // Must be '0x..' or '0X..' Incomplete hex defaults to float if that was requested.
-        { .inStr = "xFE abc",       .outFlt = 0.0,       .tail = NULL,     .outModified = false, _ReqFloat_GotFloat},
+        { .inStr = "xFE abc",       .outFlt = 0.0,       .tail = NULL,      .outModified = false, _ReqFloat_GotFloat},
+
+        // Just exponent symbol, no number ahead
+        { .inStr = ".E5 abc",       .outFlt = 0.0,       .tail = NULL,      .outModified = false, _ReqFloat_GotFloat},
+        { .inStr = "+E20 abc",      .outFlt = 0.0,       .tail = NULL,      .outModified = false, _ReqFloat_GotFloat},
 
         // ---- Do not request floating point conversion.
 
         // Give integers, get integers.
         { .inStr = "234abc",        .outS32 = 234,       .tail = "abc",    .outModified = true, _GotSignedInt },
         { .inStr = "-567abc",       .outS32 = -567,      .tail = "abc",    .outModified = true, _GotSignedInt },
+        // Has the form of a float, even though it's a whole number -> is returned as a float.
+        { .inStr = " 5.abc",        .outFlt =  5.0,      .tail = "abc",     .outModified = true, _GotFloat },
+        { .inStr = " 5.0abc",        .outFlt =  5.0,      .tail = "abc",     .outModified = true, _GotFloat },
+        // 'E' looked like a float but wasn't. Return as int.
+        { .inStr = "789E",          .outS32 = 789,       .tail = "E",    .outModified = true, _GotSignedInt },
 
-        // Give MAX_S32+1; get it back as U32.
+        // Give float, get float
+        { .inStr = " 1.23E4abc",    .outFlt =  12300.0,  .tail = "abc",     .outModified = true, _GotFloat },
+
+        // MAX_S32 -> return as signed (S32)...
+        { .inStr = "2147483647abc", .outS32 = 0x7FFFFFFF, .tail = "abc",    .outModified = true, _GotSignedInt },
+        // ... but MAX_S32+1; get it back as U32.
         { .inStr = "2147483648abc", .outU32 = 0x80000000, .tail = "abc",    .outModified = true, _GotUnsignedInt },
         { .inStr = "4294967295abc", .outU32 = 0xFFFFFFFF, .tail = "abc",    .outModified = true, _GotUnsignedInt },
         { .inStr = "0xFFFFFFFFpqr", .outU32 = 0xFFFFFFFF, .tail = "pqr",    .outModified = true, _GotUnsignedInt },
+        // MIN_S32
+        { .inStr = "-2147483648abc", .outS32 = -2147483648, .tail = "abc",    .outModified = true, _GotSignedInt },
+        // One less than min S32 -> fail
+        { .inStr = "-2147483649abc", .outS32 = 0,         .tail = NULL,    .outModified = true, _GotSignedInt },
 
         // Too many hex digits for U32.
         { .inStr = "0x800000000pqr", .outU32 = 0,         .tail = NULL,    .outModified = true, _GotUnsignedInt },
