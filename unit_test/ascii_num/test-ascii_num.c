@@ -312,6 +312,7 @@ void test_ReadASCIIToNum(void)
         // MAX_S32 -> return as signed (S32)...
         { .inStr = "2147483647abc", .outS32 = 0x7FFFFFFF, .tail = "abc",    .outModified = true, _GotSignedInt },
         // ... but MAX_S32+1; get it back as U32.
+        { .inStr = "0xABCpqr",      .outU32 = 0xABC,      .tail = "pqr",    .outModified = true, _GotUnsignedInt },
         { .inStr = "2147483648abc", .outU32 = 0x80000000, .tail = "abc",    .outModified = true, _GotUnsignedInt },
         { .inStr = "4294967295abc", .outU32 = 0xFFFFFFFF, .tail = "abc",    .outModified = true, _GotUnsignedInt },
         { .inStr = "0xFFFFFFFFpqr", .outU32 = 0xFFFFFFFF, .tail = "pqr",    .outModified = true, _GotUnsignedInt },
@@ -415,18 +416,20 @@ void test_ReadDirtyASCIIInt_ByCh(void)
 
 void test_ReadTaggedASCIIInt(void)
 {
-    typedef struct { C8 const *inStr; C8 const *tag; S16 result; C8 const *tail; bool outModified; } S_Tst;
+    typedef struct { C8 const *inStr; C8 const *tag; C8 const *delimiters; S32 result; C8 const *tail; bool outModified; } S_Tst;
 
     S_Tst const tsts[] = {
         // Match a tag.
-        { .inStr = "ABC 123 def",       .tag = "ABC",   .result = 123,  .tail = " def",     .outModified = true },
-        // Get 1st number after, bypassing intervening words.
-        { .inStr = "ABC def 123 ghi",   .tag = "ABC",   .result = 123,  .tail = " ghi",     .outModified = true },
+        { .inStr = "ABC 123 def",       .tag = "ABC",   .result = 123,     .tail = " def",     .outModified = true },
+        { .inStr = "ABC -789 def",      .tag = "ABC",   .result = -789,    .tail = " def",     .outModified = true },
+        { .inStr = "TAG 0xABC def",     .tag = "TAG",   .result = 0xABC,   .tail = " def",     .outModified = true },
         // Tag is e.g the 2nd word, rather than the 1st.
         { .inStr = "ABC DEF 123 ghi",   .tag = "DEF",   .result = 123,  .tail = " ghi",     .outModified = true },
         // Tail may be glued to number.
         { .inStr = "ABC 123def",        .tag = "ABC",   .result = 123,  .tail = "def",     .outModified = true },
 
+        // With additional delimiters.
+        { .inStr = "Var := 123 def",     .tag = "Var",   .result = 123,   .tail = " def", .outModified = true, .delimiters = " =:" },
         // Fails.
 
         // Empty string, empty tag -> return NULL, output unchanged.
@@ -443,17 +446,17 @@ void test_ReadTaggedASCIIInt(void)
 
     U8 i; for(i = 0; i < RECORDS_IN(tsts); i++) {
         S_Tst const *t = &tsts[i];
-        S16 was = t->result + 1;
-        S16 out = was;
-        C8 const * ret = ReadTaggedASCIIInt(t->inStr, t->tag, &out);
+        S32 was = t->result + 2;
+        S32 out = was;
+        C8 const * ret = ReadTaggedASCIIInt(t->inStr, t->tag, &out, t->delimiters);
 
         C8 b0[100];
         #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
 
         if(t->outModified == false)
-            { TEST_ASSERT_EQUAL_INT16_MESSAGE(was, out, _msg("Output should not have been modified", t)); }
+            { TEST_ASSERT_EQUAL_INT32_MESSAGE(was, out, _msg("Output should not have been modified", t)); }
         else
-            { TEST_ASSERT_EQUAL_INT16_MESSAGE(t->result, out,  _msg("Incorrect output", t)); }
+            { TEST_ASSERT_EQUAL_INT32_MESSAGE(t->result, out,  _msg("Incorrect output", t)); }
 
         if(t->tail == NULL && ret != NULL)
             { TEST_FAIL_MESSAGE( _msg("Return should been NULL but wasn't",t)); }
