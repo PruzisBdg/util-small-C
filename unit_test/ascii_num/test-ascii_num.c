@@ -245,6 +245,10 @@ void test_ReadASCIIToNum(void)
 
         { .inStr = "- 234",         .outFlt = 0,        .tail = NULL,       .outModified = false },   // '-' must be connected to number.
 
+        // Where '+' or '-' are defined as delimiters. Must still see read the '-' directly in from of the number.
+        { .inStr = "-+- -234abc",   .outFlt = -234.0,   .tail = "abc",      .outModified = true, _ReqFloat_GotFloat, .delimiters = " -+" },
+        { .inStr = "+++ +234abc",   .outFlt = 234.0,    .tail = "abc",      .outModified = true, _ReqFloat_GotFloat, .delimiters = " -+" },
+
         // Fixed point
         { .inStr = " 12.345abc",    .outFlt =  12.345,   .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
         { .inStr = "-12.345abc",    .outFlt =  -12.345,  .tail = "abc",     .outModified = true, _ReqFloat_GotFloat },
