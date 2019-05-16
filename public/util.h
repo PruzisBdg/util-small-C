@@ -312,6 +312,7 @@ extern S16 const     DaysToMonthStartTbl[];
 /* --------------------------- Pretty Prints -------------------------------------- */
 PUBLIC C8 const * ArrayPrettyPrint(C8 *out, U16 outBufLen, C8 const *prefix, U8 const *src, size_t len, U16 maxLine);
 PUBLIC C8 const * PrintU8s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, U8 const *src, size_t numBytes);
+PUBLIC C8 const * PrintS16s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, S16 const *src, size_t numBytes);
 
 /* -------------------------- Table search ----------------------------------------- */
 
