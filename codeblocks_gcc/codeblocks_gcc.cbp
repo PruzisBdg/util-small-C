@@ -442,6 +442,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/stacks/ptr_stack.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/stores/c8_bag.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
