@@ -32,15 +32,15 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.25.0" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.25.0" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -425,6 +425,10 @@
       <SubType>compile</SubType>
       <Link>src\srecord\parse_s_record.c</Link>
     </Compile>
+    <Compile Include="..\src\stacks\ptr_stack.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\stacks\ptr_stack.c</Link>
+    </Compile>
     <Compile Include="..\src\stores\c8_bag.c">
       <SubType>compile</SubType>
       <Link>src\stores\c8_bag.c</Link>
@@ -579,6 +583,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="as7_util_arm_gcc\" />
+    <Folder Include="as7_util_arm_gcc\src\" />
+    <Folder Include="as7_util_arm_gcc\src\stacks\" />
+    <Folder Include="Debug\" />
+    <Folder Include="Debug\src\" />
+    <Folder Include="Debug\src\stacks\" />
     <Folder Include="GenericTypes" />
     <Folder Include="arith_incl" />
     <Folder Include="private" />
@@ -593,6 +603,7 @@
     <Folder Include="src\misc" />
     <Folder Include="src\network" />
     <Folder Include="src\misc2" />
+    <Folder Include="src\stacks" />
     <Folder Include="src\words" />
     <Folder Include="src\wordlist" />
     <Folder Include="src\timedate" />
