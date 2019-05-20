@@ -156,11 +156,11 @@ PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out)
       if( !readMantissa && !readExp && !readHex )     // Haven't reached mantissa?
       {
          /* Boof past any delimiters until we get to a digit '+','-', or '.' which may start a number.
-            We must handle the corner-case where '+' or '-' are themselves defined as delimiters and
+            Handle the corner-case where '+' or '-' are themselves defined as delimiters and
             there's also a "-' or '+' prefixed to the number.
          */
-         if( Str_Delimiter(ch) == 1 &&                // A delimiter specified by 'Str_Delimiters'?, Default is SPC.
-             !(                                       // but NOT a "+' or '-' directly before a digit?
+         if( Str_Delimiter(ch) == 1 &&          // A delimiter specified by 'Str_Delimiters'?, Default is SPC.
+             !(                                 // but NOT a "+' or '-' directly before a digit?
                   (isdigit(*(inTxt+1)) || *(inTxt+1) == '.') &&
                   (ch == '-' || ch == '+')
                ))

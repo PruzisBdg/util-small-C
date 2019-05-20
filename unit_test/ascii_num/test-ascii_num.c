@@ -466,5 +466,4 @@ void test_ReadTaggedASCIIInt(void)
             { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
 }
 
-
 // ----------------------------------------- eof --------------------------------------------
