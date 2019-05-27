@@ -193,10 +193,12 @@ PUBLIC U8 IdxToLsbSet_U16(U16 n);
 
 PUBLIC U8 NumBitsSet_U32(U32 n);
 PUBLIC U8 IdxToLsbSet_U32(U32 n);
+PUBLIC U8 SWAR32(U32 n);            // SWAR = Sideways addition. Faster than NumBitsSet_U32().
 
 PUBLIC U8  MakeAtoBSet_U8 (U8 msb, U8 lsb);
 PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
+
 
 /* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
 typedef U16 T_bit64K;

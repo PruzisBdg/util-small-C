@@ -267,6 +267,35 @@ void test_MakeAtoBSet_U32(void)
 }
 
 
+/* ------------------------------- test_SWAR32 ------------------------------------------------ */
+
+void test_SWAR32 (void)
+{
+   typedef struct { U32 in; U8 cnt; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .in = 0x00000000,     .cnt = 0x00 },    // None set
+      { .in = 0xFFFFFFFF,     .cnt = 0x20 },    // All set
+      { .in = 0x000F0000,     .cnt = 0x04 },    // Try some others.
+      { .in = 0x00F00090,     .cnt = 0x06 },
+      { .in = 0x0F000000,     .cnt = 0x04 },
+      { .in = 0xF00F0107,     .cnt = 0x0C },
+      { .in = 0x00FEF701,     .cnt = 0x0F },
+      { .in = 0x30080020,     .cnt = 0x04 },
+      { .in = 0x0F100F03,     .cnt = 0x0B },
+      { .in = 0xFF0F00A5,     .cnt = 0x10 },
+      { .in = 0xFEAFA0A0,     .cnt = 0x11 },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      U8 rtn = SWAR32(t->in);
+      TEST_ASSERT_EQUAL_UINT8(t->cnt, rtn);
+   }
+}
+
+
 
 
 // ----------------------------------------- eof --------------------------------------------
