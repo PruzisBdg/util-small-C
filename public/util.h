@@ -170,21 +170,20 @@ PUBLIC U8 * byteBuf_ToFill( S_byteBuf *b, U8 cnt);
 PUBLIC void byteBuf_Unlock(S_byteBuf *b);
 
 
-
 // Wrapper for a for() loop.
 PUBLIC void RepeatIdxFunc( void( *func)(U8), U8 repeatCnt);
 
 /* ---------------------------- void* Stack ------------------------------ */
 
-typedef struct { void **base; U8 size, put; } S_VoidStack;
+typedef struct { void **base; U8 size, put; } S_PtrStack;
 
-PUBLIC bool  VoidStack_Init(S_VoidStack *stk, void **voidsBuf, U8 size);
-PUBLIC bool  VoidStack_Push(S_VoidStack *stk, void *p);
-PUBLIC void* VoidStack_Pop(S_VoidStack *stk);
-PUBLIC void* VoidStack_Top(S_VoidStack *stk);
-PUBLIC void  VoidStack_Flush(S_VoidStack *stk);
-PUBLIC U8    VoidStack_Cnt(S_VoidStack *stk);
-PUBLIC U8    VoidStack_Free(S_VoidStack *stk);
+PUBLIC bool  PtrStack_Init(S_PtrStack *stk, void **voidsBuf, U8 size);
+PUBLIC bool  PtrStack_Push(S_PtrStack *stk, void *p);
+PUBLIC void* PtrStack_Pop(S_PtrStack *stk);
+PUBLIC void* PtrStack_Top(S_PtrStack *stk);
+PUBLIC void  PtrStack_Flush(S_PtrStack *stk);
+PUBLIC U8    PtrStack_Cnt(S_PtrStack *stk);
+PUBLIC U8    PtrStack_Free(S_PtrStack *stk);
 
 /* ---------------------------- Bits ---------------------------------- */
 

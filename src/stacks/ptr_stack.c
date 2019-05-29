@@ -14,7 +14,7 @@
 #include <string.h>
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC bool VoidStack_Init(S_VoidStack *stk, void **voidsBuf, U8 size)
+PUBLIC bool PtrStack_Init(S_PtrStack *stk, void **voidsBuf, U8 size)
 {
    if(voidsBuf == NULL) {        // No buffer?
       return false; }            // fail
@@ -26,7 +26,7 @@ PUBLIC bool VoidStack_Init(S_VoidStack *stk, void **voidsBuf, U8 size)
 }
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC bool VoidStack_Push(S_VoidStack *stk, void *p)
+PUBLIC bool PtrStack_Push(S_PtrStack *stk, void *p)
 {
    if( stk->base == NULL || stk->size == 0 ||      // No/zero-size stack? OR
        stk->put >= stk->size) {                    // is full?
@@ -37,7 +37,7 @@ PUBLIC bool VoidStack_Push(S_VoidStack *stk, void *p)
 }
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC void* VoidStack_Pop(S_VoidStack *stk)
+PUBLIC void* PtrStack_Pop(S_PtrStack *stk)
 {
    if( stk->base == NULL || stk->size == 0 ||      // No/zero-size stack? OR
        stk->put == 0) {                            // is empty?
@@ -47,7 +47,7 @@ PUBLIC void* VoidStack_Pop(S_VoidStack *stk)
 }
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC void VoidStack_Flush(S_VoidStack *stk)
+PUBLIC void PtrStack_Flush(S_PtrStack *stk)
 {
    if(stk->base != NULL) {
       memset(stk->base, 0, stk->size * sizeof(void*)); }    // Be tidy (for debug at least). Clean off the actual stack.
@@ -55,7 +55,7 @@ PUBLIC void VoidStack_Flush(S_VoidStack *stk)
 }
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC void* VoidStack_Top(S_VoidStack *stk)
+PUBLIC void* PtrStack_Top(S_PtrStack *stk)
 {
    if( stk->base == NULL || stk->size == 0 ||      // No/zero-size stack? OR
        stk->put == 0) {                            // is empty?
@@ -65,11 +65,11 @@ PUBLIC void* VoidStack_Top(S_VoidStack *stk)
 }
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC U8 VoidStack_Cnt(S_VoidStack *stk)
+PUBLIC U8 PtrStack_Cnt(S_PtrStack *stk)
    { return stk->put; }
 
 // -----------------------------------------------------------------------------------------------
-PUBLIC U8 VoidStack_Free(S_VoidStack *stk)
+PUBLIC U8 PtrStack_Free(S_PtrStack *stk)
    { return stk->size == 0 ? 0 : stk->size - stk->put; }
 
 
