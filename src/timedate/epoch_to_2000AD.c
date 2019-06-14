@@ -7,12 +7,10 @@
 
 PUBLIC T_Seconds32 EpochTo2000AD(T_Seconds32 epochSecs)
 {
-   #define _2000AD_Epoch_secs 946728000UL
-
    return
-      epochSecs < _2000AD_Epoch_secs
+      epochSecs < _12am_Jan_1st_2000_Epoch_secs
          ? 0
-         : epochSecs - _2000AD_Epoch_secs;
+         : epochSecs - _12am_Jan_1st_2000_Epoch_secs;
 }
 
 // =============================== eof =======================================

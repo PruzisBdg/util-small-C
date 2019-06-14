@@ -312,6 +312,9 @@ PUBLIC U8            YMDHMS_ToStr(S_DateTime const *t, C8 *outStr);
 PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);
 PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
 
+#define _12am_Jan_1st_2000_Epoch_secs 946684800UL
+
+
 extern S16 const     DaysToMonthStartTbl[];
 
 #define _ISO8601_YMDHMS_MaxStr (sizeof("2018-03-06T20:28:44") + 2)
