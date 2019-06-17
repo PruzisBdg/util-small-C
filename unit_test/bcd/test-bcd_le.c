@@ -97,7 +97,7 @@ void test_bcdLE_U16(void)
       /* Pre-fill out with something other than the expected value. If input is out of range
          then 'out' should be left unchanged.
       */
-      U16 prefill= t->out + 1;
+      U16 prefill= (t->out + 1) << 1;
       U16 out = prefill;
 
       bool ret = bcdLE_U16( (U8*)&out, t->in);
@@ -143,7 +143,7 @@ void test_bcdLE_U32(void)
       /* Pre-fill out with something other than the expected value. If input is out of range
          then 'out' should be left unchanged.
       */
-      U32 prefill= t->out + 1;
+      U32 prefill= (t->out + 1) << 1;
       U32 out = prefill;
 
       bool ret = bcdLE_U32( (U8*)&out, t->in);
@@ -189,7 +189,7 @@ void test_bcdLE_U48(void)
       /* Pre-fill out with something other than the expected value. If input is out of range
          then 'out' should be left unchanged.
       */
-      U64 prefill= t->out + 1;
+      U64 prefill= ((t->out+1) << 1) & 0xFFFFFFFFFFFF;
       U64 out = prefill;
 
       bool ret = bcdLE_U48( (U8*)&out, t->in);
@@ -206,7 +206,7 @@ void test_bcdLE_U48(void)
                   i, out);
                TEST_ASSERT_TRUE(FALSE); }}
          else {
-            printf("bcdLE_U48() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
+            printf("bcdLE_U48() failed tst #%d  Expected %lu -> 0x%02lX got 0x%02lX",
                i, t->in, t->out, out);
             TEST_ASSERT_TRUE(FALSE); }}
    }
@@ -235,7 +235,7 @@ void test_bcdLE_U64(void)
       /* Pre-fill out with something other than the expected value. If input is out of range
          then 'out' should be left unchanged.
       */
-      U64 prefill= t->out + 1;
+      U64 prefill= (t->out+1) << 1;
       U64 out = prefill;
 
       bool ret = bcdLE_U64( (U8*)&out, t->in);
