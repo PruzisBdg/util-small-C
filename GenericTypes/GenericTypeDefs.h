@@ -29,6 +29,8 @@ typedef enum _BIT { CLEAR = 0, SET } BIT;
 #define PUBLIC                                  /* Function attributes */
 #define PROTECTED
 #define PRIVATE static
+typedef unsigned long long U64;
+typedef signed long long S64;
 
 typedef signed short int S16;                      // Succinct versions of the above
 typedef signed long int S32;

@@ -162,6 +162,11 @@
 			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
+		<Unit filename="../src/bcd/bcd_le.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/bits/bit64k_copy.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -599,6 +604,13 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/ascii_num/test-ascii_num.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bcd/bcd_le.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bcd/test-bcd_le.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>

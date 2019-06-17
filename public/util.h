@@ -198,6 +198,12 @@ PUBLIC U8  MakeAtoBSet_U8 (U8 msb, U8 lsb);
 PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
+/* ---------------------------------- BCD ------------------------------------------- */
+PUBLIC bool bcdLE_U8( U8 *out, U8 n );
+PUBLIC bool bcdLE_U16(U8 *out, U16 n);
+PUBLIC bool bcdLE_U32(U8 *out, U32 n);
+PUBLIC bool bcdLE_U48(U8 *out, U64 n);
+PUBLIC bool bcdLE_U64(U8 *out, U64 n);
 
 /* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
 typedef U16 T_bit64K;
