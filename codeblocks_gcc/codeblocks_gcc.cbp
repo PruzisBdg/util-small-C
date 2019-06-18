@@ -66,8 +66,8 @@
 			<Add directory="../GenericTypes" />
 			<Add directory="../private" />
 			<Add directory="../public" />
-			<Add directory="../arith_incl" />
 			<Add directory="../src" />
+			<Add directory="$(SPJ_SWR_LOC)/arith/public" />
 			<Add directory="../../tiny2/public" />
 		</Compiler>
 		<Unit filename="../../unity_tdd/tdd_common.c">
@@ -148,6 +148,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/ascii_num/read_dirty_int_pass_char.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/ascii_num/read_dirty_s32.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />

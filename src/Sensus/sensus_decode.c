@@ -21,16 +21,16 @@ typedef U8  Sens_T_FlowDir;
 typedef S16 Sens_T_degC;
 typedef S16 Sens_T_degC;
 
-// The kind of Encoder message.
+// The kind of Encoder message.'m' <-> masks
 typedef enum {
-   eADE        = 0x01,
-   eGen1       = 0x02,
-   eGen2       = 0x04,
-   eHRE        = 0x08,
-   eHRE_LCD    = 0x10,
-   eMag        = 0x20,
-   eAnyEncoder = 0xFF
-} Sens_E_EncType;
+   mADE        = 0x01,
+   mGen1       = 0x02,
+   mGen2       = 0x04,
+   mHRE        = 0x08,
+   mHRE_LCD    = 0x10,
+   mMag        = 0x20,
+   mAnyEncoder = 0xFF
+} Sens_M_EncType;
 
 typedef enum {
    eMeterType_Undefined = 0,
@@ -70,8 +70,8 @@ typedef struct {
 #define _enc_MaxSerNumChars 10
 
 typedef struct {
-   Sens_E_EncType    encoderType;
-   Sens_S_WotWeGot   wotWeGot;
+   Sens_M_EncType    encoderType;
+   Sens_S_WotWeGot   weGot;
    C8                serNumStr[_enc_MaxSerNumChars+1];
    Sens_T_Tot        rawTot;
    Sens_T_FlowPcent  flowPcent;
@@ -105,14 +105,22 @@ _EXPORT_FOR_TEST C8 const *startField(C8 const *src, C8 const *tag) {
                ? NULL
                : src+3 )); }
 
+/* ---------------------------------- endMsg -------------------------------------------------
+
+   <CR> or '\0' finishes an encoder message.
+*/
+static bool inline endMsg(C8 const *src) {
+   #define CR 0x13
+   return src[0] == '\0' || src[0] == CR; }
+
+
 /* --------------------------------- endField ----------------------------------------------------
 
    Return true if 'src' is ';' which ends/start  a field or <CR> or '\0' which ends and encoder
    message.
 */
-_EXPORT_FOR_TEST bool endField(C8 const *src) {
-   #define CR 0x13
-   return src[0] == ';' || src[0] == '\0' || src[0] == CR; }
+PRIVATE bool endField(C8 const *src) {
+   return src[0] == ';' || endMsg(src); }
 
 
 /* --------------------------------- copySerNum ---------------------------------------------------
@@ -124,10 +132,10 @@ _EXPORT_FOR_TEST bool endField(C8 const *src) {
 
    If success then return on the trailing ';'; else return NULL.
 */
-_EXPORT_FOR_TEST C8 const * copySerNum(C8 *out, C8 const *src)
+_EXPORT_FOR_TEST C8 const * copySerNum(C8 const *src, C8 *out)
 {
    for(U8 i = 0; i < _enc_MaxSerNumChars; i++, src++, out++) {    // From 'src', up to 10 (alphanumeric) chars
-      if( endField(*src) == true ) {                              // Field delimiter ie ';', <CR> or '\0'?
+      if( endField(src) == true ) {                               // Field delimiter ie ';', <CR> or '\0'?
          *out = '\0';                                             // Terminate whatever we built in 'out'.
          return i == 0                                            // Didn't even get 1 char?
             ? NULL                                                // then fail, serial number cannot be empty.
@@ -137,6 +145,7 @@ _EXPORT_FOR_TEST C8 const * copySerNum(C8 *out, C8 const *src)
 
    return NULL;      // Got a non-alphanumeric before filed delimiter.
 }
+
 
 /* --------------------------------- Sensus_BlockDecode --------------------------------------------
 
@@ -153,7 +162,7 @@ _EXPORT_FOR_TEST C8 const * copySerNum(C8 *out, C8 const *src)
    If decode succeeds 'rawTot' and 'serNum' in 'out' will always be populated. Other fields will
    be updated if there's content in the message for them; otherwise they will be left alone.
 
-   'out->wotWeGot tabulates which fields were received. It includes 'rawTot', 'serNum' though
+   'out->weGot tabulates which fields were received. It includes 'rawTot', 'serNum' though
    really, these will always be true, but we include them for completeness.
 
    Sensus_BlockDecode() fails at the first 'src' byte which doesn't obey any format. It stops,
@@ -185,17 +194,47 @@ _EXPORT_FOR_TEST C8 const * copySerNum(C8 *out, C8 const *src)
       XPiijjkk             -
 */
 
-PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_E_EncType lookFor)
+PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncType lookFor)
 {
    if(*src == 'V') {
       if(NULL != (src = startField(src, "RB"))) {
-         T_FloatOrInt fi = {0};
-         if(NULL != (src = ReadASCIIToNum(src, &fi))) {
-            if(fi.gotUnsigned == true && fi.gotInt == true) {
+         S32 t;
+         if( NULL != (src = ReadDirtyASCII_S32(src, &t))) {
+            if(t >= 0 && t <= 999999999) {
+               out->rawTot = t;
+               out->weGot.rawTot = 1;
+               if(NULL != (src = startField(src, "IB"))) {
+                  if(NULL != (src = copySerNum(src, out->serNumStr))) {
+                     out->weGot.serNum = 1;
+
+                     if(NULL != (src = startField(src, "M"))) {
+                        if(BSET(lookFor, mHRE)) {
+                           // Get Mbbbb?!
+                        }
+                     }
+                     else if(NULL != (src = startField(src, "GC"))) {
+                        if(BSET(lookFor, mGen1 | mGen2 | mHRE_LCD | mMag)) {
+                           S16 fpc;
+                           if(NULL != (src = ReadDirtyASCIIInt(src, &fpc))) {
+                              if(fpc >= 0 && fpc <= 99) {
+                                 out->flowPcent = fpc;
+                                 out->weGot.flowPcent = 1;
+
+                              }
+                           }
+                        }
+                     }
+                     else if( endMsg(src) && BSET(lookFor, mADE) ) {
+                        return true;
+                     }
+
+                  }
+               }
             }
          }
       }
    }
+   return false;
 }
 
 // ------------------------------------------ eof ------------------------------------------------
