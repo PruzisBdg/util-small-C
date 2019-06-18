@@ -116,6 +116,12 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../public/wordlist.h" />
+		<Unit filename="../src/Sensus/sensus_decode.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/SumBytesU8.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -676,6 +682,13 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/printfs/tiny1_sprintf.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/sensus/sensus_decode.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/sensus/test-sensus_decode.c">
+			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/timedate/test-timedate.c">

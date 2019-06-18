@@ -74,6 +74,14 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 #define XCAT(x,y)  CAT(x,y)
 #define CASSERT(condition) enum { XCAT(_compile_assert_var_at_line_,  __LINE__) = 1/(condition) };
 
+// Export some normally private functions for Unity TDD.
+#ifdef UNITY_TDD
+   #define _EXPORT_FOR_TEST PUBLIC
+#else
+   #define _EXPORT_FOR_TEST PRIVATE
+#endif
+
+
 
 #endif // LIBS_SUPPORT_H
 

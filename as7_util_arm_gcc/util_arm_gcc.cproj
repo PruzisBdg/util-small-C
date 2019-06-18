@@ -106,8 +106,8 @@
       <Value>../../GenericTypes</Value>
       <Value>../../private</Value>
       <Value>../../public</Value>
-      <Value>../../arith_incl</Value>
       <Value>../../src</Value>
+      <Value>../../../arith/public</Value>
       <Value>../../../tiny2/public</Value>
       <Value>%24(PackRepoDir)\Atmel\SAML22_DFP\1.2.77\include</Value>
     </ListValues>

@@ -21,7 +21,7 @@ OUT_FILE = -o $(TARGET)
 SYMBOLS=-DTEST
 
 # All arith tests reference the same includes
-INC_DIRS := $(INC_DIRS) -I. -I../../src -I../../arith_incl
+INC_DIRS := $(INC_DIRS) -I. -I../../src -I$(SPJ_SWR_LOC)/arith/public
 
 # --------------------------------- eof ------------------------------------
 

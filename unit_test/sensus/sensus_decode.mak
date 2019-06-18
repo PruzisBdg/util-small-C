@@ -1,24 +1,20 @@
 # ------------------------------------------------------------------
 #
-# TDD makefile for Basic Integer lib
+# TDD makefile bits lib
 #
 # ---------------------------------------------------------------------
 
 # Code folder, test folder and test file all get same name.
-TARGET_BASE = ascii_num
-TARGET_BASE_DIR = $(TARGET_BASE)
+TARGET_BASE = sensus_decode
+TARGET_BASE_DIR = sensus
 
-# Defs common to the arithmetic.
+# Defs common to the utils.
 include ../util_common_pre.mak
 
+# The complete files list
 SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
-							$(SRCDIR)read_dirty_int.c \
-							$(SRCDIR)read_dirty_s32.c \
-							$(SRCDIR)read_dirty_int_pass_char.c \
-							$(SRCDIR)read_next_float.c \
-							$(SRCDIR)read_next_number.c \
-							$(SRCDIR)read_tagged_int.c \
-							$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
+								$(SRCDIR)sensus_decode.c \
+								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build
 include ../util_common_build.mak
