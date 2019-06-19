@@ -8,10 +8,12 @@
 #include "libs_support.h"
 #include "util.h"
 #include <ctype.h>
+#include "arith.h"
 #include <string.h>
 
 typedef U32 Sens_T_Tot;       // Raw Meter readings; up to 9 digits
 typedef U8  Sens_T_FlowPcent;
+typedef U8  Sens_T_Pressure;
 typedef U8  Sens_T_MeterSize;
 typedef U8  Sens_T_MeterType;
 typedef U8  Sens_T_Resolution;
@@ -77,6 +79,7 @@ typedef struct {
    C8                kStr[_enc_MaxSerNumChars+1];
    Sens_T_Tot        rawTot;
    Sens_T_FlowPcent  flowPcent;
+   struct { Sens_T_Pressure _min, _max, _avg; } pres;
    Sens_T_degC       fluidDegC,
                      ambientDegC;
    Sens_T_MeterSize  meterSize;
@@ -88,8 +91,6 @@ typedef struct {
    Sens_T_FlowDir    flowDir;
    Sens_S_Alerts     alerts;
 } S_EncoderMsgData;
-
-#define _FieldDelimiter ';'
 
 /* --------------------------------- startField --------------------------------------------------
 
@@ -111,9 +112,12 @@ _EXPORT_FOR_TEST C8 const *startField(C8 const *src, C8 const *tag) {
 
    <CR> or '\0' finishes an encoder message.
 */
-static bool inline endMsg(C8 const *src) {
+static bool inline endsMsg(C8 ch) {
    #define CR 0x13
-   return src[0] == '\0' || src[0] == CR; }
+   return ch == '\0' || ch == CR; }
+
+static bool inline endMsg(C8 const *src) {
+   return endsMsg(src[0]); }
 
 
 /* --------------------------------- endField ----------------------------------------------------
@@ -125,7 +129,7 @@ PRIVATE bool endField(C8 const *src) {
    return src[0] == ';' || endMsg(src); }
 
 
-/* --------------------------------- copySerNum ---------------------------------------------------
+/* --------------------------------- getSerialStr ---------------------------------------------------
 
    Given serial number "ssssssssss(:|'\0'|<CR>)", get "ssssssssss" into 'out'.
 
@@ -134,7 +138,7 @@ PRIVATE bool endField(C8 const *src) {
 
    If success then return on the trailing ';'; else return NULL.
 */
-_EXPORT_FOR_TEST C8 const * copySerNum(C8 const *src, C8 *out)
+_EXPORT_FOR_TEST C8 const * getSerialStr(C8 const *src, C8 *out)
 {
    for(U8 i = 0; i < _enc_MaxSerNumChars; i++, src++, out++) {    // From 'src', up to 10 (alphanumeric) chars
       if( endField(src) == true ) {                               // Field delimiter ie ';', <CR> or '\0'?
@@ -223,6 +227,41 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, S_XT *xt ) {
    return NULL;
 }
 
+#define _LongestEncoderMsg_chars \
+   sizeof("V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTffaa;Kyyyyyyyyyy;XPiijjkk\r")
+
+typedef struct {U8 _min, _max; } S_MsgLimits;
+
+/* ----------------------------------- getMsgLimits -----------------------------------------------
+
+   Given zero or more encoder types 'et', return the number of chars of the longest message for
+   any of these encoders.
+*/
+_EXPORT_FOR_TEST S_MsgLimits const * getMsgLimits(Sens_M_EncType et, S_MsgLimits *l)
+{
+   // A list of prototype message string, by encoder type.
+   typedef struct { Sens_M_EncType encType; U8 msgLen; } S_MaxStr;
+
+   PRIVATE S_MaxStr const maxStrs[] = {
+      {.encType = mADE,   .msgLen = sizeof("V;RBrrrrrr;IBsssssss\r") },
+      {           mGen1,            sizeof("V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTddd;Kyyyyyyyyyy\r") },
+      {           mGen2,            sizeof("V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTffaa;Kyyyyyyyyyy;XPiijjkk\r") },
+      {           mHRE,             sizeof("V;RBrrrrrrrrr;IBssssssssss;Mbbbb?!\r") },
+      {           mHRE_LCD,         sizeof("V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx\r") },
+      {           mMag,             sizeof("V;RBrrrrrrrrr;IBssssssss;GCaa;Mbbbbbbbb,xxxxxxxx\r") }};
+
+   // Scan the strings table; get longest message of the encoders ORed in 'et'.
+   l->_min = _LongestEncoderMsg_chars;
+   l->_max = 0;
+
+   for(U8 i = 0; i < RECORDS_IN(maxStrs); i++) {
+      if(BSET(et, maxStrs[i].encType)) {
+         l->_max = MaxU8(l->_max, maxStrs[i].msgLen);
+         l->_min = MinU8(l->_min, maxStrs[i].msgLen); }}
+   return l;
+}
+
+
 /* ----------------------------- getXP --------------------------------------------
 
    Get into the 'xp' the values encoded in the pressure field 'XPiijjkk' where 'ii','jj','kk'
@@ -250,7 +289,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src, S_XP *xp ) {
    in 'lookFor', return the content of that message in 'out'.
 
    Return true if
-      - 'src' had a legally formatted message for one of 'lookFor' AND
+      - 'src' had a legally fomsgLimitsrmatted message for one of 'lookFor' AND
       - fields in that message could all be converted to 'out'.
 
    So this routine requires that all fields obey their format; it doesn't necessarily check that
@@ -292,7 +331,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src, S_XP *xp ) {
       XPiijjkk             -
 */
 
-PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncType lookFor)
+PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *out, Sens_M_EncType lookFor)
 {
    if(*src == 'V') {
       if(NULL != (src = startField(src, "RB"))) {
@@ -302,16 +341,15 @@ PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncT
                out->rawTot = t;
                out->weGot.rawTot = 1;
                if(NULL != (src = startField(src, "IB"))) {
-                  if(NULL != (src = copySerNum(src, out->serialStr))) {
+                  if(NULL != (src = getSerialStr(src, out->serialStr))) {
                      out->weGot.serNum = 1;
 
                      /* Got at least V;RBrrrrrr;IBsssssss i.e totaliser and serial-string. If here's nothing
-                        more than it's a ADE. If M-Field is next then it's HRE; otherwise something else.
-                     */
+                        more than it's a ADE. If M-Field is next then it's HRE; otherwise something else. */
                      if(NULL != (src = startField(src, "M")))
                      {
                         if(BSET(lookFor, mHRE)) {
-                           U16 mFld; U8 bytesGot;
+                           U16 mFld;
                            if(NULL != (src = GetNextHexASCII_U16(src, &mFld ))) {
                               if(src[0] == '?' && src[1] == '!' && endMsg(&src[2])) {
                                  out->encoderType = mHRE;
@@ -345,7 +383,7 @@ PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncT
                                           S_XT xt;
                                           if(NULL != (src = getXT(src, &xt))) {
                                              if(NULL != (src = startField(src, "K"))) {
-                                                if(NULL != (src = copySerNum(src, out->kStr))) {
+                                                if(NULL != (src = getSerialStr(src, out->kStr))) {
                                                    if(endMsg(src) == true) {
                                                       if(BSET(lookFor, mGen1)) {
                                                          out->encoderType = mGen2;
@@ -370,19 +408,31 @@ PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncT
 } // Sensus_BlockDecode
 
 
+#define _DecoderBufLen (_LongestEncoderMsg_chars + 1)
 
 typedef struct {
-   Sens_M_EncType lookFor;
+   Sens_M_EncType lookFor;             // Zero of more message types to expect.
+   U8             put;                 // i.e buf[put].
+   S_MsgLimits    msgLimits;           // longest and shorted expected messages (given 'lookFor')
+   C8             buf[_DecoderBufLen]; // Add incoming Sensus chars here.
 } Sensus_S_StreamDecode;
 
-/* ---------------------------------- Sensus_StreamStart --------------------------------------------
+/* ---------------------------------- Sensus_DecodeStart --------------------------------------------
 
+   Setup stream decoder 'dc' to scan for message from encoder types 'lookFor'
 
+   Return true if the stream decoder is now reset and ready to use.
 */
-PUBLIC bool Sensus_StreamDecode(Sensus_S_StreamDecode *dc, Sens_M_EncType lookFor)
+PUBLIC bool Sensus_DecodeStart(Sensus_S_StreamDecode *dc, Sens_M_EncType lookFor)
 {
-   dc->lookFor = lookFor;
-   return true;
+   if(dc == NULL) {                             // No stream decoder supplied?
+      return false; }                           // then fail.
+   else {
+      dc->lookFor = lookFor;
+      getMsgLimits(lookFor, &dc->msgLimits );    // Find longest and shortest message for encoder types in 'lookFor'.
+      dc->put = 0;                              // Zero the message put/char-count.
+      return true; }
+
 }
 
 // Results of next input e.g char to a stream parser.
@@ -396,16 +446,32 @@ typedef enum {
 
 /* ---------------------------------- Sensus_DecodeStream --------------------------------------------
 
-   Apply next 'ch' of a Sesnue message to the decoder 'dc'.If the parse completes (eParseStream_Done)
+   Apply next 'ch' of a Sensus message to the decoder 'dc'.If the parse completes (eParseStream_Done)
    then 'out' has what was in the message.
-
-
 
    Returns - see E_ParseStreamState
 */
 PUBLIC E_ParseStreamState Sensus_DecodeStream(Sensus_S_StreamDecode *dc, S_EncoderMsgData *out, C8 ch)
 {
-   return eParseStream_Continue;
+   /* If we exceeded the longest possible message of the encoder types we are looking for then fail.
+   */
+   if(dc->put >= dc->msgLimits._max) {
+      return eParseStream_Fail; }
+
+   /* else add 'ch' to the buffer. If it's at least as long as the shortest expected message AND 'ch' is an
+      end-of-message then give the (presumably complete) message to the parser. Return whether it parsed or no.
+   */
+   else {
+      dc->buf[dc->put++] = ch;
+
+      if(dc->put >= dc->msgLimits._min && endsMsg(ch)) {                // End-of-message? AND it's long enough?
+         return
+            true == Sensus_BlockDecode(dc->buf, out, dc->lookFor)    // then try parsing it as a message from one of 'lookFor'
+               ? eParseStream_Done                                      // Success; results will be in 'out'.
+               : eParseStream_Fail; }                                   // else fail; 'out' is undefined.
+      else {
+         return eParseStream_Continue; }                                // else keep adding chars.
+   }
 }
 
 // ------------------------------------------ eof ------------------------------------------------
