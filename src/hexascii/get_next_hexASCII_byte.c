@@ -30,7 +30,7 @@ PUBLIC C8 const* GetNextHexASCIIByte(C8 const *hexStr, U8 *out)
       {
          if( !IsHexASCII(*hexStr) || !IsHexASCII(*(hexStr+1)) )   // Not a HexASCII digit?
          {
-            return 0;                           // so return, signalling junk input
+            return 0;                           // so return, signaling junk input
          }
          else                                   // else it's a legal HexASCII digit
          {

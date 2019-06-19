@@ -8,6 +8,7 @@
 #include "libs_support.h"
 #include "util.h"
 #include <ctype.h>
+#include <string.h>
 
 typedef U32 Sens_T_Tot;       // Raw Meter readings; up to 9 digits
 typedef U8  Sens_T_FlowPcent;
@@ -72,7 +73,8 @@ typedef struct {
 typedef struct {
    Sens_M_EncType    encoderType;
    Sens_S_WotWeGot   weGot;
-   C8                serNumStr[_enc_MaxSerNumChars+1];
+   C8                serialStr[_enc_MaxSerNumChars+1];
+   C8                kStr[_enc_MaxSerNumChars+1];
    Sens_T_Tot        rawTot;
    Sens_T_FlowPcent  flowPcent;
    Sens_T_degC       fluidDegC,
@@ -146,6 +148,101 @@ _EXPORT_FOR_TEST C8 const * copySerNum(C8 const *src, C8 *out)
    return NULL;      // Got a non-alphanumeric before filed delimiter.
 }
 
+typedef struct {U8 _min, _max; } S_U8Range;
+
+/* --------------------------------- reqHexASCIIbytes ---------------------------------------------
+
+*/
+_EXPORT_FOR_TEST C8 const * reqHexASCIIbytes(C8 const *src, U32 *out, S_U8Range const *r, U8 *bytesGot) {
+   if(NULL != (src = GetNextHexASCII_U8toU32(src, out, bytesGot))) {
+      if(*bytesGot >= r->_min && *bytesGot <= r->_max) {
+         return src; }}
+   return NULL; }
+
+/* -------------------------------- getDualMfield --------------------------------------------------
+
+   Get 24bit or 32bit dual M-field i.e 'Mbbbbbb,xxxxxx' OR 'Mbbbbbbbb,xxxxxxxx' from 'src' into
+   'aFld' and 'bFld'
+
+   'a' and 'b' fields must both be 24bit or both be 32bit.
+
+   Return at the char after the 2nd field; NULL if parse failed.
+
+   If fail then 'aFld', 'bFld', 'got32bit' are undefined.
+*/
+_EXPORT_FOR_TEST C8 const * getDualMfield(C8 const *src, U32 *aFld, U32 *bFld, U8 *bytesGot) {
+   U8 aBytes;
+   S_U8Range const _3or4 = {._min = 3, ._max = 4};
+
+   if( NULL != (src = reqHexASCIIbytes(src, aFld, &_3or4, &aBytes))) {
+      if(*src == ',') {
+         U8 bBytes;
+         if( NULL != (src = reqHexASCIIbytes(src, bFld, &_3or4, &bBytes))) {
+            if(aBytes == bBytes) {
+               *bytesGot = aBytes;
+               return src; }}}}
+   return NULL; }
+
+/* ----------------------------------- getXT -----------------------------------------------------
+
+   Get either of the 2 temperature fields (below) from 'src' into 'xt'
+
+      - 'XTddd',     (type 1) where ddd is a single signed decimal temperature
+      - 'XTffss',    (type 2) where 'ff' and 'aa' are fluid and ambient temperatures,
+                              (each in signed 8-bit HexASCII).
+
+   This given 'src' is on the char after 'XT' i.e at 'ddd' or 'ffaa'. 'xt.isType2' says which we got.
+
+   Return on the 1st char after the field; NULL if fail.
+*/
+typedef struct {
+   bool isType2;        // i.e'XTffaa
+   union {
+      S16 degC;
+      struct { U8 fluid, ambient; } type2;
+   } payload;
+} S_XT;
+
+_EXPORT_FOR_TEST C8 const * getXT(C8 const *src, S_XT *xt ) {
+
+   /* For 'XT'
+   */
+   if(isalnum(src[2]) && isalnum(src[2]) && !isalnum(src[4])) {
+      U16 n;
+      if(NULL != GetNextHexASCII_U16(src, &n)) {
+         xt->isType2 = true;
+         xt->payload.type2.fluid = HIGH_BYTE(n);
+         xt->payload.type2.ambient = LOW_BYTE(n);
+         return src + 4; }}
+
+   else if( isdigit(src[1]) && isdigit(src[2])) {
+      if( NULL != ReadDirtyASCIIInt(src, &xt->payload.degC) ) {
+         xt->isType2 = false;
+         return src + 3; }
+   }
+   return NULL;
+}
+
+/* ----------------------------- getXP --------------------------------------------
+
+   Get into the 'xp' the values encoded in the pressure field 'XPiijjkk' where 'ii','jj','kk'
+   are min,max and average pressures in HexASCII (in 0.1bar).
+
+   Given 'iijjkk' return on the char after the last 'k'.
+   Return NULL if parse fail; if fail then 'xp' is undefined
+*/
+typedef struct { U8 _min, _max, avg; } S_XP;
+
+_EXPORT_FOR_TEST C8 const * getXP(C8 const *src, S_XP *xp ) {
+   U32 n;
+   if(NULL != (src = GetNextHexASCII_U24(src, &n))) {
+      xp->_min = LOW_BYTE(HIGH_WORD(n));
+      xp->_max = HIGH_BYTE(LOW_WORD(n));
+      xp->avg  = LOW_BYTE(LOW_WORD(n));
+      return src; }
+   return NULL; }
+
+
 
 /* --------------------------------- Sensus_BlockDecode --------------------------------------------
 
@@ -183,7 +280,8 @@ _EXPORT_FOR_TEST C8 const * copySerNum(C8 const *src, C8 *out)
 
       Mag               V;RBrrrrrrrrr;IBssssssss;GCaa;Mbbbbbbbb,xxxxxxxx<CR>
 
-   where:
+   where:PUBLIC C8 const* GetNextHexASCII_U24(C8 const *hexStr, U32 *out)
+
       RBrrrrrrrrr          - totaliser, 6 to 9 digits
       IBssssssssss         - serial number; 1-10 alphanumeric
       GCaa                 - flow pcent 0-99
@@ -204,15 +302,23 @@ PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncT
                out->rawTot = t;
                out->weGot.rawTot = 1;
                if(NULL != (src = startField(src, "IB"))) {
-                  if(NULL != (src = copySerNum(src, out->serNumStr))) {
+                  if(NULL != (src = copySerNum(src, out->serialStr))) {
                      out->weGot.serNum = 1;
 
-                     if(NULL != (src = startField(src, "M"))) {
+                     /* Got at least V;RBrrrrrr;IBsssssss i.e totaliser and serial-string. If here's nothing
+                        more than it's a ADE. If M-Field is next then it's HRE; otherwise something else.
+                     */
+                     if(NULL != (src = startField(src, "M")))
+                     {
                         if(BSET(lookFor, mHRE)) {
-                           // Get Mbbbb?!
-                        }
+                           U16 mFld; U8 bytesGot;
+                           if(NULL != (src = GetNextHexASCII_U16(src, &mFld ))) {
+                              if(src[0] == '?' && src[1] == '!' && endMsg(&src[2])) {
+                                 out->encoderType = mHRE;
+                                 return true; }}}
                      }
-                     else if(NULL != (src = startField(src, "GC"))) {
+                     else if(NULL != (src = startField(src, "GC")))
+                     {
                         if(BSET(lookFor, mGen1 | mGen2 | mHRE_LCD | mMag)) {
                            S16 fpc;
                            if(NULL != (src = ReadDirtyASCIIInt(src, &fpc))) {
@@ -220,21 +326,86 @@ PUBLIC bool Sensus_BlockDecode(S_EncoderMsgData *out, C8 const *src, Sens_M_EncT
                                  out->flowPcent = fpc;
                                  out->weGot.flowPcent = 1;
 
-                              }
-                           }
-                        }
-                     }
-                     else if( endMsg(src) && BSET(lookFor, mADE) ) {
+                                 U32 m1, m2;
+                                 U8 bytesGot;
+                                 if(NULL != (src = getDualMfield(src, &m1, &m2, &bytesGot))) {
+
+                                    if(endMsg(src)) {
+                                       if(bytesGot == 4 && BSET(lookFor, mMag)) {
+                                          out->encoderType = mMag;
+                                          return true;
+                                       }
+                                       else if(bytesGot == 3 && BSET(lookFor, mHRE_LCD | mGen1)) {
+                                          out->encoderType = mHRE_LCD | mGen1;
+                                          return true;
+                                       }
+                                    }
+                                    else if(NULL != (src = startField(src, "XT"))) {
+                                       if(BSET(lookFor, mGen1 | mGen2)) {
+                                          S_XT xt;
+                                          if(NULL != (src = getXT(src, &xt))) {
+                                             if(NULL != (src = startField(src, "K"))) {
+                                                if(NULL != (src = copySerNum(src, out->kStr))) {
+                                                   if(endMsg(src) == true) {
+                                                      if(BSET(lookFor, mGen1)) {
+                                                         out->encoderType = mGen2;
+                                                         return true; }}
+
+                                                   else if(NULL != (src = startField(src, "XP"))) {
+                                                      if(BSET(lookFor, mGen2)) {
+                                                         S_XP xp;
+                                                         if(NULL != (src = getXP(src, &xp))) {
+                                                            out->encoderType = mGen2;
+                                                            return true; }}}}}}}}}}}}
+                     } // startField(src, "GC")
+
+                     else if( endMsg(src) && BSET(lookFor, mADE) )
+                     {
+                        if(out->rawTot <= 999999 && strlen(out->serialStr) <= 7  )
+                        out->encoderType = mADE;
                         return true;
                      }
-
-                  }
-               }
-            }
-         }
-      }
-   }
+                  }}}}}}
    return false;
+} // Sensus_BlockDecode
+
+
+
+typedef struct {
+   Sens_M_EncType lookFor;
+} Sensus_S_StreamDecode;
+
+/* ---------------------------------- Sensus_StreamStart --------------------------------------------
+
+
+*/
+PUBLIC bool Sensus_StreamDecode(Sensus_S_StreamDecode *dc, Sens_M_EncType lookFor)
+{
+   dc->lookFor = lookFor;
+   return true;
+}
+
+// Results of next input e.g char to a stream parser.
+typedef enum {
+   eParseStream_Fail    = 0,     // This (char) failed to parse; we're done
+   eParseStream_Done    = 1,     // Parse is complete
+   eParseStream_Continue = 2,     // More input needed.
+   eParseStream_Fault   = 3      // Broke/overloaded the parser itself (which shouldn't happen unless e.g malloc() issue)
+} E_ParseStreamState;
+
+
+/* ---------------------------------- Sensus_DecodeStream --------------------------------------------
+
+   Apply next 'ch' of a Sesnue message to the decoder 'dc'.If the parse completes (eParseStream_Done)
+   then 'out' has what was in the message.
+
+
+
+   Returns - see E_ParseStreamState
+*/
+PUBLIC E_ParseStreamState Sensus_DecodeStream(Sensus_S_StreamDecode *dc, S_EncoderMsgData *out, C8 ch)
+{
+   return eParseStream_Continue;
 }
 
 // ------------------------------------------ eof ------------------------------------------------

@@ -9,9 +9,9 @@
 
 /*-----------------------------------------------------------------------------------------
 |
-|  GetNextHexASCII_U32()
+|  GetNextHexASCII_U24()
 |
-|  Return the next HexASCII (32bit) int from 'hexStr' into 'out', skipping any spaces.
+|  Return the next HexASCII (24bit) int from 'hexStr' into 'out', skipping any spaces.
 |
 |  Returns pointer to the first char after the byte read, else 0 if reached something
 |  other than a HexASCII char or a space. If didn't get a legal number, then 'out'
@@ -19,15 +19,15 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC C8 const* GetNextHexASCII_U32(C8 const *hexStr, U32 *out)
+PUBLIC C8 const* GetNextHexASCII_U24(C8 const *hexStr, U32 *out)
 {
-   U16  n1, n2;
+   U16 n1; U8 n2;
 
    if( (hexStr = GetNextHexASCII_U16(hexStr, &n1)) )     // Got high byte?
    {
-      if( (hexStr = GetNextHexASCII_U16(hexStr, &n2)) )  // Got low byte?
+      if( (hexStr = GetNextHexASCIIByte(hexStr, &n2)) )  // Got low byte?
       {
-         *out = ((U32)n1 << 16) + n2;                    // then output an int
+         *out = ((U32)n1 << 8) + n2;                     // then output an int
          return hexStr;                                  // and return ptr to next char
       }
    }

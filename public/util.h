@@ -64,7 +64,9 @@ PUBLIC void IntToHexASCII_NoSpace(C8 *out, S16 n);
 PUBLIC C8 const* GetNextHexASCIIByte(C8 const *hexStr, U8 *out);
 PUBLIC C8 const* GetNextHexASCIIInt(C8 const *hexStr, S16 *out);
 PUBLIC C8 const* GetNextHexASCII_U16(C8 const *hexStr, U16 *out);
+PUBLIC C8 const* GetNextHexASCII_U24(C8 const *hexStr, U32 *out);
 PUBLIC C8 const* GetNextHexASCII_U32(C8 const *hexStr, U32 *out);
+PUBLIC C8 const* GetNextHexASCII_U8toU32(C8 const *hexStr, U32 *out, U8 *bytesGot);
 PUBLIC C8 const* GetNextHexASCIIByte_Lenient(C8 const *hexStr, C8 *out);
 
 PUBLIC U16 HexASCII_ToU16(U8 const *hexStr);
