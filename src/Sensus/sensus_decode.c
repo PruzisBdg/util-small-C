@@ -9,110 +9,7 @@
 #include <ctype.h>
 #include "arith.h"
 #include <string.h>
-
-#define _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-
-typedef U32 enc_T_Tot;          // Raw Meter readings; up to 9 digits
-typedef U8  enc_T_FlowPcent;    // Percent of max flow
-typedef U8  enc_T_Pressure;     // In 0.1bar
-typedef U8  enc_T_MeterSize;    // Size in b[5:0] of the 32 bit M-Field
-typedef U8  enc_T_MeterType;    // Size/type in the top byte of the 24bit M-Field
-typedef U8  enc_T_Resolution;
-typedef U8  enc_T_ProdCode;     // b[15:12] of 32bit M-field
-typedef U8  enc_T_UOM;
-typedef U8  enc_T_MeasMode;
-typedef U8  enc_T_FlowDir;
-typedef S16 enc_T_degC;         // In degC.
-
-// The kind of Encoder message.'m' <-> masks so decoder can filter for multiple message-types.
-typedef enum {
-   mADE        = 0x01,
-   mGen1       = 0x02,
-   mGen2       = 0x04,
-   mHRE        = 0x08,
-   mHRE_LCD    = 0x10,
-   mMag        = 0x20,
-   mAnyEncoder = 0xFF
-} enc_M_EncType;
-
-// Will be set if this alert occurs in the message; otherwise clear.
-typedef struct {
-   U32   overflow    :1,      // of the totaliser
-         pressure    :1,      // Any of the min.max or average pressure tagged as bad.
-         reverseFlow :1,
-         tamper      :1,
-         leak        :1,
-         program     :1,      // 'Program' error in basic status.
-         temperature :1,
-         endOfLife   :1,      // Usually battery is dead.
-         emptyPipe   :1,
-         noFlow      :1;      // i.e no usage for some time.
-
-         #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-   struct {    // Mag-specific alerts.
-      U32
-         adcError    :1,
-         lowBatt     :1,
-         badCoilDrive :1,
-         measTimeout :1,
-         flowStim    :1,
-         ovStatus    :1,
-         maxFlow     :1,
-         badSensor   :1;
-      } mag;
-         #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-} enc_S_Alerts;
-
-// Will be set if the corresponding field in enc_S_MsgData was updated from the Encoder message.
-typedef struct {
-   U16   serWord     :1,
-         rawTot      :1,
-         flowPcent   :1,
-         pressure    :1,
-         fluidTmpr   :1,
-         ambientTmpr :1,
-         meterSize   :1,
-         meterType   :1,
-         res         :1,
-         prodCode    :1,
-         uom         :1,
-         measMode    :1,
-         alerts      :1;
-} enc_S_WotWeGot;
-
-#define _enc_MaxSerNumChars 10
-
-typedef struct { enc_T_Pressure _min, _max, _avg;  } S_Pres;
-
-typedef struct {
-   enc_M_EncType     encoderType;                        // From the message format i.e HRE, Gen2 etc.
-   enc_S_WotWeGot    weGot;                              // Which of the following variables were read form the message
-   enc_S_Alerts      alerts;
-   C8                serialWord[_enc_MaxSerNumChars+1];  // serial-word 'RBrrrrrrrrr;'. Up to 10 digits & letters.
-   C8                kStr[_enc_MaxSerNumChars+1];        // The 'ownership number' ';Knnnnnnnnn' up to 10 letters & digits..
-   enc_T_Tot         rawTot,                             // RBrrrrrrrrr;IBssssssssss
-                     revTot;
-   U8                dials;                              // Digits in ';RBnnnnnnnn'. Usually >= 6; no more than 9.
-   enc_T_FlowPcent   flowPcent;
-
-   struct {
-      S_Pres         pres;
-      enc_T_degC     fluidDegC,
-                     ambientDegC;
-      } noMag;
-   enc_T_MeterType   meterType;                          // Size/type in the top byte of the 24bit M-Field
-   enc_T_UOM         uom;
-      #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-   struct {
-      enc_T_Tot         secTot;                          // the secondary totaliser in 'Mbbbbbbbb,xxxxxxxx'.
-      enc_T_ProdCode    prodCode;                        // b[15:12] of 32bit M-field
-      enc_T_Resolution  res;
-      enc_T_MeterSize   meterSize;                       // Size in b[5:0] of the 32 bit M-Field
-      bool              biDirectional;                   // Mag Meter measurement mode.
-   } mag;
-      #endif
-
-} enc_S_MsgData;
+#include "sensus_codec.h"
 
 /* --------------------------------- startField --------------------------------------------------
 
@@ -174,11 +71,11 @@ _EXPORT_FOR_TEST C8 const * getSerialWord(C8 const *src, C8 *out)
    return NULL;      // Got a non-alphanumeric before filed delimiter.
 }
 
-typedef struct {U8 _min, _max; } S_U8Range;
-
 /* --------------------------------- reqHexASCIIbytes ---------------------------------------------
 
 */
+typedef struct {U8 _min, _max; } S_U8Range;
+
 _EXPORT_FOR_TEST C8 const * reqHexASCIIbytes(C8 const *src, U32 *out, S_U8Range const *r, U8 *bytesGot) {
    if(NULL != (src = GetNextHexASCII_U8toU32(src, out, bytesGot))) {
       if(*bytesGot >= r->_min && *bytesGot <= r->_max) {
@@ -388,17 +285,12 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
    return NULL;      // Some fail above.
 }
 
-#define _LongestEncoderMsg_chars \
-   sizeof("V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTffaa;Kyyyyyyyyyy;XPiijjkk\r")
-
-typedef struct {U8 _min, _max; } S_MsgLimits;
-
 /* ----------------------------------- getMsgLimits -----------------------------------------------
 
    Given zero or more encoder types 'et', return to 'l' the number of chars of the longest and
    shortest possible messages for any of these encoders.
 */
-_EXPORT_FOR_TEST S_MsgLimits const * getMsgLimits(enc_M_EncType et, S_MsgLimits *l)
+_EXPORT_FOR_TEST S_MinMaxU8 const * getMsgLimits(enc_M_EncType et, S_MinMaxU8 *l)
 {
    // A list of prototype message string, by encoder type.
    typedef struct { enc_M_EncType encType; U8 msgLen; } S_MaxStr;
@@ -421,7 +313,7 @@ _EXPORT_FOR_TEST S_MsgLimits const * getMsgLimits(enc_M_EncType et, S_MsgLimits 
       {           mMag,             sizeof("V;RBrrrrrr;IBssss;GCaa;Mbbbbbbbb,xxxxxxxx\r") }};
 
    // Scan the strings table; get longest message of the encoders ORed in 'et'.
-   l->_min = _LongestEncoderMsg_chars;
+   l->_min = _enc_LongestMsg_chars;
    l->_max = 0;
 
    for(U8 i = 0; i < RECORDS_IN(maxStrs); i++) {
@@ -470,8 +362,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
    return NULL; }
 
 
-
-/* --------------------------------- Sensus_BlockDecode --------------------------------------------
+/* --------------------------------- Sensus_DecodeMsg --------------------------------------------
 
    Given a byte sequence in 'src' which represents a legal 'Sensus' message for one of the Encoders
    in 'filterFor', return the content of that message in 'out'.
@@ -489,7 +380,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
    'out->weGot tabulates which fields were received. It includes 'rawTot', 'serNum' though
    really, these will always be true, but we include them for completeness.
 
-   Sensus_BlockDecode() fails at the first 'src' byte which doesn't obey any format. It stops,
+   Sensus_DecodeMsg() fails at the first 'src' byte which doesn't obey any format. It stops,
    success or fail, at a <CR> or '\0'. It does need the <CR> to succeed.
 
    It look for one or more of:
@@ -518,7 +409,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
       XTffaa               - fluid and ambient degC, 2 + 2 Hex chars.
       XPiijjkk             - min, max and average pressure.
 */
-PUBLIC bool Sensus_BlockDecode(C8 const *src, enc_S_MsgData *ed, enc_M_EncType filterFor)
+PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType filterFor)
 {
    C8 const *p = src;      // Mark the start.
 
@@ -615,17 +506,8 @@ PUBLIC bool Sensus_BlockDecode(C8 const *src, enc_S_MsgData *ed, enc_M_EncType f
                      }
                   }}}}}}
    return false;     // Did not finish a decode above.
-} // Sensus_BlockDecode
+} // Sensus_DecodeMsg
 
-
-#define _DecoderBufLen (_LongestEncoderMsg_chars + 1)
-
-typedef struct {
-   enc_M_EncType filterFor;             // Zero of more message types to expect.
-   U8             put;                 // i.e buf[put].
-   S_MsgLimits    msgLimits;           // longest and shorted expected messages (given 'filterFor')
-   C8             buf[_DecoderBufLen]; // Add incoming Sensus chars here.
-} enc_S_StreamDecode;
 
 /* ---------------------------------- Sensus_DecodeStart --------------------------------------------
 
@@ -642,16 +524,7 @@ PUBLIC bool Sensus_DecodeStart(enc_S_StreamDecode *dc, enc_M_EncType filterFor)
       getMsgLimits(filterFor, &dc->msgLimits );    // Find longest and shortest message for encoder types in 'filterFor'.
       dc->put = 0;                              // Zero the message put/char-count.
       return true; }
-
 }
-
-// Results of next input e.g char to a stream parser.
-typedef enum {
-   eParseStream_Fail    = 0,     // This (char) failed to parse; we're done
-   eParseStream_Done    = 1,     // Parse is complete
-   eParseStream_Continue = 2,     // More input needed.
-   eParseStream_Fault   = 3      // Broke/overloaded the parser itself (which shouldn't happen unless e.g malloc() issue)
-} enc_E_StreamState;
 
 
 /* ---------------------------------- Sensus_DecodeStream --------------------------------------------
@@ -672,7 +545,7 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
       end-of-message then give the (presumably complete) message to the parser. Return whether it parsed or no.
    */
    else {
-      // If this is the 1st char, then zero results, to be filled by Sensus_BlockDecode().
+      // If this is the 1st char, then zero results, to be filled by Sensus_DecodeMsg().
       if(dc->put == 0) {
          *ed = (enc_S_MsgData){0};
          // Set pressures to their null-storage values.
@@ -683,7 +556,7 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
 
       if(dc->put >= dc->msgLimits._min && endsMsg(ch)) {                // End-of-message? AND it's long enough?
          return
-            true == Sensus_BlockDecode(dc->buf, ed, dc->filterFor)        // then try parsing it as a message from one of 'filterFor'
+            true == Sensus_DecodeMsg(dc->buf, ed, dc->filterFor)        // then try parsing it as a message from one of 'filterFor'
                ? eParseStream_Done                                      // Success; results will be in 'ed'.
                : eParseStream_Fail; }                                   // else fail; 'ed' is undefined.
       else {

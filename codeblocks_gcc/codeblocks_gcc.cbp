@@ -100,6 +100,10 @@
 			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
+		<Unit filename="../public/sensus_codec.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../public/text_line_builder.h">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -116,6 +120,12 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../public/wordlist.h" />
+		<Unit filename="../src/Sensus/sensus_codec_support.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/Sensus/sensus_decode.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
