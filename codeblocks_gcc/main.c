@@ -6,7 +6,14 @@
 
 int main (void)
 {
-   enc_S_MsgData md = {.rawTot = 123456, .dials = 6};
+   enc_S_MsgData md = {
+      .encoderType = mADE | mGen1,
+      .weGot.serWord = 1,
+      .rawTot = 1234, .dials = 6 };
+
+   C8 b0[200];
+   Sensus_PrintMsgData(b0,&md);
+   printf("%s", b0);
 }
 
 // ------------------------------------- eof ---------------------------------------------
