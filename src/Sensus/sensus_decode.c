@@ -11,18 +11,17 @@
 #include "arith.h"
 #include <string.h>
 
-typedef U32 Sens_T_Tot;       // Raw Meter readings; up to 9 digits
-typedef U8  Sens_T_FlowPcent;
-typedef U8  Sens_T_Pressure;
-typedef U8  Sens_T_MeterSize;
-typedef U8  Sens_T_MeterType;
+typedef U32 Sens_T_Tot;          // Raw Meter readings; up to 9 digits
+typedef U8  Sens_T_FlowPcent;    // Percent of max flow
+typedef U8  Sens_T_Pressure;     // In 0.1bar
+typedef U8  Sens_T_MeterSize;    // Size in b[5:0] of the 32 bit M-Field
+typedef U8  Sens_T_MeterType;    // Size/type in the top byte of the 24bit M-Field
 typedef U8  Sens_T_Resolution;
-typedef U8  Sens_T_ProdCode;
+typedef U8  Sens_T_ProdCode;     // b[15:12] of 32bit M-field
 typedef U8  Sens_T_UOM;
 typedef U8  Sens_T_MeasMode;
 typedef U8  Sens_T_FlowDir;
-typedef S16 Sens_T_degC;
-typedef S16 Sens_T_degC;
+typedef S16 Sens_T_degC;         // In degC.
 
 // The kind of Encoder message.'m' <-> masks
 typedef enum {
@@ -41,7 +40,7 @@ typedef enum {
 
 // Will be set if this alert occurs in the message; otherwise clear.
 typedef struct {
-   U8    overflow    :1,
+   U32   overflow    :1,
          pressure    :1,
          reverseFlow :1,
          tamper      :1,
@@ -50,7 +49,16 @@ typedef struct {
          temperature :1,
          endOfLife   :1,
          emptyPipe   :1,
-         noFlow      :1;
+         noFlow      :1,
+         // Mag errors.
+         adcError    :1,
+         lowBatt     :1,
+         badCoilDrive :1,
+         measTimeout :1,
+         flowStim    :1,
+         ovStatus    :1,
+         maxFlow     :1,
+         badSensor   :1;
 } Sens_S_Alerts;
 
 // Will be set if the corresponding field in S_EncoderMsgData was updated from the Encoder message.
@@ -73,23 +81,26 @@ typedef struct {
 #define _enc_MaxSerNumChars 10
 
 typedef struct {
-   Sens_M_EncType    encoderType;
-   Sens_S_WotWeGot   weGot;
-   C8                serialStr[_enc_MaxSerNumChars+1];
-   C8                kStr[_enc_MaxSerNumChars+1];
-   Sens_T_Tot        rawTot;
+   Sens_M_EncType    encoderType;                        // From the message format i.e HRE, Gen2 etc.
+   Sens_S_WotWeGot   weGot;                              // Which of the following variables were read form the message
+   C8                serialStr[_enc_MaxSerNumChars+1];   // serial-string 'RBrrrrrrrrr;'. Up to 10 digits & letters.
+   C8                kStr[_enc_MaxSerNumChars+1];        // The 'ownership number' ';Knnnnnnnnn' up to 10 letters & digits..
+   Sens_T_Tot        rawTot,                             // RBrrrrrrrrr;IBssssssssss
+                     revTot,
+                     secTot;                             // For Mag meters, the secondary totaliser in 'Mbbbbbbbb,xxxxxxxx'.
    Sens_T_FlowPcent  flowPcent;
    struct { Sens_T_Pressure _min, _max, _avg; } pres;
    Sens_T_degC       fluidDegC,
                      ambientDegC;
-   Sens_T_MeterSize  meterSize;
-   Sens_T_MeterType  meterType;
+   Sens_T_MeterSize  meterSize;                          // Size in b[5:0] of the 32 bit M-Field
+   Sens_T_MeterType  meterType;                          // Size/type in the top byte of the 24bit M-Field
    Sens_T_Resolution res;
-   Sens_T_ProdCode   prodCode;
+   Sens_T_ProdCode   prodCode;                           // b[15:12] of 32bit M-field
    Sens_T_UOM        uom;
    Sens_T_MeasMode   measMode;
    Sens_T_FlowDir    flowDir;
    Sens_S_Alerts     alerts;
+   bool              biDirectional;                      // Mag Meter measurement mode.
 } S_EncoderMsgData;
 
 /* --------------------------------- startField --------------------------------------------------
@@ -186,6 +197,84 @@ _EXPORT_FOR_TEST C8 const * getDualMfield(C8 const *src, U32 *aFld, U32 *bFld, U
                *bytesGot = aBytes;
                return src; }}}}
    return NULL; }
+
+// -----------------------------------------------------------------------------------------------
+static U8 bitAtU32(U32 n, U8 bit) {
+   return (n & (1UL << bit)) != 0 ? 1 : 0; }
+
+// -----------------------------------------------------------------------------------------------
+static U8 bitsAtU32(U32 n, U8 msb, U8 lsb) {
+   return (n && MakeAtoBSet_U32(msb, lsb)) >> lsb; }
+
+
+/* ------------------------------ decode24bit_MField -----------------------------------------------
+
+   Decode into 'ed' 24bit M-field in the 3 lower bytes of 'mf'.
+*/
+_EXPORT_FOR_TEST bool decode24bit_MField(U32 mf, S_EncoderMsgData *ed) {
+
+   ed->meterSize = LOW_BYTE(HIGH_WORD(mf));
+   ed->uom = bitsAtU32(mf, 11, 9);
+
+   Sens_S_Alerts a;
+   a.overflow     = bitAtU32(mf, 15);
+   a.pressure     = bitAtU32(mf, 14);
+   a.tamper       = bitAtU32(mf, 7);
+   a.program      = bitAtU32(mf,6);
+   a.leak         = bitAtU32(mf,5);
+   a.reverseFlow  = bitAtU32(mf,4);
+   a.noFlow       = bitAtU32(mf,3);
+   a.endOfLife    = bitAtU32(mf,2);
+   a.temperature  = bitAtU32(mf,1);
+   a.emptyPipe    = bitAtU32(mf,0);
+   ed->alerts = a;
+
+   return true;   // Always succeeds, for now.
+}
+
+/* ------------------------------ decodeMag_MField -----------------------------------------------
+
+   Decode into 'ed' 32bit M-field in 'mf'.
+*/
+typedef enum {
+   eMag_Unknown = 0, eMag_M2000 = 1, eMag_M5000 = 2, eMag_M1500 = 3, eMag_M1000 = 4,
+   eMag_M5000B = 5, eMag_Utility = 6, eMag_Isonic4000 = 7, eMag_TFX_500W = 8
+} E_MagProdCode;
+
+_EXPORT_FOR_TEST bool decodeMag_MField(U32 mf, S_EncoderMsgData *ed) {
+
+   ed->prodCode = bitsAtU32(mf, 15, 12);
+
+   Sens_S_Alerts *a = &ed->alerts;
+
+   if(ed->prodCode == eMag_M2000 || ed->prodCode == eMag_M1000 || ed->prodCode == eMag_M5000 || ed->prodCode == eMag_Utility) {
+      a->maxFlow   = bitAtU32(mf, 27);
+      a->adcError  = bitAtU32(mf, 26);
+      a->emptyPipe = bitAtU32(mf, 25);
+      a->badSensor = bitAtU32(mf, 24); }
+
+   if(ed->prodCode == eMag_M2000) {
+      a->flowStim = bitAtU32(mf, 30);
+      a->overflow = bitAtU32(mf, 29);
+      a->ovStatus = bitAtU32(mf, 28);
+      }
+   else if(ed->prodCode == eMag_M1000 || ed->prodCode == eMag_M5000 || ed->prodCode == eMag_M5000B ) {
+      a->badCoilDrive = bitAtU32(mf,30);
+      a->measTimeout = bitAtU32(mf,29);
+      }
+   else if(ed->prodCode == eMag_Utility) {
+      a->endOfLife = bitAtU32(mf,30);
+      a->measTimeout = bitAtU32(mf,29);
+      a->leak = bitAtU32(mf,23);
+      a->reverseFlow = bitAtU32(mf,22); }
+
+   ed->uom = bitsAtU32(mf, 11, 8);
+   ed->measMode = bitAtU32(mf, 7);
+   ed->alerts.reverseFlow = bitAtU32(mf, 6);
+   ed->meterSize = bitsAtU32(mf, 5, 0);
+   ed->biDirectional = bitAtU32(mf,7);
+   return true;      // Always succeeds, for now.
+}
 
 /* ----------------------------------- getXT -----------------------------------------------------
 
@@ -331,18 +420,18 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src, S_XP *xp ) {
       XPiijjkk             -
 */
 
-PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *out, Sens_M_EncType lookFor)
+PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *ed, Sens_M_EncType lookFor)
 {
    if(*src == 'V') {
       if(NULL != (src = startField(src, "RB"))) {
          S32 t;
          if( NULL != (src = ReadDirtyASCII_S32(src, &t))) {
             if(t >= 0 && t <= 999999999) {
-               out->rawTot = t;
-               out->weGot.rawTot = 1;
+               ed->rawTot = t;
+               ed->weGot.rawTot = 1;
                if(NULL != (src = startField(src, "IB"))) {
-                  if(NULL != (src = getSerialStr(src, out->serialStr))) {
-                     out->weGot.serNum = 1;
+                  if(NULL != (src = getSerialStr(src, ed->serialStr))) {
+                     ed->weGot.serNum = 1;
 
                      /* Got at least V;RBrrrrrr;IBsssssss i.e totaliser and serial-string. If here's nothing
                         more than it's a ADE. If M-Field is next then it's HRE; otherwise something else. */
@@ -352,7 +441,7 @@ PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *out, Sens_M_EncT
                            U16 mFld;
                            if(NULL != (src = GetNextHexASCII_U16(src, &mFld ))) {
                               if(src[0] == '?' && src[1] == '!' && endMsg(&src[2])) {
-                                 out->encoderType = mHRE;
+                                 ed->encoderType = mHRE;
                                  return true; }}}
                      }
                      else if(NULL != (src = startField(src, "GC")))
@@ -361,8 +450,8 @@ PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *out, Sens_M_EncT
                            S16 fpc;
                            if(NULL != (src = ReadDirtyASCIIInt(src, &fpc))) {
                               if(fpc >= 0 && fpc <= 99) {
-                                 out->flowPcent = fpc;
-                                 out->weGot.flowPcent = 1;
+                                 ed->flowPcent = fpc;
+                                 ed->weGot.flowPcent = 1;
 
                                  U32 m1, m2;
                                  U8 bytesGot;
@@ -370,12 +459,16 @@ PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *out, Sens_M_EncT
 
                                     if(endMsg(src)) {
                                        if(bytesGot == 4 && BSET(lookFor, mMag)) {
-                                          out->encoderType = mMag;
-                                          return true;
+                                          ed->encoderType = mMag;
+                                          if(true == decodeMag_MField(m1, ed)) {
+                                             ed->secTot = m2;
+                                             return true; }
                                        }
                                        else if(bytesGot == 3 && BSET(lookFor, mHRE_LCD | mGen1)) {
-                                          out->encoderType = mHRE_LCD | mGen1;
-                                          return true;
+                                          ed->encoderType = mHRE_LCD | mGen1;
+                                          if(true == decode24bit_MField(m1, ed)) {
+                                             ed->revTot = m2;
+                                             return true; }
                                        }
                                     }
                                     else if(NULL != (src = startField(src, "XT"))) {
@@ -383,24 +476,24 @@ PUBLIC bool Sensus_BlockDecode(C8 const *src, S_EncoderMsgData *out, Sens_M_EncT
                                           S_XT xt;
                                           if(NULL != (src = getXT(src, &xt))) {
                                              if(NULL != (src = startField(src, "K"))) {
-                                                if(NULL != (src = getSerialStr(src, out->kStr))) {
+                                                if(NULL != (src = getSerialStr(src, ed->kStr))) {
                                                    if(endMsg(src) == true) {
                                                       if(BSET(lookFor, mGen1)) {
-                                                         out->encoderType = mGen2;
+                                                         ed->encoderType = mGen2;
                                                          return true; }}
 
                                                    else if(NULL != (src = startField(src, "XP"))) {
                                                       if(BSET(lookFor, mGen2)) {
                                                          S_XP xp;
                                                          if(NULL != (src = getXP(src, &xp))) {
-                                                            out->encoderType = mGen2;
+                                                            ed->encoderType = mGen2;
                                                             return true; }}}}}}}}}}}}
                      } // startField(src, "GC")
 
                      else if( endMsg(src) && BSET(lookFor, mADE) )
                      {
-                        if(out->rawTot <= 999999 && strlen(out->serialStr) <= 7  )
-                        out->encoderType = mADE;
+                        if(ed->rawTot <= 999999 && strlen(ed->serialStr) <= 7  )
+                        ed->encoderType = mADE;
                         return true;
                      }
                   }}}}}}
