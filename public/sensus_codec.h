@@ -12,20 +12,21 @@
 
 // ======================================== Batch Decoder ========================================
 
-typedef U32 enc_T_Tot;          // Raw Meter readings; up to 9 digits
-typedef U8  enc_T_FlowPcent;    // Percent of max flow
-typedef U8  enc_T_Pressure;     // In 0.1bar
-typedef U8  enc_T_MeterSize;    // Size in b[5:0] of the 32 bit M-Field
-typedef U8  enc_T_MeterType;    // Size/type in the top byte of the 24bit M-Field
-typedef U8  enc_T_Resolution;
-typedef U8  enc_T_ProdCode;     // b[15:12] of 32bit M-field
-typedef U8  enc_T_UOM;
-typedef U8  enc_T_MeasMode;
-typedef U8  enc_T_FlowDir;
-typedef S16 enc_T_degC;         // In degC.
+typedef U32 enc_T_Tot;           // Raw Meter readings; up to 9 digits
+typedef U8  enc_T_FlowPcent;     // Percent of max flow
+typedef U8  enc_T_Pressure;      // In 0.1bar
+typedef S16 enc_T_degC;          // In degC.
+typedef U8  enc_T_MeterSize;     // Size in b[5:0] of the 32 bit M-Field
+typedef U8  enc_T_MeterType;     // Size/type in the top byte of the 24bit M-Field
+typedef U8  enc_T_Resolution;    // x1,x0.1,x10 etc
+typedef U8  enc_T_ProdCode;      // b[15:12] of 32bit M-field
+typedef U8  enc_T_UOM;           // m3, ft3, gal etc.
+typedef U8  enc_T_MeasMode;      // Unidirectional or bidirectional. For Mag Meters.
+typedef U8  enc_T_FlowDir;       // Forward or reverse.
 
 // The kind of Encoder message.'m' <-> masks so decoder can filter for multiple message-types.
 typedef enum {
+   mNoEncoders = 0x00,
    mADE        = 0x01,
    mGen1       = 0x02,
    mGen2       = 0x04,
@@ -36,48 +37,54 @@ typedef enum {
 } enc_M_EncType;
 
 // Will be set if this alert occurs in the message; otherwise clear.
-typedef struct {
-   U32   overflow    :1,      // of the totaliser
-         pressure    :1,      // Any of the min.max or average pressure tagged as bad.
-         reverseFlow :1,
-         tamper      :1,
-         leak        :1,
-         program     :1,      // 'Program' error in basic status.
-         temperature :1,
-         endOfLife   :1,      // Usually battery is dead.
-         emptyPipe   :1,
-         noFlow      :1;      // i.e no usage for some time.
+typedef union {
+   U32 asU32;
+   struct {
+      U32   overflow    :1,      // of the totaliser
+            pressure    :1,      // Any of the min.max or average pressure tagged as bad.
+            reverseFlow :1,
+            tamper      :1,
+            leak        :1,
+            program     :1,      // 'Program' error in basic status.
+            temperature :1,
+            endOfLife   :1,      // Usually battery is dead.
+            emptyPipe   :1,
+            noFlow      :1;      // i.e no usage for some time.
 
-         #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-   struct {    // Mag-specific alerts.
-      U32
-         adcError    :1,
-         lowBatt     :1,
-         badCoilDrive :1,
-         measTimeout :1,
-         flowStim    :1,
-         ovStatus    :1,
-         maxFlow     :1,
-         badSensor   :1;
-      } mag;
+            #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+      struct {    // Mag-specific alerts.
+         U32
+            adcError    :1,
+            lowBatt     :1,
+            badCoilDrive :1,
+            measTimeout :1,
+            flowStim    :1,
+            ovStatus    :1,
+            maxFlow     :1,
+            badSensor   :1;
+         } mag;
+      } bs;
          #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 } enc_S_Alerts;
 
 // Will be set if the corresponding field in enc_S_MsgData was updated from the Encoder message.
-typedef struct {
-   U16   serWord     :1,
-         rawTot      :1,
-         flowPcent   :1,
-         pressure    :1,
-         fluidTmpr   :1,
-         ambientTmpr :1,
-         meterSize   :1,
-         meterType   :1,
-         res         :1,
-         prodCode    :1,
-         uom         :1,
-         measMode    :1,
-         alerts      :1;
+typedef union {
+   U16   asU16;
+   struct {
+      U16   serWord     :1,
+            rawTot      :1,
+            flowPcent   :1,
+            pressure    :1,
+            fluidTmpr   :1,
+            ambientTmpr :1,
+            meterSize   :1,
+            meterType   :1,
+            res         :1,
+            prodCode    :1,
+            uom         :1,
+            measMode    :1,
+            alerts      :1;
+   } bs;
 } enc_S_WotWeGot;
 
 #define _enc_MaxSerNumChars 10
@@ -90,17 +97,19 @@ typedef struct {
    enc_S_Alerts      alerts;
    C8                serialWord[_enc_MaxSerNumChars+1];  // serial-word 'RBrrrrrrrrr;'. Up to 10 digits & letters.
    C8                kStr[_enc_MaxSerNumChars+1];        // The 'ownership number' ';Knnnnnnnnn' up to 10 letters & digits..
-   enc_T_Tot         rawTot,                             // RBrrrrrrrrr;IBssssssssss
-                     revTot;
+   enc_T_Tot         rawTot;                             // RBrrrrrrrrr;IBssssssssss
    U8                dials;                              // Digits in ';RBnnnnnnnn'. Usually >= 6; no more than 9.
    enc_T_FlowPcent   flowPcent;
 
    struct {
+      enc_T_Tot      revTot;                             // Reverse total; from 'xxxxxx' in ';Mbbbbbb,xxxxxx'
       S_Pres         pres;
       enc_T_degC     fluidDegC,
                      ambientDegC;
       } noMag;
+
    enc_T_MeterType   meterType;                          // Size/type in the top byte of the 24bit M-Field
+
    enc_T_UOM         uom;
       #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
    struct {
@@ -152,7 +161,12 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
 
 // =================================== Test harness support ===========================================
 
-PUBLIC U16 Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed);
+PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed);
+
+#define _sens_EncodersEqual_IgnoreMag  false
+#define _sens_EncodersEqual_ChkMag     true
+PUBLIC bool Sensus_EncodersEqual(enc_S_MsgData const *a, enc_S_MsgData const *b, bool chkMag);
+PUBLIC C8 const * sens_ShowEncoders(C8 *out, enc_M_EncType t);
 
 #endif // SENSUS_CODEC_H
 

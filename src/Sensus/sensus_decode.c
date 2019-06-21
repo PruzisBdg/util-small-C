@@ -126,19 +126,19 @@ static U8 fieldU32(U32 n, U8 msb, U8 lsb) {
 _EXPORT_FOR_TEST bool decodeBasicStatus(U16 mf, enc_S_MsgData *ed) {
 
    enc_S_Alerts a;
-   a.overflow     = bitU16(mf, 15);
-   a.pressure     = bitU16(mf, 14);
-   a.tamper       = bitU16(mf, 7);
-   a.program      = bitU16(mf, 6);
-   a.leak         = bitU16(mf, 5);
-   a.reverseFlow  = bitU16(mf, 4);
-   a.noFlow       = bitU16(mf, 3);
-   a.endOfLife    = bitU16(mf, 2);
-   a.temperature  = bitU16(mf, 1);
-   a.emptyPipe    = bitU16(mf, 0);
+   a.bs.overflow     = bitU16(mf, 15);
+   a.bs.pressure     = bitU16(mf, 14);
+   a.bs.tamper       = bitU16(mf, 7);
+   a.bs.program      = bitU16(mf, 6);
+   a.bs.leak         = bitU16(mf, 5);
+   a.bs.reverseFlow  = bitU16(mf, 4);
+   a.bs.noFlow       = bitU16(mf, 3);
+   a.bs.endOfLife    = bitU16(mf, 2);
+   a.bs.temperature  = bitU16(mf, 1);
+   a.bs.emptyPipe    = bitU16(mf, 0);
    ed->alerts = a;
 
-   ed->weGot.alerts = 1;
+   ed->weGot.bs.alerts = 1;
    return true;   // Always succeeds, for now.
 }
 
@@ -150,9 +150,9 @@ _EXPORT_FOR_TEST bool decodeExtended_MField(U32 mf, enc_S_MsgData *ed) {
 
    // Extended content in msb (of the 3 bytes).
    ed->meterType = LOW_BYTE(HIGH_WORD(mf));
-   ed->weGot.meterType = 1;
+   ed->weGot.bs.meterType = 1;
    ed->uom = fieldU32(mf, 11, 9);
-   ed->weGot.uom = 1;
+   ed->weGot.bs.uom = 1;
 
    // Legacy status in the lower 2 bytes.
    return decodeBasicStatus(LOW_WORD(mf), ed);
@@ -173,47 +173,47 @@ _EXPORT_FOR_TEST bool decodeMag_MField(U32 mf, enc_S_MsgData *ed) {
 
    //How some Mag-Meter M-Fields depends on the type of Mag_meter. So get that first.
    ed->mag.prodCode = fieldU32(mf, 15, 12);
-   ed->weGot.prodCode = 1;
+   ed->weGot.bs.prodCode = 1;
 
    enc_S_Alerts *a = &ed->alerts;
 
    #define _mpc (ed->mag.prodCode)
 
    if(_mpc == eMag_M2000 || _mpc == eMag_M1000 || _mpc == eMag_M5000 || _mpc == eMag_Utility) {
-      a->mag.maxFlow   = bitU32(mf, 27);
-      a->mag.adcError  = bitU32(mf, 26);
-      a->emptyPipe     = bitU32(mf, 25);
-      a->mag.badSensor = bitU32(mf, 24); }
+      a->bs.mag.maxFlow   = bitU32(mf, 27);
+      a->bs.mag.adcError  = bitU32(mf, 26);
+      a->bs.emptyPipe     = bitU32(mf, 25);
+      a->bs.mag.badSensor = bitU32(mf, 24); }
 
    if(_mpc == eMag_M2000) {
-      a->mag.flowStim = bitU32(mf, 30);
-      a->overflow     = bitU32(mf, 29);
-      a->mag.ovStatus = bitU32(mf, 28);
+      a->bs.mag.flowStim = bitU32(mf, 30);
+      a->bs.overflow     = bitU32(mf, 29);
+      a->bs.mag.ovStatus = bitU32(mf, 28);
       }
    else if(_mpc == eMag_M1000 || _mpc == eMag_M5000 || _mpc == eMag_M5000B ) {
-      a->mag.badCoilDrive = bitU32(mf,30);
-      a->mag.measTimeout  = bitU32(mf,29);
+      a->bs.mag.badCoilDrive = bitU32(mf,30);
+      a->bs.mag.measTimeout  = bitU32(mf,29);
       }
    else if(_mpc == eMag_Utility) {
-      a->endOfLife       = bitU32(mf, 30);
-      a->mag.measTimeout = bitU32(mf, 29);
-      a->leak            = bitU32(mf, 23);
-      a->reverseFlow     = bitU32(mf, 22); }
+      a->bs.endOfLife       = bitU32(mf, 30);
+      a->bs.mag.measTimeout = bitU32(mf, 29);
+      a->bs.leak            = bitU32(mf, 23);
+      a->bs.reverseFlow     = bitU32(mf, 22); }
 
    ed->mag.res = fieldU32(mf, 19, 16);
-   ed->weGot.res = 1;
+   ed->weGot.bs.res = 1;
 
    ed->uom = fieldU32(mf, 11, 8);
-   ed->weGot.uom = 1;
+   ed->weGot.bs.uom = 1;
 
-   ed->alerts.reverseFlow = bitU32(mf, 6);
+   ed->alerts.bs.reverseFlow = bitU32(mf, 6);
 
    ed->mag.meterSize = fieldU32(mf, 5, 0);
-   ed->weGot.meterSize = 1;
+   ed->weGot.bs.meterSize = 1;
 
    ed->mag.biDirectional = bitU32(mf,7);
 
-   ed->weGot.alerts = 1;_SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+   ed->weGot.bs.alerts = 1;
    return true;      // Always succeeds, for now.
 }
    #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
@@ -248,22 +248,22 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
          */
          U8 fluid = HIGH_BYTE(n);
          if(fluid == 0x7E) {                          // Error reading temperature?
-            ed->alerts.temperature = 1; }             // then post alert.
+            ed->alerts.bs.temperature = 1; }             // then post alert.
          else if(fluid == 0x7D || fluid == 0x7C) {    // No sensor? OR Meter is in storage mode?
             }                                         // then do nothing.
          else {                                       // else byte is a valid degC
             ed->noMag.fluidDegC = (S8)fluid;          // read it as signed 8-bit
-            ed->weGot.fluidTmpr = 1; }                // and say we got a degC
+            ed->weGot.bs.fluidTmpr = 1; }                // and say we got a degC
 
          // Repeat above for ambient temperature.
          U8 amb = LOW_BYTE(n);
          if(amb == 0x7E) {
-            ed->alerts.temperature = 1; }
+            ed->alerts.bs.temperature = 1; }
          else if(amb == 0x7D || amb == 0x7C) {
          }
          else {
             ed->noMag.ambientDegC = (S8)amb;
-            ed->weGot.ambientTmpr = 1; }
+            ed->weGot.bs.ambientTmpr = 1; }
          return src + 4; }}                           // Advance past 'ffaa' and done.
 
    // else check for ';XTddd', 2nd and 3rd of 'ddd' must be digits...
@@ -276,14 +276,234 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
          if(n == 125 )                                // 125?, Meter is in storage mode
             {}                                        // so no temperature read, do nothing.
          else if(n == 126 ) {                         // 126?, fault reading temperature.
-            ed->alerts.temperature = 1; }             // post alert
+            ed->alerts.bs.temperature = 1; }             // post alert
          else {
             ed->noMag.fluidDegC = n;                  // else legal fluid temperature reading. use it
-            ed->weGot.fluidTmpr = 1; }                // and say we have a that reading.
+            ed->weGot.bs.fluidTmpr = 1; }                // and say we have a that reading.
          return src + 3; }                            // Advance past 'ddd' and done.
    }
    return NULL;      // Some fail above.
 }
+
+/* ----------------------------- getXP --------------------------------------------
+
+   Get into the 'ed' the values encoded in the pressure field 'XPiijjkk' where 'ii','jj','kk'
+   are min,max and average pressures in HexASCII (in 0.1bar).
+
+   Given 'iijjkk' return on the char after the last 'k'.
+   Return NULL if parse fail; if fail then 'xp' is undefined
+*/
+
+// ---- Not a fault (0xFD) AND not no-read (0xFD) because Meter is in storage.
+static bool isAPres(U8 p) {
+   return p != 0xFE && p != 0xFD; }
+
+_EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
+   U32 n;
+   if(NULL != (src = GetNextHexASCII_U24(src, &n))) {
+
+      U8 minP = LOW_BYTE(HIGH_WORD(n));
+      U8 maxP = HIGH_BYTE(LOW_WORD(n));
+      U8 avgP  = LOW_BYTE(LOW_WORD(n));
+
+      if(minP == 0xFE || maxP == 0xFE || avgP == 0xFE) {
+         ed->alerts.bs.pressure = 1; }
+
+      if(minP != 0xFE) {
+         ed->noMag.pres._min = minP; }
+      if(maxP != 0xFE) {
+         ed->noMag.pres._max = maxP; }
+      if(avgP != 0xFE) {
+         ed->noMag.pres._avg = avgP; }
+
+      if( isAPres(minP) || isAPres(maxP) || isAPres(avgP)) {
+         ed->weGot.bs.pressure = 1; }
+
+      return src; }
+   return NULL; }
+
+
+/* ------------------------------- legalEmptyEncoder --------------------------------
+
+   Zeros, empty strings, <null> fields for pressure and temperature.
+*/
+PRIVATE enc_S_MsgData legalEmptyEncoder = {
+   .serialWord = "",
+   .kStr = "",
+   .noMag = {
+      .pres = {._min = 0xFF, ._max = 0xFF, ._avg = 0xFF},
+      .fluidDegC = 0xFF, .ambientDegC = 0xFF}
+};
+
+
+
+/* --------------------------------- Sensus_DecodeMsg --------------------------------------------
+
+   Given a byte sequence in 'src' which represents a legal 'Sensus' message for one of the Encoders
+   in 'filterFor', return the content of that message in 'ed'.
+
+   Return true if
+      - 'src' had a legally formatted message for one of 'filterFor' AND
+      - fields in that message could all be converted to 'ed'.
+
+   So this routine requires that all fields obey their format; it doesn't necessarily check that
+   values are legal or sensible, just that they can be produced in 'ed'
+
+   If decode succeeds 'rawTot' and 'serNum' in 'ed' will always be populated. Other fields will
+   be updated if there's content in the message for them; otherwise they will be left at defaults.
+
+   Sensus_DecodeMsg() always returns some legal enc_S_MsgData in 'ed' no matter where the parse
+   fails. 'Legal' means that 'ed' can be used (by the caller) without errors in generic handling
+   of that data. It doesn't mean guarantee the data will make sense; after all the input, if any,
+   didn't make sense.
+
+   'ed->weGot tabulates which fields were received. It includes 'rawTot', 'serNum' though
+   really, these will always be true, but we include them for completeness.
+
+   Sensus_DecodeMsg() fails at the first 'src' byte which doesn't obey any format. It stops,
+   success or fail, at a <CR> or '\0'. It does need the <CR> to succeed.
+
+   It look for one or more of:
+
+      ADE               V;RBrrrrrr;IBsssssss<CR>
+
+      E-series GEN1     V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx<CR>   OR...
+                        V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTddd;Kyyyyyyyyyy<CR>
+
+      E-series GEN2     V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTddd;Kyyyyyyyyyy;XPiijjkk<CR>
+                        V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTffaa;Kyyyyyyyyyy;XPiijjkk<CR>
+
+      HRE               V;RBrrrrrrrrr;IBssssssssss;Mbbbb?!<CR>
+      HRE-LCD           V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx<CR>
+
+      Mag               V;RBrrrrrrrrr;IBssssssss;GCaa;Mbbbbbbbb,xxxxxxxx<CR>
+
+   where:PUBLIC C8 const* GetNextHexASCII_U24(C8 const *hexStr, U32 *out)
+
+      RBrrrrrrrrr          - totaliser, 6 to 9 digits
+      IBssssssssss         - serial number; 1-10 alphanumeric
+      GCaa                 - flow pcent 0-99
+      Mbbbbbb,xxxxxx       - 24 bit M-field; see Badger Wiki for contents.
+      Mbbbbbbbb,xxxxxxxx   - 32 bit M-field     "     "     "        "
+      XTddd                - temperature; 3-digits/min e.g 024 or -16
+      XTffaa               - fluid and ambient degC, 2 + 2 Hex chars.
+      XPiijjkk             - min, max and average pressure.
+*/
+PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType filterFor)
+{
+   // Whatever happens, start with a legal empty encoder, and fill from there.
+   *ed = legalEmptyEncoder;
+
+   C8 const *p = src;      // Mark the start.
+
+   if(filterFor == 0) {
+      return true; }
+
+   if(*p == 'V') {                                                            // 'V...  '?
+      if(NULL != (p = startField(p+1, "RB"))) {                               // 'V;RB...  '?
+         S32 t;
+         if( NULL != (p = ReadDirtyASCII_S32(p, &t))) {                       // 'V;RBrr...  '? where 'r' are 0-9
+
+            U8 digits = AminusBU8(p - src, 4);
+            if(digits < 9 && digits >= 6) {                                   // 6-9 digits?
+
+               ed->rawTot = t;                                                // then our totaliser is that number.
+               ed->dials = digits;
+               ed->weGot.bs.rawTot = 1;
+
+               if(NULL != (p = startField(p, "IB"))) {                       // 'V;RBrrrrrr[rrr];IB...   '?
+                  if(NULL != (p = getSerialWord(p, ed->serialWord))) {       // Read 'ssssssss' from 'V;RBrrrrrr[rrr];IBsssssssss'?
+                     ed->weGot.bs.serWord = 1;
+
+                     /* Got at least V;RBrrrrrr;IBsssssss i.e totaliser and serial-string. If here's nothing
+                        more than it's a ADE. If M-Field is next then it's HRE; otherwise something else.
+                     */
+                     // Multiple choices ahead so must preserve 'p' to offer to each of then.
+                     C8 const *q;
+
+                     if(NULL != (q = startField(p, "M")))                        // 'V;RBrrrrrrrrr;IBssssssssss;M...  '?
+                     {  p = q;                                                   // Only HRE fits this pattern.
+                        if(BSET(filterFor, mHRE)) {                              // HRE requested?
+                           U16 mFld;
+                           if(NULL != (p = GetNextHexASCII_U16(p, &mFld ))) {    // Got ';Mxxxx'
+                              if(p[0] == '?' && p[1] == '!' && endMsg(&p[2])) {  // Got ';Mxxxx?!'
+                                 ed->encoderType = mHRE;                         // then it's a HRE
+                                 decodeBasicStatus(mFld, ed);                    // Decode the 16-bit status.
+                                 return true; }}}
+                     }
+                     else if(NULL != (q = startField(p, "GC")))                     // 'V;RBrrrrrrrrr;IBssssssssss;GC...  '?
+                     {  p = q;                                                      // must be Gen1,Gen2,HRE-LCD or mag.
+                        if(BSET(filterFor, mGen1 | mGen2 | mHRE_LCD | mMag)) {      // Is one of the above?
+                           S16 pcent;
+                           if(NULL != (p = ReadDirtyASCIIInt(p, &pcent))) {         // Read (flow) pcent from ';GCnn'
+                              if(pcent >= 0 && pcent <= 99) {                       // Was 0-99
+                                 ed->flowPcent = pcent;                             // then write result.
+                                 ed->weGot.bs.flowPcent = 1;
+
+                                 /* ';GCaa' is always followed by a 24-bit or 32-bit dual M-Field. 32-bit is Mag-Meter; everything
+                                    else is 24-bit.
+                                 */
+                                 U32 m1, m2;
+                                 U8 bytesGot;
+                                 if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {      // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
+
+                                    // If M-filed ends message then it's Gen1, HRE-LCD or Mag.
+                                    if(endMsg(p)) {
+                                             #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+                                       if(bytesGot == 4 && BSET(filterFor, mMag)) {                   // 32-bit M-Field?
+                                          ed->encoderType = mMag;                                     // then it's a Mag
+                                          if(true == decodeMag_MField(m1, ed)) {                      // Decode 1st 'bbbbbbbb'
+                                             ed->mag.secTot = m2;                                     // 'xxxxxxxx' is secondary total
+                                             return true; }
+                                       } else
+                                             #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+                                       if(bytesGot == 3 && BSET(filterFor, mHRE_LCD | mGen1)) {       // else 24-bit M-field? AND requested Gen1 or HRE-LCD?
+                                          ed->encoderType = mHRE_LCD | mGen1;                         // then we got one of those; they have same message format
+                                          if(true == decodeExtended_MField(m1, ed)) {                 // decode 24bit status
+                                             ed->noMag.revTot = m2;                                   // 2nd M-field is reverse total.
+                                             return true; }
+                                       }
+                                    }
+                                    // If M-field is followed by ';XT... ' (temperature) then it's a Gen1 or Gen2.
+                                    else if(NULL != (p = startField(p, "XT"))) {                      // Got ';XT...  '?...
+                                       if(BSET(filterFor, mGen1 | mGen2)) {                           // and asking for Gen1 or Gen2.
+                                          if(NULL != (p = getXT(p, ed))) {                            // then read ';XTddd' (fluid degC) or ';XTffaa' (fluid and ambient)?
+                                             if(NULL != (p = startField(p, "K"))) {
+                                                // For Gen1, Gen2, ';XT...' is always followed by ';Kyyyyyy... ', the owenership number.
+                                                if(NULL != (p = getSerialWord(p, ed->kStr))) {        // Read ';Kyyyyyyyyy'?
+                                                   // If ';Kyyyyyyyyyy' then it must be Gen1.
+                                                   if(endMsg(p) == true) {                            // ';Kyyyyyyyy' was last field?
+                                                      if(BSET(filterFor, mGen1)) {                    // and did request Gen1
+                                                         ed->encoderType = mGen1;                     // then Gen1 is what we got
+                                                         return true; }}
+                                                   // else 'XP...' (pressures) after ';Kyyyy...'. Must be Gen2.
+                                                   else if(NULL != (p = startField(p, "XP"))) {       // Got ';XP'?
+                                                      if(BSET(filterFor, mGen2)) {                    // AND requested Gen2?
+                                                         if(NULL != (p = getXP(p, ed))) {             // AND read ';XPiijjkk' into pressures?
+                                                            ed->encoderType = mGen2;                  // then Gen2 is what we got.
+                                                            return true; }}}}}}}}}}}}
+                     } // startField(p, "GC")
+
+                     /* else no ';M...' and no ';GC... '. It must be just  V;RBrrrrrr;IBsssssss<CR> i.e and ADE.
+
+                        Check for end of message, a 6 digit totaliser and a serial-word of no more than 7 chars.
+                     */
+                     else if( endMsg(p) && BSET(filterFor, mADE) )                  // End-of-message? AND did request ADE?
+                     {
+                        if(ed->rawTot <= 999999 && strlen(ed->serialWord) <= 7  )    // 6-digit total? AND < 7-char serial-word.
+                        ed->encoderType = mADE;
+                        return true;
+                     }
+                  }}}}}}
+   return false;     // Did not finish a decode above.
+} // Sensus_DecodeMsg
+
+// =============================== ends: Block Decoder ===========================================
+
+
+
+
+// ================================== Stream Decoder ===========================================
 
 /* ----------------------------------- getMsgLimits -----------------------------------------------
 
@@ -323,192 +543,6 @@ _EXPORT_FOR_TEST S_MinMaxU8 const * getMsgLimits(enc_M_EncType et, S_MinMaxU8 *l
    return l;
 }
 
-
-/* ----------------------------- getXP --------------------------------------------
-
-   Get into the 'ed' the values encoded in the pressure field 'XPiijjkk' where 'ii','jj','kk'
-   are min,max and average pressures in HexASCII (in 0.1bar).
-
-   Given 'iijjkk' return on the char after the last 'k'.
-   Return NULL if parse fail; if fail then 'xp' is undefined
-*/
-
-// ---- Not a fault (0xFD) AND not no-read (0xFD) because Meter is in storage.
-static bool isAPres(U8 p) {
-   return p != 0xFE && p != 0xFD; }
-
-_EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
-   U32 n;
-   if(NULL != (src = GetNextHexASCII_U24(src, &n))) {
-
-      U8 minP = LOW_BYTE(HIGH_WORD(n));
-      U8 maxP = HIGH_BYTE(LOW_WORD(n));
-      U8 avgP  = LOW_BYTE(LOW_WORD(n));
-
-      if(minP == 0xFE || maxP == 0xFE || avgP == 0xFE) {
-         ed->alerts.pressure = 1; }
-
-      if(minP != 0xFE) {
-         ed->noMag.pres._min = minP; }
-      if(maxP != 0xFE) {
-         ed->noMag.pres._max = maxP; }
-      if(avgP != 0xFE) {
-         ed->noMag.pres._avg = avgP; }
-
-      if( isAPres(minP) || isAPres(maxP) || isAPres(avgP)) {
-         ed->weGot.pressure = 1; }
-
-      return src; }
-   return NULL; }
-
-
-/* --------------------------------- Sensus_DecodeMsg --------------------------------------------
-
-   Given a byte sequence in 'src' which represents a legal 'Sensus' message for one of the Encoders
-   in 'filterFor', return the content of that message in 'out'.
-
-   Return true if
-      - 'src' had a legally fomsgLimitsrmatted message for one of 'filterFor' AND
-      - fields in that message could all be converted to 'out'.
-
-   So this routine requires that all fields obey their format; it doesn't necessarily check that
-   values are legal or sensible, just that they can be produced in 'out'
-
-   If decode succeeds 'rawTot' and 'serNum' in 'out' will always be populated. Other fields will
-   be updated if there's content in the message for them; otherwise they will be left alone.
-
-   'out->weGot tabulates which fields were received. It includes 'rawTot', 'serNum' though
-   really, these will always be true, but we include them for completeness.
-
-   Sensus_DecodeMsg() fails at the first 'src' byte which doesn't obey any format. It stops,
-   success or fail, at a <CR> or '\0'. It does need the <CR> to succeed.
-
-   It look for one or more of:
-
-      ADE               V;RBrrrrrr;IBsssssss<CR>
-
-      E-series GEN1     V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx<CR>   OR...
-                        V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTddd;Kyyyyyyyyyy<CR>
-
-      E-series GEN2     V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTddd;Kyyyyyyyyyy;XPiijjkk<CR>
-                        V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx;XTffaa;Kyyyyyyyyyy;XPiijjkk<CR>
-
-      HRE               V;RBrrrrrrrrr;IBssssssssss;Mbbbb?!<CR>
-      HRE-LCD           V;RBrrrrrrrrr;IBssssssssss;GCaa;Mbbbbbb,xxxxxx<CR>
-
-      Mag               V;RBrrrrrrrrr;IBssssssss;GCaa;Mbbbbbbbb,xxxxxxxx<CR>
-
-   where:PUBLIC C8 const* GetNextHexASCII_U24(C8 const *hexStr, U32 *out)
-
-      RBrrrrrrrrr          - totaliser, 6 to 9 digits
-      IBssssssssss         - serial number; 1-10 alphanumeric
-      GCaa                 - flow pcent 0-99
-      Mbbbbbb,xxxxxx       - 24 bit M-field; see Badger Wiki for contents.
-      Mbbbbbbbb,xxxxxxxx   - 32 bit M-field     "     "     "        "
-      XTddd                - temperature; 3-digits/min e.g 024 or -16
-      XTffaa               - fluid and ambient degC, 2 + 2 Hex chars.
-      XPiijjkk             - min, max and average pressure.
-*/
-PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType filterFor)
-{
-   C8 const *p = src;      // Mark the start.
-
-   if(*p == 'V') {                                                            // 'V...  '?
-      if(NULL != (p = startField(p, "RB"))) {                                 // 'V;RB...  '?
-         S32 t;
-         if( NULL != (p = ReadDirtyASCII_S32(p, &t))) {                       // 'V;RBrr...  '? where 'r' are 0-9
-            U8 digits = AminusBU8(p - src, 3);
-            if(digits < 9 && digits >= 6) {                                   // 6-9 digits?
-
-               ed->rawTot = t;                                                // then our totaliser is that number.
-               ed->dials = digits;
-               ed->weGot.rawTot = 1;
-
-               if(NULL != (p = startField(p, "IB"))) {                       // 'V;RBrrrrrr[rrr];IB...   '?
-                  if(NULL != (p = getSerialWord(p, ed->serialWord))) {       // Read 'ssssssss' from 'V;RBrrrrrr[rrr];IBsssssssss'?
-                     ed->weGot.serWord = 1;
-
-                     /* Got at least V;RBrrrrrr;IBsssssss i.e totaliser and serial-string. If here's nothing
-                        more than it's a ADE. If M-Field is next then it's HRE; otherwise something else.
-                     */
-                     if(NULL != (p = startField(p, "M")))                        // 'V;RBrrrrrrrrr;IBssssssssss;M...  '?
-                     {                                                           // Only HRE fits this pattern.
-                        if(BSET(filterFor, mHRE)) {                              // HRE requested?
-                           U16 mFld;
-                           if(NULL != (p = GetNextHexASCII_U16(p, &mFld ))) {    // Got ';Mxxxx'
-                              if(p[0] == '?' && p[1] == '!' && endMsg(&p[2])) {  // Got ';Mxxxx?!'
-                                 ed->encoderType = mHRE;                         // then it's a HRE
-                                 decodeBasicStatus(mFld, ed);                    // Decode the 16-bit status.
-                                 return true; }}}
-                     }
-                     else if(NULL != (p = startField(p, "GC")))                     // 'V;RBrrrrrrrrr;IBssssssssss;GC...  '?
-                     {                                                              // must be Gen1,Gen2,HRE-LCD or mag.
-                        if(BSET(filterFor, mGen1 | mGen2 | mHRE_LCD | mMag)) {      // Is one of the above?
-                           S16 pcent;
-                           if(NULL != (p = ReadDirtyASCIIInt(p, &pcent))) {         // Read (flow) pcent from ';GCnn'
-                              if(pcent >= 0 && pcent <= 99) {                       // Was 0-99
-                                 ed->flowPcent = pcent;                             // then write result.
-                                 ed->weGot.flowPcent = 1;
-
-                                 /* ';GCaa' is always followed by a 24-bit or 32-bit dual M-Field. 32-bit is Mag-Meter; everything
-                                    else is 24-bit.
-                                 */
-                                 U32 m1, m2;
-                                 U8 bytesGot;
-                                 if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {      // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
-
-                                    // If M-filed ends message then it's Gen1, HRE-LCD or Mag.
-                                    if(endMsg(p)) {
-                                             #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-                                       if(bytesGot == 4 && BSET(filterFor, mMag)) {                   // 32-bit M-Field?
-                                          ed->encoderType = mMag;                                     // then it's a Mag
-                                          if(true == decodeMag_MField(m1, ed)) {                      // Decode 1st 'bbbbbbbb'
-                                             ed->mag.secTot = m2;                                     // 'xxxxxxxx' is secondary total
-                                             return true; }
-                                       } else
-                                             #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-                                       if(bytesGot == 3 && BSET(filterFor, mHRE_LCD | mGen1)) {       // else 24-bit M-field? AND requested Gen1 or HRE-LCD?
-                                          ed->encoderType = mHRE_LCD | mGen1;                         // then we got one of those; they have same message format
-                                          if(true == decodeExtended_MField(m1, ed)) {                 // decode 24bit status
-                                             ed->revTot = m2;                                         // 2nd M-field is reverse total.
-                                             return true; }
-                                       }
-                                    }
-                                    // If M-field is followed by ';XT... ' (temperature) then it's a Gen1 or Gen2.
-                                    else if(NULL != (p = startField(p, "XT"))) {                      // Got ';XT...  '?...
-                                       if(BSET(filterFor, mGen1 | mGen2)) {                           // and asking for Gen1 or Gen2.
-                                          if(NULL != (p = getXT(p, ed))) {                            // then read ';XTddd' (fluid degC) or ';XTffaa' (fluid and ambient)?
-                                             if(NULL != (p = startField(p, "K"))) {
-                                                // For Gen1, Gen2, ';XT...' is always followed by ';Kyyyyyy... ', the owenership number.
-                                                if(NULL != (p = getSerialWord(p, ed->kStr))) {        // Read ';Kyyyyyyyyy'?
-                                                   // If ';Kyyyyyyyyyy' then it must be Gen1.
-                                                   if(endMsg(p) == true) {                            // ';Kyyyyyyyy' was last field?
-                                                      if(BSET(filterFor, mGen1)) {                    // and did request Gen1
-                                                         ed->encoderType = mGen1;                     // then Gen1 is what we got
-                                                         return true; }}
-                                                   // else 'XP...' (pressures) after ';Kyyyy...'. Must be Gen2.
-                                                   else if(NULL != (p = startField(p, "XP"))) {       // Got ';XP'?
-                                                      if(BSET(filterFor, mGen2)) {                    // AND requested Gen2?
-                                                         if(NULL != (p = getXP(p, ed))) {             // AND read ';XPiijjkk' into pressures?
-                                                            ed->encoderType = mGen2;                  // then Gen2 is what we got.
-                                                            return true; }}}}}}}}}}}}
-                     } // startField(p, "GC")
-
-                     /* else no ';M...' and no ';GC... '. It must be just  V;RBrrrrrr;IBsssssss<CR> i.e and ADE.
-
-                        Check for end of message, a 6 digit totaliser and a serial-word of no more than 7 chars.
-                     */
-                     else if( endMsg(p) && BSET(filterFor, mADE) )                  // End-of-message? AND did request ADE?
-                     {
-                        if(ed->rawTot <= 999999 && strlen(ed->serialWord) <= 7  )    // 6-digit total? AND < 7-char serial-word.
-                        ed->encoderType = mADE;
-                        return true;
-                     }
-                  }}}}}}
-   return false;     // Did not finish a decode above.
-} // Sensus_DecodeMsg
-
-
 /* ---------------------------------- Sensus_DecodeStart --------------------------------------------
 
    Setup stream decoder 'dc' to scan for message from encoder types 'filterFor'
@@ -545,12 +579,12 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
       end-of-message then give the (presumably complete) message to the parser. Return whether it parsed or no.
    */
    else {
-      // If this is the 1st char, then zero results, to be filled by Sensus_DecodeMsg().
+      /* If this is the 1st char, then fill rightaway with 'legalEmptyEncoder'. Sensus_DecodeMsg() will also
+         do this when called below, but filling now means that 'ed' is legal right at the start of the char
+         stream.
+      */
       if(dc->put == 0) {
-         *ed = (enc_S_MsgData){0};
-         // Set pressures to their null-storage values.
-         ed->noMag.pres =(S_Pres){ ._min = 0xFF, ._max = 0xFF, ._avg = 0xFF };
-         }
+         *ed = legalEmptyEncoder; }
 
       dc->buf[dc->put++] = ch;
 
