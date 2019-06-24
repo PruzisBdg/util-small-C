@@ -87,6 +87,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out);
 PUBLIC BIT        GotFloatFromASCII(U8 const *inTxt, float *out);
 PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out);
 PUBLIC C8 const * ReadDirtyASCII_S32(C8 const *inTxt, S32 *out);
+PUBLIC C8 const * ReadAsciiS32(C8 const *inTxt, S32 *out);
 PUBLIC U8 const * ReadDirtyBinaryWord(U8 const *inTxt, U16 *out);
 PUBLIC C8 const * ReadTaggedASCIIInt(C8 const *in, C8 const *tag, S32 *out, C8 const *delimiters);
 

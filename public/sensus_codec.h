@@ -37,7 +37,21 @@ typedef enum {
 } enc_M_EncType;
 
 // Will be set if this alert occurs in the message; otherwise clear.
-typedef union {
+            #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+typedef struct {
+   U32
+      adcError    :1,
+      lowBatt     :1,
+      badCoilDrive :1,
+      measTimeout :1,
+      flowStim    :1,
+      ovStatus    :1,
+      maxFlow     :1,
+      badSensor   :1;
+} enc_S_MagAlerts;
+         #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+
+typedef union __attribute__((packed)) {
    U32 asU32;
    struct {
       U32   overflow    :1,      // of the totaliser
@@ -52,17 +66,7 @@ typedef union {
             noFlow      :1;      // i.e no usage for some time.
 
             #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-      struct {    // Mag-specific alerts.
-         U32
-            adcError    :1,
-            lowBatt     :1,
-            badCoilDrive :1,
-            measTimeout :1,
-            flowStim    :1,
-            ovStatus    :1,
-            maxFlow     :1,
-            badSensor   :1;
-         } mag;
+    enc_S_MagAlerts  mag;
       } bs;
          #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 } enc_S_Alerts;

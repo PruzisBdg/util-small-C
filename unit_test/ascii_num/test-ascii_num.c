@@ -174,6 +174,83 @@ void test_ReadDirtyASCII_S32(void)
             { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
 }
 
+/* ---------------------------- test_ReadAsciiS32 ------------------------------------------- */
+
+void test_ReadAsciiS32(void)
+{
+    typedef struct { C8 const *inStr; S32 result; C8 const *tail; bool outModified; } S_Tst;
+
+    S_Tst const tsts[] = {
+        { .inStr = "",              .result = 0,    .tail = NULL,             .outModified = false },     // Empty string -> return NULL, output unchanged.
+        { .inStr = "abc dr()",      .result = 0,    .tail = NULL,             .outModified = false },     // No number -> return NULL, output unchanged.
+        { .inStr = "-abc",          .result = 0,    .tail = NULL,             .outModified = false },    // A lone '-' is not a number.
+
+        { .inStr = "0",             .result = 0,         .tail = "",          .outModified = true },      // "0" -> 0, output at end of string.
+        { .inStr = "23",            .result = 23,        .tail = "",          .outModified = true },
+        { .inStr = "23456789",      .result = 23456789,  .tail = "",          .outModified = true },
+        { .inStr = "0xyz",          .result = 0,         .tail = "xyz",       .outModified = true },
+
+        //{ .inStr = "abc123xyz",     .result = 123,       .tail = "xyz",       .outModified = true },      // Ignore leading non-digits.
+        //{ .inStr = "abc\r\n\t 123pq",.result = 123,      .tail = "pq",        .outModified = true },      // Boof thru leading whitespace
+
+        { .inStr = "-0xyz",         .result = 0,         .tail = "xyz",       .outModified = true },
+        //{ .inStr = "abc-1234567xyz",.result = -1234567,      .tail = "xyz",       .outModified = true },
+        //{ .inStr = "abc123 456xyz", .result = 123,       .tail = " 456xyz",   .outModified = true },
+
+        { .inStr = "32767xyz",      .result = 32767,     .tail = "xyz",       .outModified = true },      // Min and max S16.
+        { .inStr = "-32768xyz",     .result = -32768,    .tail = "xyz",       .outModified = true },
+
+        { .inStr = "2147483647xyz", .result = 2147483647, .tail = "xyz",      .outModified = true },      // Min and max S32.
+        { .inStr = "-2147483648xyz",.result = -2147483648, .tail = "xyz",     .outModified = true },
+
+        { .inStr = "0450xyz",       .result = 450,       .tail = "xyz",       .outModified = true },
+        { .inStr = "000000450328xyz",.result = 450328,   .tail = "xyz",       .outModified = true },      // Bazillion leading zeros are OK.
+        { .inStr = "-000000450xyz", .result = -450,      .tail = "xyz",       .outModified = true },      // ...and with leading '-'.
+
+        // If 10 or more digits puts the number over/under S32, (2147483647, -2147483648) then returns with the 9 digit number
+        // and with tail at the remaining digits.
+        { .inStr = "0003147483647xyz",  .result = 314748364, .tail = "7xyz",  .outModified = true },
+        { .inStr = "-0003147483648xyz", .result = -314748364,.tail = "8xyz",  .outModified = true },
+
+        { .inStr = "+123pqr",       .result = 123,       .tail = "pqr",       .outModified = true },      // "+" is ignored.
+
+        { .inStr = "123.456",       .result = 123,       .tail = ".456",      .outModified = true },     // DP is ignored. The number is what precedes the DP.
+        { .inStr = "123 456",       .result = 123,       .tail = " 456",      .outModified = true },     // Space breaks a number; like any other non-digit.
+        { .inStr = "000 456",       .result = 0,         .tail = " 456",      .outModified = true },     // Leading zero is read as just that.
+
+        { .inStr = "- 123pqr",      .result = 0,         .tail = NULL,       .outModified = false },      // '-' must be next to leading digit.
+        { .inStr = "-+456xyz",      .result = 0,         .tail = NULL,       .outModified = false },     // Just 1 sign allowed, directly before 1st digit.
+    };
+
+    U8 i; for(i = 0; i < RECORDS_IN(tsts); i++) {
+        S_Tst const *t = &tsts[i];
+
+        // Prime 'out' with some value other than the correct result. So can tell if was modified or no.
+        S32 was = t->result + 1;
+        S32 out = was;
+        C8 const * ret = ReadAsciiS32(t->inStr, &out);
+
+        C8 b0[100];
+        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
+
+        if(t->outModified == false)
+            { TEST_ASSERT_EQUAL_INT32_MESSAGE(was, out, _msg("Output should not have been modified", t)); }
+        else {
+            if(out == was) {
+               TEST_FAIL_MESSAGE(_msg("Expected result (in 'out') but 'out' was not modified", t)); }
+            else {
+               if(t->result != out) {
+                  printf("Incorrect output: expected %ld, got %ld ", t->result, out);
+                  TEST_FAIL();}}}
+
+        if(t->tail == NULL && ret != NULL)
+            { TEST_FAIL_MESSAGE( _msg("Return should been NULL but wasn't",t)); }
+        else if(t->tail != NULL && ret == NULL)
+            { TEST_FAIL_MESSAGE(_msg("NULL return (wrong)",t)); }
+        else
+            { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
+}
+
 /* --------------------------------- test_ReadASCIIToFloat ----------------------------------------- */
 
 void test_ReadASCIIToFloat(void)

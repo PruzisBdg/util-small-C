@@ -32,7 +32,7 @@ _EXPORT_FOR_TEST C8 const *startField(C8 const *src, C8 const *tag) {
    <CR> or '\0' finishes an encoder message.
 */
 static bool inline endsMsg(C8 ch) {
-   #define CR 0x13
+   #define CR 13
    return ch == '\0' || ch == CR; }
 
 static bool inline endMsg(C8 const *src) {
@@ -52,23 +52,27 @@ PRIVATE bool endField(C8 const *src) {
 
    Given serialisation word "ssssssssss(:|'\0'|<CR>)", get "ssssssssss" into 'out'.
 
-   "ssssssssss" must be 1-10 alphanumeric chars ('_enc_MaxSerNumChars') immediately followed by one
+   "ssssssssss" must be 6-10 alphanumeric chars ('_enc_MaxSerNumChars') immediately followed by one
    ';', '\0' or <CR>.
 
    If success then return on the trailing ';'; else return NULL.
 */
 _EXPORT_FOR_TEST C8 const * getSerialWord(C8 const *src, C8 *out)
 {
-   for(U8 i = 0; i < _enc_MaxSerNumChars; i++, src++, out++) {    // From 'src', up to 10 (alphanumeric) chars
-      if( endField(src) == true ) {                               // Field delimiter ie ';', <CR> or '\0'?
-         *out = '\0';                                             // Terminate whatever we built in 'out'.
-         return i == 0                                            // Didn't even get 1 char?
-            ? NULL                                                // then fail, serial number cannot be empty.
-            : src; }                                              // else return on end of the field we read.
-      else if(isalnum(*src)) {                                    // else another char of the serial number?...
-         *out = *src; }}                                           // ...copy it to 'out'.
-
-   return NULL;      // Got a non-alphanumeric before filed delimiter.
+   U8 i;
+   for(i = 0; i <= _enc_MaxSerNumChars; i++, src++, out++)      // From 'src', up to 10 (alphanumeric) chars
+   {
+      if(isalnum(*src)) {                                      // else another char of the serial number?...
+         *out = *src; }                                        // ...copy it to 'out'.
+      else {                                                   // else, fail or no, we are done with the serial number.
+         *out = '\0';                                          // Terminate whatever we built in 'out'.
+         return
+            endField(src) == true &&                           // Field delimiter ie ';', <CR> or '\0'? AND
+            i >= 1                                             // got at least 1 char?
+               ? src                                           // else return on end of the field we read.
+               : NULL; }                                       // then fail, serial number cannot be empty.
+   }
+   return NULL;      // Got a non-alphanumeric before field delimiter.
 }
 
 /* --------------------------------- reqHexASCIIbytes ---------------------------------------------
@@ -125,7 +129,10 @@ static U8 fieldU32(U32 n, U8 msb, U8 lsb) {
 */
 _EXPORT_FOR_TEST bool decodeBasicStatus(U16 mf, enc_S_MsgData *ed) {
 
+printf("decode mf 0x%X %d  ", mf, bitU16(mf, 15));
    enc_S_Alerts a;
+   a.asU32 = 0;
+
    a.bs.overflow     = bitU16(mf, 15);
    a.bs.pressure     = bitU16(mf, 14);
    a.bs.tamper       = bitU16(mf, 7);
@@ -136,6 +143,8 @@ _EXPORT_FOR_TEST bool decodeBasicStatus(U16 mf, enc_S_MsgData *ed) {
    a.bs.endOfLife    = bitU16(mf, 2);
    a.bs.temperature  = bitU16(mf, 1);
    a.bs.emptyPipe    = bitU16(mf, 0);
+
+   a.bs.mag.asU32 = 0;
    ed->alerts = a;
 
    ed->weGot.bs.alerts = 1;
@@ -402,10 +411,10 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
    if(*p == 'V') {                                                            // 'V...  '?
       if(NULL != (p = startField(p+1, "RB"))) {                               // 'V;RB...  '?
          S32 t;
-         if( NULL != (p = ReadDirtyASCII_S32(p, &t))) {                       // 'V;RBrr...  '? where 'r' are 0-9
+         if( NULL != (p = ReadAsciiS32(p, &t))) {                             // 'V;RBrr...  '? where 'r' are 0-9
 
             U8 digits = AminusBU8(p - src, 4);
-            if(digits < 9 && digits >= 6) {                                   // 6-9 digits?
+            if(digits <= 9 && digits > 0) {                                    // 1-9 digits?
 
                ed->rawTot = t;                                                // then our totaliser is that number.
                ed->dials = digits;
@@ -447,7 +456,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                                  U8 bytesGot;
                                  if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {      // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
 
-                                    // If M-filed ends message then it's Gen1, HRE-LCD or Mag.
+                                    // If M-field ends message then it's Gen1, HRE-LCD or Mag.
                                     if(endMsg(p)) {
                                              #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
                                        if(bytesGot == 4 && BSET(filterFor, mMag)) {                   // 32-bit M-Field?
@@ -488,14 +497,18 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
 
                         Check for end of message, a 6 digit totaliser and a serial-word of no more than 7 chars.
                      */
-                     else if( endMsg(p) && BSET(filterFor, mADE) )                  // End-of-message? AND did request ADE?
+                     else if( endMsg(p) && BSET(filterFor, mADE) )                     // End-of-message? AND did request ADE?
                      {
-                        if(ed->rawTot <= 999999 && strlen(ed->serialWord) <= 7  )    // 6-digit total? AND < 7-char serial-word.
-                        ed->encoderType = mADE;
-                        return true;
+                        if(ed->rawTot <= 999999 && ed->dials >= 6 && strlen(ed->serialWord) <= 7  ) {    // 6-digit total? AND < 7-char serial-word.
+                           ed->encoderType = mADE;
+                           return true; }
                      }
                   }}}}}}
-   return false;     // Did not finish a decode above.
+
+   // Fail above. Say no encoder found; no alerts. Leave any other data in place.
+   ed->encoderType = mNoEncoders;
+   ed->alerts.asU32 = 0;
+   return false;
 } // Sensus_DecodeMsg
 
 // =============================== ends: Block Decoder ===========================================
