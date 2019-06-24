@@ -71,20 +71,25 @@ static C8 const *showDataFlags(C8 *out, enc_S_WotWeGot const *n)
 }
 
 // -------------------------------------------------------------------------------------------
-static C8 const *showAlerts(C8 *out, enc_S_Alerts const *a)
+PUBLIC C8 const *sens_ShowAlerts(C8 *out, enc_S_Alerts const *a)
 {
-   if(a->asU32 == 0) {
+   if(a->noMag.asU16 == 0
+            #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+      && a->mag.asU16 == 0
+            #endif
+      ) {
       strcpy(out, "(none)"); }
    else {
       // Show the non-Mag alerts.
-      out[0] = '(';
+      strcpy(out, "(");
 
       #define _MayCat(_name)            \
-         if(a->bs._name == 1) { strcat(out, #_name "," ); }
+         if(a->noMag.bs._name == 1) { strcat(out, #_name "," ); }
 
       _MayCat(overflow)
       _MayCat(pressure)
       _MayCat(reverseFlow)
+      _MayCat(negFlowRate)
       _MayCat(tamper)
       _MayCat(leak)
       _MayCat(program)
@@ -97,23 +102,25 @@ static C8 const *showAlerts(C8 *out, enc_S_Alerts const *a)
 
       // Mat also show the Mag alerts.
             #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-      strcat(out, "[Mag: ");
+      if(a->mag.asU16 != 0) {
+         strcat(out, "[Mag: ");
 
-      #define _MayCat(_name)            \
-         if(a->bs.mag._name == 1) { strcat(out, #_name ", " ); }
+         #define _MayCat(_name)            \
+            if(a->mag.bs._name == 1) { strcat(out, #_name ", " ); }
 
-      _MayCat(adcError)
-      _MayCat(lowBatt)
-      _MayCat(badCoilDrive)
-      _MayCat(measTimeout)
-      _MayCat(flowStim)
-      _MayCat(ovStatus)
-      _MayCat(maxFlow)
-      _MayCat(badSensor)
+         _MayCat(adcError)
+         _MayCat(lowBatt)
+         _MayCat(badCoilDrive)
+         _MayCat(measTimeout)
+         _MayCat(flowStim)
+         _MayCat(ovStatus)
+         _MayCat(maxFlow)
+         _MayCat(badSensor)
 
-      #undef _MayCat
+         #undef _MayCat
 
-      strcat(out, "]");
+         strcat(out, "]");
+      }
             #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 
       strcat(out, ")");
@@ -146,13 +153,13 @@ static C8 const * showPressures(C8 *out, S_Pres const *ps)
 // ------------------------------------------------------------------------------------------
 static C8 const *showOneTmpr(C8 *out, enc_T_degC t) {
    if(t == 0xFE) {
-      sprintf(out, "error"); }
+      sprintf(out, "<error>"); }
    else if(t == 0xFD) {
-      sprintf(out, "storage"); }
+      sprintf(out, "<storage>"); }
    else if(t == 0xFF) {
-      sprintf(out, "null"); }
+      sprintf(out, "<null>"); }
    else {
-      sprintf(out, "%d", t); }
+      sprintf(out, "%ddegC", t); }
    return out;
 }
 
@@ -160,7 +167,7 @@ static C8 const *showOneTmpr(C8 *out, enc_T_degC t) {
 static C8 const * showTemperatures(C8 *out, enc_T_degC fluid, enc_T_degC ambient)
 {
    C8 b0[20], b1[20];
-   sprintf(out, "tmpr(degC)(fluid/amb %s/%s)", showOneTmpr(b0, fluid), showOneTmpr(b1, ambient));
+   sprintf(out, "fluid %s ambient %s", showOneTmpr(b0, fluid), showOneTmpr(b1, ambient));
    return out;
 }
 
@@ -182,7 +189,7 @@ PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed)
 
    // Print the number of dials
    C8 b0[100];
-   strcpy(b0, "encoders=%s dataFlags=%s alerts=%s\r\n" _indent "sn=\"%s\" k=\"%s\" " );
+   strcpy(b0, "encoders=%s weRead=%s alertFlags=%s\r\n" _indent "sn=\"%s\" k=\"%s\" " );
    C8 *p = b0 + strlen(b0);
 
    if(ed->dials >= 6 && ed->dials <= 9) {
@@ -190,17 +197,18 @@ PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed)
    else {
       sprintf(p, "Tot %%d(%d)", ed->dials); }
 
-   strcat(b0, " uom 0x%02X flow %d%%\r\n" _indent "%s %s\r\n");
+   strcat(b0, " rev %u uom 0x%02X flow %d%%\r\n" _indent "%s %s\r\n");
 
    C8 b1[100], b2[200], b3[100], b4[100], b5[500];
 
    sprintf(out, b0,
                sens_ShowEncoders(b1, ed->encoderType),
                showDataFlags(b2, &ed->weGot),
-               showAlerts(b3, &ed->alerts),
+               sens_ShowAlerts(b3, &ed->alerts),
                safeKStr(ed->serialWord),
                safeKStr(ed->kStr),
                ed->rawTot,
+               ed->noMag.revTot,
                ed->uom,
                ed->flowPcent,
                showPressures(b4, &ed->noMag.pres),
@@ -214,7 +222,8 @@ PUBLIC bool Sensus_EncodersEqual(enc_S_MsgData const *a, enc_S_MsgData const *b,
    return
       a->encoderType == b->encoderType &&
       a->weGot.asU16 == b->weGot.asU16 &&
-      a->alerts.asU32 == b->alerts.asU32 &&
+      a->alerts.noMag.asU16 == b->alerts.noMag.asU16 &&
+      a->alerts.mag.asU16 == b->alerts.mag.asU16 &&
       a->rawTot == b->rawTot &&
       a->dials == b->dials &&
       a->flowPcent == b->flowPcent &&

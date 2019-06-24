@@ -38,8 +38,9 @@ typedef enum {
 
 // Will be set if this alert occurs in the message; otherwise clear.
             #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-typedef struct {
-   U32
+typedef union {
+   U16   asU16;
+   struct { U16
       adcError    :1,
       lowBatt     :1,
       badCoilDrive :1,
@@ -47,27 +48,30 @@ typedef struct {
       flowStim    :1,
       ovStatus    :1,
       maxFlow     :1,
-      badSensor   :1;
+      badSensor   :1; } bs;
 } enc_S_MagAlerts;
          #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 
-typedef union __attribute__((packed)) {
-   U32 asU32;
-   struct {
-      U32   overflow    :1,      // of the totaliser
-            pressure    :1,      // Any of the min.max or average pressure tagged as bad.
-            reverseFlow :1,
-            tamper      :1,
-            leak        :1,
-            program     :1,      // 'Program' error in basic status.
-            temperature :1,
-            endOfLife   :1,      // Usually battery is dead.
-            emptyPipe   :1,
-            noFlow      :1;      // i.e no usage for some time.
+typedef union {
+   U16 asU16;
+   struct { U16
+         overflow    :1,      // of the totaliser
+         pressure    :1,      // Any of the min.max or average pressure tagged as bad.
+         reverseFlow :1,
+         negFlowRate :1,      // the current flow rate is negative ('GCnn') is negative.
+         tamper      :1,
+         leak        :1,
+         program     :1,      // 'Program' error in basic status.
+         temperature :1,
+         endOfLife   :1,      // Usually battery is dead.
+         emptyPipe   :1,
+         noFlow      :1; } bs;     // i.e no usage for some time.
+} enc_S_NonMagAlerts;
 
-            #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-    enc_S_MagAlerts  mag;
-      } bs;
+typedef struct __attribute__((packed)) {
+   enc_S_NonMagAlerts   noMag;
+         #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+   enc_S_MagAlerts      mag;
          #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 } enc_S_Alerts;
 
@@ -162,6 +166,9 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
 
 // ===================================== ends: Stream Decoder ========================================
 
+// ============================ Exported just for Test Harness =========================================
+_EXPORT_FOR_TEST bool decodeBasicStatus(U16 mf, enc_S_MsgData *ed);
+_EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed );
 
 // =================================== Test harness support ===========================================
 
@@ -171,6 +178,7 @@ PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed);
 #define _sens_EncodersEqual_ChkMag     true
 PUBLIC bool Sensus_EncodersEqual(enc_S_MsgData const *a, enc_S_MsgData const *b, bool chkMag);
 PUBLIC C8 const * sens_ShowEncoders(C8 *out, enc_M_EncType t);
+PUBLIC C8 const * sens_ShowAlerts(C8 *out, enc_S_Alerts const *a);
 
 #endif // SENSUS_CODEC_H
 

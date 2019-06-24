@@ -104,7 +104,9 @@ _EXPORT_FOR_TEST C8 const * getDualMfield(C8 const *src, U32 *aFld, U32 *bFld, U
    if( NULL != (src = reqHexASCIIbytes(src, aFld, &_3or4, &aBytes))) {
       if(*src == ',') {
          U8 bBytes;
-         if( NULL != (src = reqHexASCIIbytes(src, bFld, &_3or4, &bBytes))) {
+//printf("......... 2ndMfld %s\r\n", src);
+         if( NULL != (src = reqHexASCIIbytes(src+1, bFld, &_3or4, &bBytes))) {
+//printf("......... got 2nd (a %lu %d b %lu %d) %s\r\n", *aFld, aBytes, *bFld, bBytes, src);
             if(aBytes == bBytes) {
                *bytesGot = aBytes;
                return src; }}}}
@@ -125,28 +127,34 @@ static U8 fieldU32(U32 n, U8 msb, U8 lsb) {
 
 /* ---------------------------- decodeBasicStatus ---------------------------------------------------
 
-   Decode into 'ed' the basic 16bit status in 'mf' e.g ':Mbbbb?!' or the lower 16 bits of ';Mbbbbbb'.
+   In 'ed->alerts' set any alerts which are set in the basic 16bit status in 'mf'. Clear any alerts
+   which are not set in 'mf'.
+
+   'mf' is from from ':Mbbbb?!' (from the HRE) or the lower 16 bits of the extended (24bit) status
+   ';Mbbbbbb'.
 */
 _EXPORT_FOR_TEST bool decodeBasicStatus(U16 mf, enc_S_MsgData *ed) {
 
-printf("decode mf 0x%X %d  ", mf, bitU16(mf, 15));
    enc_S_Alerts a;
-   a.asU32 = 0;
 
-   a.bs.overflow     = bitU16(mf, 15);
-   a.bs.pressure     = bitU16(mf, 14);
-   a.bs.tamper       = bitU16(mf, 7);
-   a.bs.program      = bitU16(mf, 6);
-   a.bs.leak         = bitU16(mf, 5);
-   a.bs.reverseFlow  = bitU16(mf, 4);
-   a.bs.noFlow       = bitU16(mf, 3);
-   a.bs.endOfLife    = bitU16(mf, 2);
-   a.bs.temperature  = bitU16(mf, 1);
-   a.bs.emptyPipe    = bitU16(mf, 0);
+   // Start with all alerts cleared.
+   a.noMag.asU16 = 0;
+      #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+   a.mag.asU16 = 0;
+      #endif
+   a.noMag.bs.overflow     = bitU16(mf, 15);
+   a.noMag.bs.pressure     = bitU16(mf, 14);
+   a.noMag.bs.negFlowRate  = bitU16(mf, 8);
+   a.noMag.bs.tamper       = bitU16(mf, 7);
+   a.noMag.bs.program      = bitU16(mf, 6);
+   a.noMag.bs.leak         = bitU16(mf, 5);
+   a.noMag.bs.reverseFlow  = bitU16(mf, 4);
+   a.noMag.bs.noFlow       = bitU16(mf, 3);
+   a.noMag.bs.endOfLife    = bitU16(mf, 2);
+   a.noMag.bs.temperature  = bitU16(mf, 1);
+   a.noMag.bs.emptyPipe    = bitU16(mf, 0);
 
-   a.bs.mag.asU32 = 0;
    ed->alerts = a;
-
    ed->weGot.bs.alerts = 1;
    return true;   // Always succeeds, for now.
 }
@@ -189,25 +197,25 @@ _EXPORT_FOR_TEST bool decodeMag_MField(U32 mf, enc_S_MsgData *ed) {
    #define _mpc (ed->mag.prodCode)
 
    if(_mpc == eMag_M2000 || _mpc == eMag_M1000 || _mpc == eMag_M5000 || _mpc == eMag_Utility) {
-      a->bs.mag.maxFlow   = bitU32(mf, 27);
-      a->bs.mag.adcError  = bitU32(mf, 26);
-      a->bs.emptyPipe     = bitU32(mf, 25);
-      a->bs.mag.badSensor = bitU32(mf, 24); }
+      a->mag.bs.maxFlow   = bitU32(mf, 27);
+      a->mag.bs.adcError  = bitU32(mf, 26);
+      a->noMag.bs.emptyPipe     = bitU32(mf, 25);
+      a->mag.bs.badSensor = bitU32(mf, 24); }
 
    if(_mpc == eMag_M2000) {
-      a->bs.mag.flowStim = bitU32(mf, 30);
-      a->bs.overflow     = bitU32(mf, 29);
-      a->bs.mag.ovStatus = bitU32(mf, 28);
+      a->mag.bs.flowStim = bitU32(mf, 30);
+      a->noMag.bs.overflow     = bitU32(mf, 29);
+      a->mag.bs.ovStatus = bitU32(mf, 28);
       }
    else if(_mpc == eMag_M1000 || _mpc == eMag_M5000 || _mpc == eMag_M5000B ) {
-      a->bs.mag.badCoilDrive = bitU32(mf,30);
-      a->bs.mag.measTimeout  = bitU32(mf,29);
+      a->mag.bs.badCoilDrive = bitU32(mf,30);
+      a->mag.bs.measTimeout  = bitU32(mf,29);
       }
    else if(_mpc == eMag_Utility) {
-      a->bs.endOfLife       = bitU32(mf, 30);
-      a->bs.mag.measTimeout = bitU32(mf, 29);
-      a->bs.leak            = bitU32(mf, 23);
-      a->bs.reverseFlow     = bitU32(mf, 22); }
+      a->noMag.bs.endOfLife       = bitU32(mf, 30);
+      a->mag.bs.measTimeout = bitU32(mf, 29);
+      a->noMag.bs.leak            = bitU32(mf, 23);
+      a->noMag.bs.reverseFlow     = bitU32(mf, 22); }
 
    ed->mag.res = fieldU32(mf, 19, 16);
    ed->weGot.bs.res = 1;
@@ -215,7 +223,7 @@ _EXPORT_FOR_TEST bool decodeMag_MField(U32 mf, enc_S_MsgData *ed) {
    ed->uom = fieldU32(mf, 11, 8);
    ed->weGot.bs.uom = 1;
 
-   ed->alerts.bs.reverseFlow = bitU32(mf, 6);
+   ed->alerts.noMag.bs.reverseFlow = bitU32(mf, 6);
 
    ed->mag.meterSize = fieldU32(mf, 5, 0);
    ed->weGot.bs.meterSize = 1;
@@ -257,40 +265,40 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
          */
          U8 fluid = HIGH_BYTE(n);
          if(fluid == 0x7E) {                          // Error reading temperature?
-            ed->alerts.bs.temperature = 1; }             // then post alert.
+            ed->alerts.noMag.bs.temperature = 1; }    // then post alert.
          else if(fluid == 0x7D || fluid == 0x7C) {    // No sensor? OR Meter is in storage mode?
             }                                         // then do nothing.
          else {                                       // else byte is a valid degC
             ed->noMag.fluidDegC = (S8)fluid;          // read it as signed 8-bit
-            ed->weGot.bs.fluidTmpr = 1; }                // and say we got a degC
+            ed->weGot.bs.fluidTmpr = 1; }             // and say we got a degC
 
          // Repeat above for ambient temperature.
          U8 amb = LOW_BYTE(n);
          if(amb == 0x7E) {
-            ed->alerts.bs.temperature = 1; }
+            ed->alerts.noMag.bs.temperature = 1; }
          else if(amb == 0x7D || amb == 0x7C) {
          }
          else {
             ed->noMag.ambientDegC = (S8)amb;
             ed->weGot.bs.ambientTmpr = 1; }
-         return src + 4; }}                           // Advance past 'ffaa' and done.
+         return src + 4; }                           // Advance past 'ffaa' and done.
 
-   // else check for ';XTddd', 2nd and 3rd of 'ddd' must be digits...
-   else if( isdigit(src[1]) && isdigit(src[2])) {
-      // ... and 'ddd' must read as positive or negative integer.
-      S16 n;
-      if( NULL != ReadDirtyASCIIInt(src, &n) ) {      // Read a signed int?
+      // else check for ';XTddd', 2nd and 3rd of 'ddd' must be digits...
+      else if( isdigit(src[1]) && isdigit(src[2])) {
+         // ... and 'ddd' must read as positive or negative integer.
+         S16 n;
+         if( NULL != ReadDirtyASCIIInt(src, &n) ) {      // Read a signed int?
 
-         // Check special numbers which mean error or exception.
-         if(n == 125 )                                // 125?, Meter is in storage mode
-            {}                                        // so no temperature read, do nothing.
-         else if(n == 126 ) {                         // 126?, fault reading temperature.
-            ed->alerts.bs.temperature = 1; }             // post alert
-         else {
-            ed->noMag.fluidDegC = n;                  // else legal fluid temperature reading. use it
-            ed->weGot.bs.fluidTmpr = 1; }                // and say we have a that reading.
-         return src + 3; }                            // Advance past 'ddd' and done.
-   }
+            // Check special numbers which mean error or exception.
+            if(n == 125 )                                // 125?, Meter is in storage mode
+               {}                                        // so no temperature read, do nothing.
+            else if(n == 126 ) {                         // 126?, fault reading temperature.
+               ed->alerts.noMag.bs.temperature = 1; }             // post alert
+            else {
+               ed->noMag.fluidDegC = n;                  // else legal fluid temperature reading. use it
+               ed->weGot.bs.fluidTmpr = 1; }                // and say we have a that reading.
+            return src + 3; }                            // Advance past 'ddd' and done.
+      }}
    return NULL;      // Some fail above.
 }
 
@@ -316,7 +324,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
       U8 avgP  = LOW_BYTE(LOW_WORD(n));
 
       if(minP == 0xFE || maxP == 0xFE || avgP == 0xFE) {
-         ed->alerts.bs.pressure = 1; }
+         ed->alerts.noMag.bs.pressure = 1; }
 
       if(minP != 0xFE) {
          ed->noMag.pres._min = minP; }
@@ -454,44 +462,48 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                                  */
                                  U32 m1, m2;
                                  U8 bytesGot;
-                                 if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {      // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
+                                 if(NULL != (p = startField(p, "M"))) {
+                                    if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {            // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
 
-                                    // If M-field ends message then it's Gen1, HRE-LCD or Mag.
-                                    if(endMsg(p)) {
-                                             #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-                                       if(bytesGot == 4 && BSET(filterFor, mMag)) {                   // 32-bit M-Field?
+                                       if(bytesGot == 3) {                                            // Was 24-bit extended status?
+                                          ed->noMag.revTot = m2;                                      // then 2nd sub-field is always reverse total.
+                                          if(true == decodeExtended_MField(m1, ed)) {                 // decode 24bit status (1st sub-field)?
+
+                                             // If M-field ends message then it's Gen1, HRE-LCD or Mag.
+                                             if(endMsg(p)) {
+                                                if(bytesGot == 3 && BSET(filterFor, mHRE_LCD | mGen1)) {       // else 24-bit M-field? AND requested Gen1 or HRE-LCD?
+                                                   ed->encoderType = mHRE_LCD | mGen1;                         // then we got one of those; they have same message format
+                                                   return true; }}
+
+                                             // else if M-field is followed by ';XT... ' (temperature) then it's a Gen1 or Gen2.
+                                             else if(NULL != (p = startField(p, "XT"))) {                      // Got ';XT...  '?...
+                                                if(BSET(filterFor, mGen1 | mGen2)) {                           // and asking for Gen1 or Gen2.
+                                                   if(NULL != (p = getXT(p, ed))) {                            // then read ';XTddd' (fluid degC) or ';XTffaa' (fluid and ambient)?
+                                                      if(NULL != (p = startField(p, "K"))) {
+                                                         // For Gen1, Gen2, ';XT...' is always followed by ';Kyyyyyy... ', the owenership number.
+                                                         if(NULL != (p = getSerialWord(p, ed->kStr))) {        // Read ';Kyyyyyyyyy'?
+                                                            // If ';Kyyyyyyyyyy' then it must be Gen1.
+                                                            if(endMsg(p) == true) {                            // ';Kyyyyyyyy' was last field?
+                                                               if(BSET(filterFor, mGen1)) {                    // and did request Gen1
+                                                                  ed->encoderType = mGen1;                     // then Gen1 is what we got
+                                                                  return true; }}
+                                                            // else 'XP...' (pressures) after ';Kyyyy...'. Must be Gen2.
+                                                            else if(NULL != (p = startField(p, "XP"))) {       // Got ';XP'?
+                                                               if(NULL != (p = getXP(p, ed))) {                // AND read ';XPiijjkk' into pressures?
+                                                                  if(endMsg(p)) {                              // 'XP' was the last field
+                                                                     ed->encoderType = mGen2;                  // then Gen2 is what we got.
+                                                                     if(BSET(filterFor, mGen2)) {              // Did so request Gen2?
+                                                                        return true; }}}}}}}}}}}               // then success.
+
+                                                #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+                                       else if(endMsg(p) && bytesGot == 4) {                          // else Was 32bit and no more fields after 'M'
                                           ed->encoderType = mMag;                                     // then it's a Mag
                                           if(true == decodeMag_MField(m1, ed)) {                      // Decode 1st 'bbbbbbbb'
                                              ed->mag.secTot = m2;                                     // 'xxxxxxxx' is secondary total
-                                             return true; }
-                                       } else
-                                             #endif // _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
-                                       if(bytesGot == 3 && BSET(filterFor, mHRE_LCD | mGen1)) {       // else 24-bit M-field? AND requested Gen1 or HRE-LCD?
-                                          ed->encoderType = mHRE_LCD | mGen1;                         // then we got one of those; they have same message format
-                                          if(true == decodeExtended_MField(m1, ed)) {                 // decode 24bit status
-                                             ed->noMag.revTot = m2;                                   // 2nd M-field is reverse total.
-                                             return true; }
-                                       }
-                                    }
-                                    // If M-field is followed by ';XT... ' (temperature) then it's a Gen1 or Gen2.
-                                    else if(NULL != (p = startField(p, "XT"))) {                      // Got ';XT...  '?...
-                                       if(BSET(filterFor, mGen1 | mGen2)) {                           // and asking for Gen1 or Gen2.
-                                          if(NULL != (p = getXT(p, ed))) {                            // then read ';XTddd' (fluid degC) or ';XTffaa' (fluid and ambient)?
-                                             if(NULL != (p = startField(p, "K"))) {
-                                                // For Gen1, Gen2, ';XT...' is always followed by ';Kyyyyyy... ', the owenership number.
-                                                if(NULL != (p = getSerialWord(p, ed->kStr))) {        // Read ';Kyyyyyyyyy'?
-                                                   // If ';Kyyyyyyyyyy' then it must be Gen1.
-                                                   if(endMsg(p) == true) {                            // ';Kyyyyyyyy' was last field?
-                                                      if(BSET(filterFor, mGen1)) {                    // and did request Gen1
-                                                         ed->encoderType = mGen1;                     // then Gen1 is what we got
-                                                         return true; }}
-                                                   // else 'XP...' (pressures) after ';Kyyyy...'. Must be Gen2.
-                                                   else if(NULL != (p = startField(p, "XP"))) {       // Got ';XP'?
-                                                      if(BSET(filterFor, mGen2)) {                    // AND requested Gen2?
-                                                         if(NULL != (p = getXP(p, ed))) {             // AND read ';XPiijjkk' into pressures?
-                                                            ed->encoderType = mGen2;                  // then Gen2 is what we got.
-                                                            return true; }}}}}}}}}}}}
-                     } // startField(p, "GC")
+                                             if(BSET(filterFor, mMag)) {                              // Looking for a Mag?
+                                                return true; }}}                                      // then success, cuz we got one.
+                                                #endif
+                                                               }}}}}} // startField(p, "GC")
 
                      /* else no ';M...' and no ';GC... '. It must be just  V;RBrrrrrr;IBsssssss<CR> i.e and ADE.
 
@@ -505,9 +517,12 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                      }
                   }}}}}}
 
-   // Fail above. Say no encoder found; no alerts. Leave any other data in place.
+   // Fail above. Say no Encoder found and no Alerts. Leave any other data in place.
    ed->encoderType = mNoEncoders;
-   ed->alerts.asU32 = 0;
+   ed->alerts.mag.asU16 = 0;
+      #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
+   ed->alerts.noMag.asU16 = 0;
+      #endif
    return false;
 } // Sensus_DecodeMsg
 

@@ -18,7 +18,6 @@ SRCDIR = ../../src/$(TARGET_BASE_DIR)/
 INTEGER_BASIC_FULLPATH = $(SRCDIR)arith_integer_basic$(CEXT)
 
 OUT_FILE = -o $(TARGET)
-SYMBOLS=-DTEST
 
 # All arith tests reference the same includes
 INC_DIRS := $(INC_DIRS) -I. -I../../src -I$(SPJ_SWR_LOC)/arith/public
