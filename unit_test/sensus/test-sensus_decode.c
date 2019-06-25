@@ -104,87 +104,127 @@ void test_decodeBasicStatus(void) {
 void test_getXT(void)
 {
    typedef struct {
-      C8 const *src;
-      C8 const *tail;
-      bool success;                    // Return was not NULL.
-      enc_T_degC fluidTmpr, ambTmpr;
-      bool alert;                      // Bad temperature alert set.
+      C8 const    *src;
+      C8 const    *tail;
+      bool        success;                    // Return was not NULL.
+      enc_T_degC  fluidTmpr, ambTmpr;
+      bool        alert,                      // Bad temperature alert set.
+                  gotFluid, gotAmbient;
       } S_Tst;
 
    S_Tst const tsts[] = {
       {.src = "", .tail = NULL, .success = false, .fluidTmpr = 0xFF, .ambTmpr = 0xFF },
 
-      // ';XTddd' means just fluid temperature as a signed decimal.
-      {.src = "025\r",  .tail = "\r",     .success = true, .fluidTmpr = 25,   .ambTmpr = 0xFF },
-      {.src = "102",    .tail = "",       .success = true, .fluidTmpr = 102,  .ambTmpr = 0xFF },
-      {.src = "003;",   .tail = ";",      .success = true, .fluidTmpr = 3,    .ambTmpr = 0xFF },
-      {.src = "-28;",   .tail = ";",      .success = true, .fluidTmpr = -28,  .ambTmpr = 0xFF },
+      /* ';XTddd' means just fluid temperature as a signed decimal.
+
+         'XTddd' can be followed by '\0', '\r' or ';' (next field).
+      */
+      {.src = "025\r",  .tail = "\r",     .success = true, .fluidTmpr = 25,   .ambTmpr = 0xFF, .gotFluid = true },
+      {.src = "102",    .tail = "",       .success = true, .fluidTmpr = 102,  .ambTmpr = 0xFF, .gotFluid = true },
+      {.src = "003;",   .tail = ";",      .success = true, .fluidTmpr = 3,    .ambTmpr = 0xFF, .gotFluid = true },
+      {.src = "-28;",   .tail = ";",      .success = true, .fluidTmpr = -28,  .ambTmpr = 0xFF, .gotFluid = true },
 
       // 125 means Meter is in storage mode. Leave 'fluidTmpr' at 0xFF, null-reading.
       {.src = "125\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,  .ambTmpr = 0xFF },
       // 126 means measurement error. Set error flag.
       {.src = "126\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,  .ambTmpr = 0xFF, .alert = true },
+
+      /* ';XTffaa' means fluid and ambient temperatures as signed hex.
+
+         0x7E -> error; 0x7D -> Meter in storage; 0x7C -> No sensor.
+      */
+      {.src = "1517\r",  .tail = "\r",     .success = true, .fluidTmpr = 21,   .ambTmpr = 23, .gotFluid = true, .gotAmbient = true },
+      {.src = "83FE\r",  .tail = "\r",     .success = true, .fluidTmpr = -125,   .ambTmpr = -2, .gotFluid = true, .gotAmbient = true },
+      // 0x7C, meaning "No Sensor" doesn't trigger an alert; just menas no readin to be had.
+      {.src = "7CFE\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,   .ambTmpr = -2, .gotFluid = false, .gotAmbient = true },
+      {.src = "037C\r",  .tail = "\r",     .success = true, .fluidTmpr = 3,   .ambTmpr = 0xFF, .gotFluid = true, .gotAmbient = false },
+      // 0x7D (storage mode) -> no measurement.
+      {.src = "7D44\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,   .ambTmpr = 68, .gotFluid = false, .gotAmbient = true },
+      {.src = "107D\r",  .tail = "\r",     .success = true, .fluidTmpr = 16,   .ambTmpr = 0xFF, .gotFluid = true, .gotAmbient = false },
+      // 0x7E (Error) -> no measurement & alert.
+      {.src = "7E44\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,   .ambTmpr = 68, .gotFluid = false, .gotAmbient = true, .alert = true },
+      {.src = "107E\r",  .tail = "\r",     .success = true, .fluidTmpr = 16,   .ambTmpr = 0xFF, .gotFluid = true, .gotAmbient = false, .alert = true },
+
+      {.src = "025 ", .tail = NULL, .success = false, .fluidTmpr = 0xFF, .ambTmpr = 0xFF },
+      {.src = "1517 ", .tail = NULL, .success = false, .fluidTmpr = 0xFF, .ambTmpr = 0xFF },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
    {
       S_Tst const *t = &tsts[i];
 
-      enc_S_MsgData ed;
-      ed = legalEmptyEncoder;
+      enc_S_MsgData ed = legalEmptyEncoder;
 
       C8 const *rtn = getXT(t->src, &ed);
 
       bool fail = false;
 
+      C8 b0[100];
+      sprintf(b0, "tst #%d.", i);
+
+      // Parse should have succeeded, meaning returned non-NULL?
       if(t->success == true) {
+         /* If parse did succeed then check for correct:
+               - temperature(s)
+               - data flags and alerts
+               - tail returned.
+         */
          if(rtn != NULL) {
             if(ed.noMag.fluidDegC != t->fluidTmpr ) {
-               printf("tst #%d Expected fluid = %ddegC, got %d\r\n", i, t->fluidTmpr, ed.noMag.fluidDegC);
+               printf("%s Expected fluid = %ddegC, got %d\r\n", b0, t->fluidTmpr, ed.noMag.fluidDegC);
                fail = true; }
 
             if(ed.noMag.ambientDegC != t->ambTmpr ) {
-               printf("tst #%d Expected ambient = %ddegC, got %d\r\n", i, t->ambTmpr, ed.noMag.ambientDegC);
+               printf("%s Expected ambient = %ddegC, got %d\r\n", b0, t->ambTmpr, ed.noMag.ambientDegC);
+               fail = true; }
+
+            if(t->gotFluid == true && ed.weGot.bs.fluidTmpr == 0 || t->gotFluid == false && ed.weGot.bs.fluidTmpr == 1) {
+               printf("%s gotFluid; expected %d, got %d\r\n", b0, t->gotFluid, ed.weGot.bs.fluidTmpr);
+               fail = true; }
+
+            if(t->gotAmbient == true && ed.weGot.bs.ambientTmpr == 0 || t->gotAmbient == false && ed.weGot.bs.ambientTmpr == 1) {
+               printf("%s gotAmbient; expected %d, got %d\r\n", b0, t->gotAmbient, ed.weGot.bs.ambientTmpr);
                fail = true; }
 
             if(strcmp(rtn, t->tail) != 0) {
-               printf("tst #%d Expected rtn \"%s\"\r\n, got \"%s\"\r\n", i, t->tail, rtn);
+               printf("%s Expected rtn \"%s\"\r\n, got \"%s\"\r\n", b0, t->tail, rtn);
                fail = true; }
 
             if(t->alert == true) {
                if( ed.alerts.noMag.bs.temperature == 0) {
-                  printf("tst #%d. Expected alert but was not set.\r\n");
+                  printf("%s. Expected alert but was not set.\r\n",b0);
                   fail = true; }
-               else {
-               }
             }
             else {
                if( ed.alerts.noMag.bs.temperature == 1) {
-                  printf("tst #%d. Unexpected alert.\r\n", i);
+                  printf("%s. Unexpected alert.\r\n", b0);
                   fail = true; }
-               else {
-               }
             }
          }
+         // else should have parsed but did not.
          else {
-            printf("tst #%d Expected success but got NULL\r\n", i);
+            printf("%s Expected success but got NULL\r\n", b0);
             fail = true;
          }
       }
+      // else parse should have failed, meaning returned NULL.
       else {
-         if(rtn == NULL) {
-
+         if(rtn == NULL) {       // Expected NULL, and got it?
+            // then there should be no temperatures and no alerts.
+            if(ed.noMag.fluidDegC != 0xFF || ed.noMag.ambientDegC != 0xFF) {
+               printf("%s. Got NULL return (correct) but fluidTmpr = %d ambientTmpr = %d; should both be 0xFF\r\n", b0, ed.noMag.fluidDegC, ed.noMag.ambientDegC); fail = true; }
+            if(ed.alerts.noMag.bs.temperature == 1) {
+               printf("%s. Got NULL return (correct) but also temperature alert (wrong)\r\n", b0); fail = true;}
+            if(ed.weGot.bs.fluidTmpr == 1 || ed.weGot.bs.ambientTmpr == 1) {
+               printf("%s. Got NULL return (correct) but data flags fluid = %d ambient %d set (wrong)\r\n", b0, ed.weGot.bs.fluidTmpr, ed.weGot.bs.ambientTmpr); fail = true; }
          }
          else {
-            printf("tst #%d Expected fail (NULL) but got %s\r\n", i, rtn);
-            fail = true;
-
-         }
+            printf("%s Expected fail (NULL) but got \"%s\"\r\n", b0, rtn);
+            fail = true; }
       }
       if(fail == true) {
          TEST_FAIL(); }
    }
-
 }
 
 /* ------------------------------ test_Sensus_DecodeMsg_NoMag ---------------------------------- */

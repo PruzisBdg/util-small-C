@@ -259,49 +259,51 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
       Since GetNextHexASCII_U16() eats leading spaces check that the first char is NOT a
       space and then that GetNextHexASCII_U16() can read 2 HexASCII bytes from there.
    */
-   if(IsHexASCII(src[0]) || src[0] == '-') {          // First byte starts a number, hex or signed decimal?
+   if(IsHexASCII(src[0]) || src[0] == '-') {             // First byte starts a number, hex or signed decimal?
       U16 n;
-      if(NULL != GetNextHexASCII_U16(src, &n)) {      // ... read 2 HexASCII bytes from 'src'
+      C8 const *p;
+      if(NULL != (p = GetNextHexASCII_U16(src, &n))) {   // ... read 2 HexASCII bytes from 'src'
+         if( endField(p) == true) {                      // ...followed by end-of-message or field delimiter?
 
-         /* then this is a dual-temperature reading. Parse each of fluid and ambient,
-            checking for any exception codes.
-         */
-         U8 fluid = HIGH_BYTE(n);
-         if(fluid == 0x7E) {                          // Error reading temperature?
-            ed->alerts.noMag.bs.temperature = 1; }    // then post alert.
-         else if(fluid == 0x7D || fluid == 0x7C) {    // No sensor? OR Meter is in storage mode?
-            }                                         // then do nothing.
-         else {                                       // else byte is a valid degC
-            ed->noMag.fluidDegC = (S8)fluid;          // read it as signed 8-bit
-            ed->weGot.bs.fluidTmpr = 1; }             // and say we got a degC
+            /* then this is a dual-temperature reading. Parse each of fluid and ambient,
+               checking for any exception codes.
+            */
+            U8 fluid = HIGH_BYTE(n);
+            if(fluid == 0x7E) {                          // Error reading temperature?
+               ed->alerts.noMag.bs.temperature = 1; }    // then post alert.
+            else if(fluid == 0x7D || fluid == 0x7C) {    // No sensor? OR Meter is in storage mode?
+               }                                         // then do nothing.
+            else {                                       // else byte is a valid degC
+               ed->noMag.fluidDegC = (S8)fluid;          // read it as signed 8-bit
+               ed->weGot.bs.fluidTmpr = 1; }             // and say we got a degC
 
-         // Repeat above for ambient temperature.
-         U8 amb = LOW_BYTE(n);
-         if(amb == 0x7E) {
-            ed->alerts.noMag.bs.temperature = 1; }
-         else if(amb == 0x7D || amb == 0x7C) {
-         }
-         else {
-            ed->noMag.ambientDegC = (S8)amb;
-            ed->weGot.bs.ambientTmpr = 1; }
-         return src + 4; }                           // Advance past 'ffaa' and done.
+            // Repeat above for ambient temperature.
+            U8 amb = LOW_BYTE(n);
+            if(amb == 0x7E) {                            // (126) Measurement error?
+               ed->alerts.noMag.bs.temperature = 1; }    // then set alert flag.
+            else if(amb == 0x7D || amb == 0x7C) {        // No sensor (0x7C)? OR Meter in storage mode (0x7D)?
+            }                                            // then there's no measurement to use (but no alert either)
+            else {
+               ed->noMag.ambientDegC = (S8)amb;
+               ed->weGot.bs.ambientTmpr = 1; }
+            return p; }}                                 // Return end-of-message or next field delimiter
 
       // else check for ';XTddd', 2nd and 3rd of 'ddd' must be digits...
       else if( isdigit(src[1]) && isdigit(src[2])) {
          // ... and 'ddd' must read as positive or negative integer.
-
          S16 n;
-         if( NULL != ReadDirtyASCIIInt(src, &n) ) {      // Read a signed int?
+         if( NULL != (p = ReadDirtyASCIIInt(src, &n) )) {   // Read a signed int?
+            if( endField(p) == true) {                      // ...followed by end-of-message or field delimiter?
 
-            // Check special numbers which mean error or exception.
-            if(n == 125 )                                // 125?, Meter is in storage mode
-               {}                                        // so no temperature read, do nothing.
-            else if(n == 126 ) {                         // 126?, fault reading temperature.
-               ed->alerts.noMag.bs.temperature = 1; }             // post alert
-            else {
-               ed->noMag.fluidDegC = n;                  // else legal fluid temperature reading. use it
-               ed->weGot.bs.fluidTmpr = 1; }                // and say we have a that reading.
-            return src + 3; }                            // Advance past 'ddd' and done.
+               // Check special numbers which mean error or exception.
+               if(n == 125 )                                // 125?, Meter is in storage mode
+                  {}                                        // so no temperature read, do nothing.
+               else if(n == 126 ) {                         // 126?, fault reading temperature.
+                  ed->alerts.noMag.bs.temperature = 1; }    // so post alert
+               else {
+                  ed->noMag.fluidDegC = n;                  // else legal fluid temperature reading. use it
+                  ed->weGot.bs.fluidTmpr = 1; }             // and say we have a that reading.
+               return p; }}                                 // Return end-of-message or next field delimiter
       }}
    return NULL;      // Some fail above.
 }
