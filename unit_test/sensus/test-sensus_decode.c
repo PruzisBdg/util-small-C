@@ -103,10 +103,27 @@ void test_decodeBasicStatus(void) {
 
 void test_getXT(void)
 {
-   typedef struct { C8 const *src; C8 const *tail; bool success; enc_T_degC fluidTmpr, ambTmpr; } S_Tst;
+   typedef struct {
+      C8 const *src;
+      C8 const *tail;
+      bool success;                    // Return was not NULL.
+      enc_T_degC fluidTmpr, ambTmpr;
+      bool alert;                      // Bad temperature alert set.
+      } S_Tst;
 
    S_Tst const tsts[] = {
       {.src = "", .tail = NULL, .success = false, .fluidTmpr = 0xFF, .ambTmpr = 0xFF },
+
+      // ';XTddd' means just fluid temperature as a signed decimal.
+      {.src = "025\r",  .tail = "\r",     .success = true, .fluidTmpr = 25,   .ambTmpr = 0xFF },
+      {.src = "102",    .tail = "",       .success = true, .fluidTmpr = 102,  .ambTmpr = 0xFF },
+      {.src = "003;",   .tail = ";",      .success = true, .fluidTmpr = 3,    .ambTmpr = 0xFF },
+      {.src = "-28;",   .tail = ";",      .success = true, .fluidTmpr = -28,  .ambTmpr = 0xFF },
+
+      // 125 means Meter is in storage mode. Leave 'fluidTmpr' at 0xFF, null-reading.
+      {.src = "125\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,  .ambTmpr = 0xFF },
+      // 126 means measurement error. Set error flag.
+      {.src = "126\r",  .tail = "\r",     .success = true, .fluidTmpr = 0xFF,  .ambTmpr = 0xFF, .alert = true },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -118,15 +135,40 @@ void test_getXT(void)
 
       C8 const *rtn = getXT(t->src, &ed);
 
+      bool fail = false;
+
       if(t->success == true) {
          if(rtn != NULL) {
+            if(ed.noMag.fluidDegC != t->fluidTmpr ) {
+               printf("tst #%d Expected fluid = %ddegC, got %d\r\n", i, t->fluidTmpr, ed.noMag.fluidDegC);
+               fail = true; }
+
+            if(ed.noMag.ambientDegC != t->ambTmpr ) {
+               printf("tst #%d Expected ambient = %ddegC, got %d\r\n", i, t->ambTmpr, ed.noMag.ambientDegC);
+               fail = true; }
+
             if(strcmp(rtn, t->tail) != 0) {
-               printf("tst #%d Expected rtn %s, got %s", i, t->tail, rtn);
+               printf("tst #%d Expected rtn \"%s\"\r\n, got \"%s\"\r\n", i, t->tail, rtn);
+               fail = true; }
+
+            if(t->alert == true) {
+               if( ed.alerts.noMag.bs.temperature == 0) {
+                  printf("tst #%d. Expected alert but was not set.\r\n");
+                  fail = true; }
+               else {
+               }
+            }
+            else {
+               if( ed.alerts.noMag.bs.temperature == 1) {
+                  printf("tst #%d. Unexpected alert.\r\n", i);
+                  fail = true; }
+               else {
+               }
             }
          }
          else {
             printf("tst #%d Expected success but got NULL\r\n", i);
-            TEST_FAIL();
+            fail = true;
          }
       }
       else {
@@ -135,11 +177,12 @@ void test_getXT(void)
          }
          else {
             printf("tst #%d Expected fail (NULL) but got %s\r\n", i, rtn);
-            TEST_FAIL();
+            fail = true;
 
          }
       }
-
+      if(fail == true) {
+         TEST_FAIL(); }
    }
 
 }

@@ -238,13 +238,16 @@ _EXPORT_FOR_TEST bool decodeMag_MField(U32 mf, enc_S_MsgData *ed) {
 
 /* ----------------------------------- getXT -----------------------------------------------------
 
-   Get either of the 2 temperature fields (below) from 'src' into 'ed'
+   Get one or both of the 2 temperature fields (below) from 'src' into 'ed.fluidTmpr' and
+   'ed.ambientTmpr'.
 
       - 'XTddd',     (type 1) where ddd is a single signed decimal temperature
       - 'XTffss',    (type 2) where 'ff' and 'aa' are fluid and ambient temperatures,
                               (each in signed 8-bit HexASCII).
 
    This given 'src' is on the char after 'XT' i.e at 'ddd' or 'ffaa'. 'xt.isType2' says which we got.
+
+   Set alerts.temperature if got one or both temperatures.
 
    Return on the 1st char after the field; NULL if fail.
 */
@@ -256,7 +259,7 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
       Since GetNextHexASCII_U16() eats leading spaces check that the first char is NOT a
       space and then that GetNextHexASCII_U16() can read 2 HexASCII bytes from there.
    */
-   if(isalnum(src[0])) {                              // First byte is NOT a space? AND...
+   if(IsHexASCII(src[0]) || src[0] == '-') {          // First byte starts a number, hex or signed decimal?
       U16 n;
       if(NULL != GetNextHexASCII_U16(src, &n)) {      // ... read 2 HexASCII bytes from 'src'
 
@@ -286,6 +289,7 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
       // else check for ';XTddd', 2nd and 3rd of 'ddd' must be digits...
       else if( isdigit(src[1]) && isdigit(src[2])) {
          // ... and 'ddd' must read as positive or negative integer.
+
          S16 n;
          if( NULL != ReadDirtyASCIIInt(src, &n) ) {      // Read a signed int?
 
