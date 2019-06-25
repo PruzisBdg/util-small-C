@@ -169,6 +169,7 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
 // ============================ Exported just for Test Harness =========================================
 _EXPORT_FOR_TEST bool decodeBasicStatus(U16 mf, enc_S_MsgData *ed);
 _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed );
+_EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed );
 
 // =================================== Test harness support ===========================================
 

@@ -104,9 +104,7 @@ _EXPORT_FOR_TEST C8 const * getDualMfield(C8 const *src, U32 *aFld, U32 *bFld, U
    if( NULL != (src = reqHexASCIIbytes(src, aFld, &_3or4, &aBytes))) {
       if(*src == ',') {
          U8 bBytes;
-//printf("......... 2ndMfld %s\r\n", src);
          if( NULL != (src = reqHexASCIIbytes(src+1, bFld, &_3or4, &bBytes))) {
-//printf("......... got 2nd (a %lu %d b %lu %d) %s\r\n", *aFld, aBytes, *bFld, bBytes, src);
             if(aBytes == bBytes) {
                *bytesGot = aBytes;
                return src; }}}}
@@ -259,7 +257,7 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
       Since GetNextHexASCII_U16() eats leading spaces check that the first char is NOT a
       space and then that GetNextHexASCII_U16() can read 2 HexASCII bytes from there.
    */
-   if(IsHexASCII(src[0]) || src[0] == '-') {             // First byte starts a number, hex or signed decimal?
+   if(IsHexASCII(src[0]) || src[0] == '-' || src[0] == '+') {  // First byte starts a number, hex or signed decimal?
       U16 n;
       C8 const *p;
       if(NULL != (p = GetNextHexASCII_U16(src, &n))) {   // ... read 2 HexASCII bytes from 'src'
@@ -292,8 +290,14 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
       else if( isdigit(src[1]) && isdigit(src[2])) {
          // ... and 'ddd' must read as positive or negative integer.
          S16 n;
-         if( NULL != (p = ReadDirtyASCIIInt(src, &n) )) {   // Read a signed int?
-            if( endField(p) == true) {                      // ...followed by end-of-message or field delimiter?
+         if( NULL != (p = ReadDirtyASCIIInt(src, &n))) {    // Read a signed int?
+            if( p == src+3 && endField(p) == true) {        // ...followed by end-of-message or field delimiter after exactly 3 digits?
+
+               /* Note we must check that ReadDirtyASCIIInt() read exactly 3 digits because
+                  it will read as few as 1 and up to 5 digits to get the largest S16 it can.
+
+                  By contrast GetNextHexASCII_U16() (above) takes exactly 4 HexACSII chars.
+               */
 
                // Check special numbers which mean error or exception.
                if(n == 125 )                                // 125?, Meter is in storage mode
@@ -323,26 +327,32 @@ static bool isAPres(U8 p) {
 
 _EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
    U32 n;
-   if(NULL != (src = GetNextHexASCII_U24(src, &n))) {
+   if(NULL != (src = GetNextHexASCII_U24(src, &n))) {    // Got 3 HexASCII bytes?
+      if(endField(src) == true) {                        // followed by end-of-message or next-field?
 
-      U8 minP = LOW_BYTE(HIGH_WORD(n));
-      U8 maxP = HIGH_BYTE(LOW_WORD(n));
-      U8 avgP  = LOW_BYTE(LOW_WORD(n));
+         U8 minP = LOW_BYTE(HIGH_WORD(n));
+         U8 maxP = HIGH_BYTE(LOW_WORD(n));
+         U8 avgP  = LOW_BYTE(LOW_WORD(n));
 
-      if(minP == 0xFE || maxP == 0xFE || avgP == 0xFE) {
-         ed->alerts.noMag.bs.pressure = 1; }
+         // Set alert if any of the pressures is an error (0xFE).
+         if(minP == 0xFE || maxP == 0xFE || avgP == 0xFE) {
+            ed->alerts.noMag.bs.pressure = 1; }
 
-      if(minP != 0xFE) {
-         ed->noMag.pres._min = minP; }
-      if(maxP != 0xFE) {
-         ed->noMag.pres._max = maxP; }
-      if(avgP != 0xFE) {
-         ed->noMag.pres._avg = avgP; }
+         /* For any pressure that isn't an error (0xFE) copy that value to ed.pres. This includes the codes
+            indicating Storage Mode (0xFD) and a Saturated pressure (0xFC).
+         */
+         if(minP != 0xFE) {
+            ed->noMag.pres._min = minP; }
+         if(maxP != 0xFE) {
+            ed->noMag.pres._max = maxP; }
+         if(avgP != 0xFE) {
+            ed->noMag.pres._avg = avgP; }
 
-      if( isAPres(minP) || isAPres(maxP) || isAPres(avgP)) {
-         ed->weGot.bs.pressure = 1; }
+         // Set 'got pressure' if we got at least one of min, max or avg.
+         if( isAPres(minP) || isAPres(maxP) || isAPres(avgP)) {
+            ed->weGot.bs.pressure = 1; }
 
-      return src; }
+         return src; }}
    return NULL; }
 
 
