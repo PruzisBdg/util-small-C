@@ -402,10 +402,10 @@ void test_Sensus_DecodeMsg_NoMag(void)
                .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF} }
 
       // Just an ADE.
-      #define _ADE(_serialWord, _tot)                                            \
-            (enc_S_MsgData){                                                    \
+      #define _ADE(_serialWord, _tot, _dials)                                    \
+            (enc_S_MsgData){                                                     \
                .encoderType = mADE, .weGot.bs = {.rawTot = 1, .serWord = 1},     \
-               .serialWord = _serialWord, .rawTot = _tot, .dials = 6,            \
+               .serialWord = _serialWord, .rawTot = _tot, .dials = _dials,       \
                .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF} }
 
       /* ---- No requested encoders.
@@ -420,15 +420,17 @@ void test_Sensus_DecodeMsg_NoMag(void)
 
       /* ---- ADE   V;RBrrrrrr;IBsssssss<CR>
 
-            is 6 digit totaliser and 1-7 character serialisation.
+            is 4-6 digit totaliser and 1-7 character serialisation.
       */
-      {.msg = "V;RB123456;IBabc123\r",         .filt = mADE,     .rtn = true,    .out = &_ADE("abc123", 123456) },                  // 6 digits OKs
+      {.msg = "V;RB1234;IBabc123\r",           .filt = mADE,     .rtn = true,    .out = &_ADE("abc123", 1234, 4) },                    // 4 digits OK
+      {.msg = "V;RB12345;IBabc123\r",          .filt = mADE,     .rtn = true,    .out = &_ADE("abc123", 12345, 5) },                   // 5 digits OK
+      {.msg = "V;RB123456;IBabc123\r",         .filt = mADE,     .rtn = true,    .out = &_ADE("abc123", 123456, 6) },                  // 6 digits OK
 
-      {.msg = "V;RB12345;IBabc123\r",          .filt = mADE,     .rtn = false,   .out = &_UnknownEncoder("abc123", 12345,   5) },   // 5 digits bad
+      {.msg = "V;RB123;IBabc123\r",            .filt = mADE,     .rtn = false,   .out = &_UnknownEncoder("abc123", 123,   3) },     // 3 digits bad
       {.msg = "V;RB1234567;IBabc123\r",        .filt = mADE,     .rtn = false,   .out = &_UnknownEncoder("abc123", 1234567, 7) },   // 7 digits bad
 
-      {.msg = "V;RB123456;IBa\r",              .filt = mADE,     .rtn = true,    .out = &_ADE("a", 123456) },                       // 1 char serial OK
-      {.msg = "V;RB123456;IBabcdefg\r",        .filt = mADE,     .rtn = true,    .out = &_ADE("abcdefg", 123456) },                 // 7 chars OK
+      {.msg = "V;RB123456;IBa\r",              .filt = mADE,     .rtn = true,    .out = &_ADE("a", 123456, 6) },                       // 1 char serial OK
+      {.msg = "V;RB123456;IBabcdefg\r",        .filt = mADE,     .rtn = true,    .out = &_ADE("abcdefg", 123456, 6) },                 // 7 chars OK
 
       {.msg = "V;RB123456;IB\r",               .filt = mADE,     .rtn = false,   .out = &_JustTotal(123456, 6) },                   // Zero chars bad
       {.msg = "V;RB123456;IBabcdefgh\r",       .filt = mADE,     .rtn = false,   .out = &_UnknownEncoder("abcdefgh", 123456, 6) },  // 8 chars bad

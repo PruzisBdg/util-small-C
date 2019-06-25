@@ -116,12 +116,12 @@ PUBLIC U16 ToSysEndian_U16(U16 n, E_EndianIs e);
 PUBLIC U32 ToSysEndian_U32(U32 n, E_EndianIs e);
 
 // Endian-aware iterator.
-typedef struct endianPtrTag T_EndianPtr;
+typedef struct T_EndianPtr T_EndianPtr;
 
-typedef struct endianPtrTag {
+struct T_EndianPtr {
    U8* (*next)(T_EndianPtr*);    // returns '_at', iterated.
    U8 const * _at;               // Current ptr.
-   } T_EndianPtr;
+   };
 
 PUBLIC U8* EndianPtr_New(T_EndianPtr *ep, U8 const *bufStart, U16 nbytes, E_EndianIs bitFieldEndian);
 PUBLIC C8 const * PrintEndian(E_EndianIs e);

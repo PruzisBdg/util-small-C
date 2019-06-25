@@ -7,7 +7,7 @@
 |
 |--------------------------------------------------------------------------*/
 
-#include "common.h"
+#include "libs_support.h"
 #include "wordlist.h"
 
 PUBLIC BIT Str_DiceComposites = 0;

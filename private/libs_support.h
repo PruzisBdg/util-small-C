@@ -60,7 +60,7 @@
 // A line with a phrase in each of the supported languages.
 typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 
-#define TOOL_GCC 1
+#define TOOL_GCC            1
 #define _TOOL_IS TOOL_GCC
 
 #define bool BOOL
@@ -81,7 +81,10 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
    #define _EXPORT_FOR_TEST PRIVATE
 #endif
 
-
+#ifdef _COMPILER_IS_TI_MSP430
+    #define __ORDER_LITTLE_ENDIAN__ 1
+    #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
+#endif
 
 #endif // LIBS_SUPPORT_H
 

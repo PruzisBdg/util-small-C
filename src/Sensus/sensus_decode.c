@@ -2,6 +2,10 @@
 
   Decoder for 'Sensus' format messages from (Badger) Water Meters.
 
+  References:
+      - 781-100-4  'Test Document for Devices Connected to Encoders'  rev.3
+      - Badger Aquarius Wiki, Sensus Page
+
 -------------------------------------------------------------------------------------------------*/
 
 #include "libs_support.h"
@@ -438,7 +442,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
          if( NULL != (p = ReadAsciiS32(p, &t))) {                             // 'V;RBrr...  '? where 'r' are 0-9
 
             U8 digits = AminusBU8(p - src, 4);
-            if(digits <= 9 && digits > 0) {                                    // 1-9 digits?
+            if(digits <= 9 && digits > 0) {                                  // 4-9 digits?
 
                ed->rawTot = t;                                                // then our totaliser is that number.
                ed->dials = digits;
@@ -527,7 +531,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                      */
                      else if( endMsg(p) && BSET(filterFor, mADE) )                     // End-of-message? AND did request ADE?
                      {
-                        if(ed->rawTot <= 999999 && ed->dials >= 6 && strlen(ed->serialWord) <= 7  ) {    // 6-digit total? AND < 7-char serial-word.
+                        if(ed->rawTot <= 999999 && ed->dials >= 4 && strlen(ed->serialWord) <= 7  ) {    // 6-digit total? AND < 7-char serial-word.
                            ed->encoderType = mADE;
                            return true; }
                      }
