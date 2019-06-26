@@ -22,6 +22,8 @@ PUBLIC S32 SumIntsU8( S16 RAM_IS *a, U8 cnt );
 /* ------------------------- On bytes -------------------------------- */
 
 PUBLIC void CopyBytesU8( U8 RAM_IS *src, U8 RAM_IS *dest, U8 cnt );
+#define CopyRBytesU8(s,d,c)  CopyBytesU8((s),(d),(c))
+PUBLIC void CopyLBytesU8( U8 RAM_IS *dest, U8 RAM_IS *src, U8 cnt );
 PUBLIC void CopyConstBytesU8( U8 CONST *src, U8 RAM_IS *dest, U8 cnt );
 PUBLIC void FillBytesU8( U8  RAM_IS *a, U8 n, U8 cnt );
 PUBLIC void ZeroBytesU8(void RAM_IS *p, U8 cnt);
@@ -101,12 +103,19 @@ PUBLIC BIT  ReadDirtyASCIIInt_ByCh(U8 ch, S16 *out);
 typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
 static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false; }
 
-// Conversions to LE, non-aligned.
+// To LE, non-aligned.
 PUBLIC void u16ToLE(U8 *out, U16 n);
 PUBLIC void s16ToLE(U8 *out, S16 n);
 PUBLIC void u32ToLE(U8 *out, U32 n);
 PUBLIC U16 leToU16(U8 const * src);
 PUBLIC U32 leToU32(U8 const *src);
+
+// To BE, non-aligned.
+PUBLIC void u16ToBE(U8 *out, U16 n);
+PUBLIC void s16ToBE(U8 *out, S16 n);
+PUBLIC void u32ToBE(U8 *out, U32 n);
+PUBLIC U16 beToU16(U8 const * src);
+PUBLIC U32 beToU32(U8 const *src);
 
 PUBLIC U16 ReverseU16(U16 n);
 PUBLIC U32 ReverseU32(U32 n);

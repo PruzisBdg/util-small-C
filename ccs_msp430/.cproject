@@ -65,7 +65,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/regex/regex_basic_non_maximal.c|src/ascii_num/stream_read_dirty_ascii_int.c|src/wordlist/romstring.c|src/wordlist/romstring_b.c|src/acc_pwm_u8.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="main.c|src/regex/regex_basic_non_maximal.c|src/ascii_num/stream_read_dirty_ascii_int.c|src/wordlist/romstring.c|src/wordlist/romstring_b.c|src/acc_pwm_u8.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

@@ -51,7 +51,7 @@ static C8 const *showDataFlags(C8 *out, enc_S_WotWeGot const *n)
          if(n->bs._name == 1) { strcat(out, #_name "," ); }
 
       _MayCat(serWord)
-      _MayCat(rawTot)
+      _MayCat(fwdTot)
       _MayCat(flowPcent)
       _MayCat(pressure)
       _MayCat(fluidTmpr)
@@ -207,7 +207,7 @@ PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed)
                sens_ShowAlerts(b3, &ed->alerts),
                safeKStr(ed->serialWord),
                safeKStr(ed->kStr),
-               ed->rawTot,
+               ed->fwdTot,
                ed->noMag.revTot,
                ed->uom,
                ed->flowPcent,
@@ -224,7 +224,7 @@ PUBLIC bool Sensus_EncodersEqual(enc_S_MsgData const *a, enc_S_MsgData const *b,
       a->weGot.asU16 == b->weGot.asU16 &&
       a->alerts.noMag.asU16 == b->alerts.noMag.asU16 &&
       a->alerts.mag.asU16 == b->alerts.mag.asU16 &&
-      a->rawTot == b->rawTot &&
+      a->fwdTot == b->fwdTot &&
       a->dials == b->dials &&
       a->flowPcent == b->flowPcent &&
 

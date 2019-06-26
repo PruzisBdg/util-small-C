@@ -444,9 +444,9 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
             U8 digits = AminusBU8(p - src, 4);
             if(digits <= 9 && digits > 0) {                                  // 4-9 digits?
 
-               ed->rawTot = t;                                                // then our totaliser is that number.
+               ed->fwdTot = t;                                                // then our totaliser is that number.
                ed->dials = digits;
-               ed->weGot.bs.rawTot = 1;
+               ed->weGot.bs.fwdTot = 1;
 
                if(NULL != (p = startField(p, "IB"))) {                       // 'V;RBrrrrrr[rrr];IB...   '?
                   if(NULL != (p = getSerialWord(p, ed->serialWord))) {       // Read 'ssssssss' from 'V;RBrrrrrr[rrr];IBsssssssss'?
@@ -466,6 +466,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                               if(p[0] == '?' && p[1] == '!' && endMsg(&p[2])) {  // Got ';Mxxxx?!'
                                  ed->encoderType = mHRE;                         // then it's a HRE
                                  decodeBasicStatus(mFld, ed);                    // Decode the 16-bit status.
+                                 ed->rawStatus = LOW_BYTE(mFld);                 // and just quote the non-extended status byte.
                                  return true; }}}
                      }
                      else if(NULL != (q = startField(p, "GC")))                     // 'V;RBrrrrrrrrr;IBssssssssss;GC...  '?
@@ -483,10 +484,13 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                                  U32 m1, m2;
                                  U8 bytesGot;
                                  if(NULL != (p = startField(p, "M"))) {
-                                    if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {            // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
+                                    if(NULL != (p = getDualMfield(p, &m1, &m2, &bytesGot))) {         // Got ';Mbbbbbb,xxxxxx' or ';Mbbbbbbbb,xxxxxxxx'
 
                                        if(bytesGot == 3) {                                            // Was 24-bit extended status?
                                           ed->noMag.revTot = m2;                                      // then 2nd sub-field is always reverse total.
+                                          ed->weGot.bs.revTot = 1;
+                                          ed->rawStatus = LOW_BYTE(m1);                               // Just quote the non-extended status byte.
+
                                           if(true == decodeExtended_MField(m1, ed)) {                 // decode 24bit status (1st sub-field)?
 
                                              // If M-field ends message then it's Gen1, HRE-LCD or Mag.
@@ -502,6 +506,8 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                                                       if(NULL != (p = startField(p, "K"))) {
                                                          // For Gen1, Gen2, ';XT...' is always followed by ';Kyyyyyy... ', the owenership number.
                                                          if(NULL != (p = getSerialWord(p, ed->kStr))) {        // Read ';Kyyyyyyyyy'?
+                                                            ed->weGot.bs.kField = 1;
+
                                                             // If ';Kyyyyyyyyyy' then it must be Gen1.
                                                             if(endMsg(p) == true) {                            // ';Kyyyyyyyy' was last field?
                                                                if(BSET(filterFor, mGen1)) {                    // and did request Gen1
@@ -518,6 +524,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                                                 #ifdef _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
                                        else if(endMsg(p) && bytesGot == 4) {                          // else Was 32bit and no more fields after 'M'
                                           ed->encoderType = mMag;                                     // then it's a Mag
+                                          ed->rawStatus = 0;                                          // Be tidy; clear raw status, which has no meaning for Mags.
                                           if(true == decodeMag_MField(m1, ed)) {                      // Decode 1st 'bbbbbbbb'
                                              ed->mag.secTot = m2;                                     // 'xxxxxxxx' is secondary total
                                              if(BSET(filterFor, mMag)) {                              // Looking for a Mag?
@@ -531,7 +538,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                      */
                      else if( endMsg(p) && BSET(filterFor, mADE) )                     // End-of-message? AND did request ADE?
                      {
-                        if(ed->rawTot <= 999999 && ed->dials >= 4 && strlen(ed->serialWord) <= 7  ) {    // 6-digit total? AND < 7-char serial-word.
+                        if(ed->fwdTot <= 999999 && ed->dials >= 4 && strlen(ed->serialWord) <= 7  ) {    // 6-digit total? AND < 7-char serial-word.
                            ed->encoderType = mADE;
                            return true; }
                      }

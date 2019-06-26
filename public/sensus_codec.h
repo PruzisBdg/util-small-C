@@ -80,8 +80,10 @@ typedef union {
    U16   asU16;
    struct {
       U16   serWord     :1,
-            rawTot      :1,
+            fwdTot      :1,
+            revTot,     :1,
             flowPcent   :1,
+            kField      :1,
             pressure    :1,
             fluidTmpr   :1,
             ambientTmpr :1,
@@ -103,9 +105,10 @@ typedef struct {
    enc_M_EncType     encoderType;                        // From the message format i.e HRE, Gen2 etc.
    enc_S_WotWeGot    weGot;                              // Which of the following variables were read form the message
    enc_S_Alerts      alerts;
+   U8                rawStatus;                          // (Non-extended) status byte as-is
    C8                serialWord[_enc_MaxSerNumChars+1];  // serial-word 'RBrrrrrrrrr;'. Up to 10 digits & letters.
    C8                kStr[_enc_MaxSerNumChars+1];        // The 'ownership number' ';Knnnnnnnnn' up to 10 letters & digits..
-   enc_T_Tot         rawTot;                             // RBrrrrrrrrr;IBssssssssss
+   enc_T_Tot         fwdTot;                             // RBrrrrrrrrr;IBssssssssss
    U8                dials;                              // Digits in ';RBnnnnnnnn'. Usually >= 6; no more than 9.
    enc_T_FlowPcent   flowPcent;
 

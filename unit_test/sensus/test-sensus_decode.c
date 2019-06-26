@@ -391,21 +391,21 @@ void test_Sensus_DecodeMsg_NoMag(void)
 
       #define _UnknownEncoder(_serialWord, _tot, _dials)                         \
             (enc_S_MsgData){                                                    \
-               .encoderType = mNoEncoders, .weGot.bs = {.rawTot = 1, .serWord = 1},     \
-               .serialWord = _serialWord, .rawTot = _tot, .dials = _dials,            \
+               .encoderType = mNoEncoders, .weGot.bs = {.fwdTot = 1, .serWord = 1},     \
+               .serialWord = _serialWord, .fwdTot = _tot, .dials = _dials,            \
                .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF} }
 
       #define _JustTotal(_tot, _dials)                         \
             (enc_S_MsgData){                                                    \
-               .encoderType = mNoEncoders, .weGot.bs = {.rawTot = 1},     \
-               .serialWord = "", .rawTot = _tot, .dials = _dials,            \
+               .encoderType = mNoEncoders, .weGot.bs = {.fwdTot = 1},     \
+               .serialWord = "", .fwdTot = _tot, .dials = _dials,            \
                .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF} }
 
       // Just an ADE.
       #define _ADE(_serialWord, _tot, _dials)                                    \
             (enc_S_MsgData){                                                     \
-               .encoderType = mADE, .weGot.bs = {.rawTot = 1, .serWord = 1},     \
-               .serialWord = _serialWord, .rawTot = _tot, .dials = _dials,       \
+               .encoderType = mADE, .weGot.bs = {.fwdTot = 1, .serWord = 1},     \
+               .serialWord = _serialWord, .fwdTot = _tot, .dials = _dials,       \
                .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF} }
 
       /* ---- No requested encoders.
@@ -441,13 +441,13 @@ void test_Sensus_DecodeMsg_NoMag(void)
       {.msg = "V;RB123 456;IBabc123\r",         .filt = mADE,     .rtn = false,  .out = &_JustTotal(123, 3) },                      // Gap in totaliser; abort with partial number.
 
       {.msg = "V;RB123456;IBabc def\r",         .filt = mADE,     .rtn = false,                    // Malformed serialisation is captured as far as it goes...
-            .out = &(enc_S_MsgData){ .encoderType = mNoEncoders, .weGot.bs = {.rawTot = 1},        // but not accepted.
-                                     .serialWord = "abc", .rawTot = 123456, .dials = 6,
+            .out = &(enc_S_MsgData){ .encoderType = mNoEncoders, .weGot.bs = {.fwdTot = 1},        // but not accepted.
+                                     .serialWord = "abc", .fwdTot = 123456, .dials = 6,
                                      .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF}}},
 
       {.msg = "V;RB123456;IBabc_def\r",         .filt = mADE,     .rtn = false,                    // Malformed serialisation is captured as far as it goes...
-            .out = &(enc_S_MsgData){ .encoderType = mNoEncoders, .weGot.bs = {.rawTot = 1},        // but not accepted.
-                                     .serialWord = "abc", .rawTot = 123456, .dials = 6,
+            .out = &(enc_S_MsgData){ .encoderType = mNoEncoders, .weGot.bs = {.fwdTot = 1},        // but not accepted.
+                                     .serialWord = "abc", .fwdTot = 123456, .dials = 6,
                                      .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF}}},
 
       /* ---- HRE    V;RBrrrrrrrrr;IBssssssssss;Mbbbb?!<CR>
@@ -457,9 +457,9 @@ void test_Sensus_DecodeMsg_NoMag(void)
       */
       {.msg = "V;RB123456789;IBabcdefghij;M8000?!\r",
                .filt = mHRE,  .rtn = true,  .out = &(enc_S_MsgData){
-                  .encoderType = mHRE, .weGot.bs = {.rawTot = 1, .serWord = 1, .alerts = 1},
+                  .encoderType = mHRE, .weGot.bs = {.fwdTot = 1, .serWord = 1, .alerts = 1},
                   .alerts.noMag.bs.overflow = 1,
-                  .serialWord = "abcdefghij", .rawTot = 123456789, .dials = 9,
+                  .serialWord = "abcdefghij", .fwdTot = 123456789, .dials = 9,
                   .noMag = {.pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF}}   },
 
 
@@ -471,9 +471,9 @@ void test_Sensus_DecodeMsg_NoMag(void)
       {.msg = "V;RB123456789;IBabcdefghij;GC28;M008000,987654\r",
                .filt = mHRE_LCD,  .rtn = true,  .out = &(enc_S_MsgData){
                   .encoderType = mGen1|mHRE_LCD,
-                  .weGot.bs = {.rawTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1},
+                  .weGot.bs = {.fwdTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1},
                   .alerts.noMag.bs.overflow = 1,
-                  .serialWord = "abcdefghij", .rawTot = 123456789, .dials = 9,
+                  .serialWord = "abcdefghij", .fwdTot = 123456789, .dials = 9,
                   .flowPcent = 28,
                   .noMag = {.revTot = 9991764UL, .pres = _NullPressures, .fluidDegC = 0xFF, .ambientDegC = 0xFF}}   },
 
@@ -485,9 +485,9 @@ void test_Sensus_DecodeMsg_NoMag(void)
       {.msg = "V;RB123456789;IBabcdefghij;GC28;M008000,54DC12;XT048;Kmnpqrstuvw\r",
                .filt = mGen1,  .rtn = true,  .out = &(enc_S_MsgData){
                   .encoderType = mGen1,
-                  .weGot.bs = {.rawTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1, .fluidTmpr = 1},
+                  .weGot.bs = {.fwdTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1, .fluidTmpr = 1},
                   .alerts.noMag.bs.overflow = 1,
-                  .serialWord = "abcdefghij", .rawTot = 123456789, .dials = 9, .kStr = "mnpqrstuvw",
+                  .serialWord = "abcdefghij", .fwdTot = 123456789, .dials = 9, .kStr = "mnpqrstuvw",
                   .flowPcent = 28,
                   .noMag = {
                      .revTot = 0x54DC12,
@@ -503,9 +503,9 @@ void test_Sensus_DecodeMsg_NoMag(void)
       {.msg = "V;RB123456789;IBabcdefghij;GC28;M008000,54DC12;XT048;Kmnpqrstuvw;XP123456\r",
                .filt = mGen2,  .rtn = true,  .out = &(enc_S_MsgData){
                   .encoderType = mGen2,
-                  .weGot.bs = {.rawTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1, .fluidTmpr = 1, .pressure = 1},
+                  .weGot.bs = {.fwdTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1, .fluidTmpr = 1, .pressure = 1},
                   .alerts.noMag.bs.overflow = 1,
-                  .serialWord = "abcdefghij", .rawTot = 123456789, .dials = 9, .kStr = "mnpqrstuvw",
+                  .serialWord = "abcdefghij", .fwdTot = 123456789, .dials = 9, .kStr = "mnpqrstuvw",
                   .flowPcent = 28,
                   .noMag = {
                      .revTot = 0x54DC12,
@@ -523,9 +523,9 @@ void test_Sensus_DecodeMsg_NoMag(void)
       {.msg = "V;RB123456789;IBabcdefghij;GC28;M008000,54DC12;XT4821;Kmnpqrstuvw;XP123456\r",
                .filt = mGen2,  .rtn = true,  .out = &(enc_S_MsgData){
                   .encoderType = mGen2,
-                  .weGot.bs = {.rawTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1, .fluidTmpr = 1, .ambientTmpr = 1, .pressure = 1},
+                  .weGot.bs = {.fwdTot = 1, .serWord = 1, .alerts = 1, .uom = 1, .flowPcent = 1, .meterType = 1, .fluidTmpr = 1, .ambientTmpr = 1, .pressure = 1},
                   .alerts.noMag.bs.overflow = 1,
-                  .serialWord = "abcdefghij", .rawTot = 123456789, .dials = 9, .kStr = "mnpqrstuvw",
+                  .serialWord = "abcdefghij", .fwdTot = 123456789, .dials = 9, .kStr = "mnpqrstuvw",
                   .flowPcent = 28,
                   .noMag = {
                      .revTot = 0x54DC12,
