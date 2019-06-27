@@ -538,8 +538,9 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                      */
                      else if( endMsg(p) && BSET(filterFor, mADE) )                     // End-of-message? AND did request ADE?
                      {
-                        if(ed->fwdTot <= 999999 && ed->dials >= 4 && strlen(ed->serialWord) <= 7  ) {    // 6-digit total? AND < 7-char serial-word.
-                           ed->encoderType = mADE;
+                        if(ed->fwdTot <= 999999999 && ed->dials >= 4 &&                // 4-9-digit total? AND
+                           strlen(ed->serialWord) >= 6  ) {                            // >= 7-char serial-word?
+                           ed->encoderType = mADE;                                     // then it's a legal ADE.
                            return true; }
                      }
                   }}}}}}
