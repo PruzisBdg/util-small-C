@@ -34,14 +34,6 @@ PUBLIC void SwapBytesU8(void RAM_IS *a, void RAM_IS *b, U8 cnt);
 
 PUBLIC void FillFloatsU8( float RAM_IS *a, float n, U8 cnt );
 
-/* ------------------------ To Numbers, safely --------------------------*/
-
-#define _ToU16_BigEnd(b)  (((U16)(*(b)) << 8) + *((b)+1))
-#define _ToU32_BigEnd(b)  (((U32)_ToU16_BigEnd(b) << 16) + _ToU16_BigEnd((b)+2))
-
-#define _ToU16_WeeEnd(b)  (((U16)(*((b)+1)) << 8) + *(b))
-#define _ToU32_WeeEnd(b)  (((U32)_ToU16_WeeEnd((b)+2) << 16) + _ToU16_WeeEnd(b))
-
 /* ------------------------- Hex ASCII -------------------------------- */
 
 PUBLIC BIT  IsHexASCII(U8 ch);
@@ -99,6 +91,12 @@ PUBLIC void ReadDirtyASCIIInt_ByCh_Init(void);
 PUBLIC BIT  ReadDirtyASCIIInt_ByCh(U8 ch, S16 *out);
 
 /* ------------------------------- Endian/Alignment conversions ---------------------- */
+
+#define _ToU16_BigEnd(b)  (((U16)(*(b)) << 8) + *((b)+1))
+#define _ToU32_BigEnd(b)  (((U32)_ToU16_BigEnd(b) << 16) + _ToU16_BigEnd((b)+2))
+
+#define _ToU16_WeeEnd(b)  (((U16)(*((b)+1)) << 8) + *(b))
+#define _ToU32_WeeEnd(b)  (((U32)_ToU16_WeeEnd((b)+2) << 16) + _ToU16_WeeEnd(b))
 
 typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
 static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false; }
@@ -530,7 +528,7 @@ PUBLIC void       RegexLT_Init        (RegexLT_S_Cfg const *cfg);
 PUBLIC T_RegexRtn RegexLT_Compile     (C8 const *regexStr, void **progV);
 PUBLIC T_RegexRtn RegexLT_Match       (C8 const *regex, C8 const *srcStr, RegexLT_S_MatchList **ml, RegexLT_T_Flags flags);
 PUBLIC T_RegexRtn RegexLT_MatchProg   (void *prog, C8 const *srcStr, RegexLT_S_MatchList **ml, RegexLT_T_Flags flags);
-PUBLIC T_RegexRtn RegexLT_Replace     (C8 const *regexStr, C8 const *inStr, C8 const *replaceStr, C8 *out);
+PUBLIC T_RegexRtn RegexLT_Replace     (C8 const *regexStr, C8 const *ien13757_MakeTypeH_FloatnStr, C8 const *replaceStr, C8 *out);
 PUBLIC T_RegexRtn RegexLT_ReplaceProg (void *prog, C8 const *inStr, C8 const *replaceStr, C8 *out);
 PUBLIC C8 const * RegexLT_RtnStr      (T_RegexRtn r);
 PUBLIC void       RegexLT_FreeMatches (RegexLT_S_MatchList const *ml);
