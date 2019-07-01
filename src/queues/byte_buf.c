@@ -74,9 +74,8 @@ PUBLIC BIT byteBuf_Write(S_byteBuf *b, U8 const *src, U8 bytesToWrite)
 
       for( c = 0; c < bytesToWrite; c++ )    // For each byte to write
       {
-         b->buf[b->put++] = src[c];          // Write that byte
+         b->buf[b->cnt++] = src[c];          // Write that byte
       }
-      b->cnt += bytesToWrite;                // Update the queue count
       b->locked = 0;                         // and we're done; unlock the queue.
       return 1;                              // Return success
    }
@@ -153,7 +152,7 @@ PUBLIC BIT byteBuf_ReadAt(S_byteBuf *b, U8 *dest, U8 from, U8 bytesToRead )
 
 PUBLIC void byteBuf_Flush(S_byteBuf *b)
 {
-   b->get = b->put = b->cnt = 0;
+   b->get = b->cnt = 0;
    b->locked = 0;
 }
 
@@ -172,6 +171,25 @@ PUBLIC BIT byteBuf_Locked(S_byteBuf *b)
 
 /*-----------------------------------------------------------------------------------------
 |
+|  byteBuf_Locked()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b)
+{
+   if(b->locked || b->cnt >= b->size)
+   {
+      return NULL;
+   }
+   else
+   {
+      return b->buf + b->cnt;
+   }
+}
+
+
+/*-----------------------------------------------------------------------------------------
+|
 |  byteBuf_ToFill()
 |
 |  Return the buffer for a naked fill of the queue. Preset indices and count for how the
@@ -184,8 +202,29 @@ PUBLIC U8 * byteBuf_ToFill(S_byteBuf *b, U8 cnt)
    byteBuf_Flush(b);
    b->locked = 1;
    b->cnt = cnt;
-   b->put = cnt;     // 'put' at next free slot.
    return b->buf;
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  byteBuf_Reserve()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 * byteBuf_Reserve(S_byteBuf *b, U8 cnt)
+{
+   if(b->locked || cnt > b->size - b->cnt )  // Buffer locked or there are not 'cnt' bytes free?
+   {
+      return NULL;                           // then can't reserve 'cnt' bytes.
+   }
+   else                                      // else we can proceed
+   {
+      b->locked = 1;                         // Lock it now, for duration of reserve
+      U8 reservedAt = b->cnt;
+      b->cnt += cnt;                         // Advance the buffer count past what we reserved.
+      b->locked = 0;                         // and we're done; unlock the queue.
+      return b->buf + reservedAt;            // Return the reserved section.
+   }
 }
 
 /*-----------------------------------------------------------------------------------------

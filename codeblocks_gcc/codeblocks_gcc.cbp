@@ -488,6 +488,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/safe_string/strlenU8.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/srecord/parse_s_record.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

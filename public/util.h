@@ -157,14 +157,13 @@ PUBLIC U8   byteQ_Size  ( S_byteQ *q);
 PUBLIC U8 * byteQ_ToFill( S_byteQ *q, U8 cnt);
 PUBLIC void byteQ_Unlock(S_byteQ *q);
 
-/* ----------------------- Basic byte buffer ------------------------------------
+/* ----------------------- Linear byte buffer ------------------------------------
 
-   Unlike byteQ_, Read() does NOT remove from buffer.
+   Unlike byteQ_, Read() does NOT remove from buffer. So no wrap.
 */
 typedef struct {
    U8 *buf,
        size,
-       put,
        get,
        cnt,
        locked;
@@ -179,9 +178,12 @@ PUBLIC BIT  byteBuf_ReadAt( S_byteBuf *b, U8 *dest, U8 from, U8 bytesToRead );
 PUBLIC BIT  byteBuf_Locked( S_byteBuf *b);
 PUBLIC U8   byteBuf_Count ( S_byteBuf *b);
 PUBLIC U8   byteBuf_Size  ( S_byteBuf *b);
-PUBLIC U8 * byteBuf_ToFill( S_byteBuf *b, U8 cnt);
 PUBLIC void byteBuf_Unlock(S_byteBuf *b);
 
+// Direct acces to buffer.
+PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b);
+PUBLIC U8 * byteBuf_Reserve(S_byteBuf *b, U8 cnt);
+PUBLIC U8 * byteBuf_ToFill( S_byteBuf *b, U8 cnt);
 
 // Wrapper for a for() loop.
 PUBLIC void RepeatIdxFunc( void( *func)(U8), U8 repeatCnt);
@@ -358,6 +360,7 @@ PUBLIC U16 SafeStrCopy(C8 *out, C8 const *src, U16 maxCh);
 PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh);
 
 PUBLIC C8 * EndStr(C8 const* str);  // Spot the end of a non-const string.
+PUBLIC U8 strlenU8(C8 const* str);
 
 /* ---------------------------- S-Records -------------------------------------------*/
 
