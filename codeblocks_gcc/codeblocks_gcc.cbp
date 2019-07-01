@@ -204,6 +204,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/bits/idx_to_1st_bit_set_u8.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/bits/make_masks.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

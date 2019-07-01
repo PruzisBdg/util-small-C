@@ -25,6 +25,8 @@ PUBLIC void CopyBytesU8( U8 RAM_IS *src, U8 RAM_IS *dest, U8 cnt );
 #define CopyRBytesU8(s,d,c)  CopyBytesU8((s),(d),(c))
 PUBLIC void CopyLBytesU8( U8 RAM_IS *dest, U8 RAM_IS *src, U8 cnt );
 PUBLIC void CopyConstBytesU8( U8 CONST *src, U8 RAM_IS *dest, U8 cnt );
+#define CopyRConstBytesU8(s,d,c)  CopyConstBytesU8((s),(d),(c))
+PUBLIC void CopyLConstBytesU8(U8 RAM_IS *dest, U8 CONST *src, U8 cnt );
 PUBLIC void FillBytesU8( U8  RAM_IS *a, U8 n, U8 cnt );
 PUBLIC void ZeroBytesU8(void RAM_IS *p, U8 cnt);
 PUBLIC U16 SumBytesU8( U8 RAM_IS *a, U8 cnt );
@@ -197,6 +199,7 @@ PUBLIC U8    PtrStack_Cnt(S_PtrStack *stk);
 PUBLIC U8    PtrStack_Free(S_PtrStack *stk);
 
 /* ---------------------------- Bits ---------------------------------- */
+PUBLIC U8 IdxToLsbSet_U8(U8 n);
 
 PUBLIC U8 NumBitsSet_U16(U16 n);
 PUBLIC U8 IdxToLsbSet_U16(U16 n);
