@@ -25,7 +25,7 @@ PUBLIC void s16ToBE(U8 *out, S16 n)
 	{ out[0] = HIGH_BYTE(n); out[1] = LOW_BYTE(n); }
 
 PUBLIC void u32ToBE(U8 *out, U32 n)
-	{ u16ToLE(&out[0], HIGH_WORD(n)); u16ToLE(&out[2], LOW_WORD(n)); }
+	{ u16ToBE(&out[0], HIGH_WORD(n)); u16ToBE(&out[2], LOW_WORD(n)); }
 
 PUBLIC U16 beToU16(U8 const * src)
 	{ return ((U16)src[0] << 8) + src[1]; }
