@@ -8,7 +8,7 @@
 static U8 bcdU8(U8 n) {
    return ((n / 10) << 4) + (n % 10); }
 
-/* ----------------- bcdLE_U8..U64 ------------------------------
+/* ----------------- BCD2_LE..U64 ------------------------------
 
    'n' -> 'out' as BCD little-endian.
 
@@ -17,7 +17,7 @@ static U8 bcdU8(U8 n) {
 */
 
 // --------------------------------------------------------------
-PUBLIC bool bcdLE_U8(U8 *out, U8 n)
+PUBLIC bool BCD2_LE(U8 *out, U8 n)
 {
    if(n > 99)
       { return false; }
@@ -27,7 +27,7 @@ PUBLIC bool bcdLE_U8(U8 *out, U8 n)
 }
 
 // --------------------------------------------------------------
-PUBLIC bool bcdLE_U16(U8 *out, U16 n)
+PUBLIC bool BCD4_LE(U8 *out, U16 n)
 {
    if(n > 9999)
       { return false; }
@@ -38,35 +38,35 @@ PUBLIC bool bcdLE_U16(U8 *out, U16 n)
 }
 
 // --------------------------------------------------------------
-PUBLIC bool bcdLE_U32(U8 *out, U32 n)
+PUBLIC bool BCD8_LE(U8 *out, U32 n)
 {
    if(n > 99999999)
       { return false; }
    else {
-      bcdLE_U16(&out[0], n % 10000);
-      bcdLE_U16(&out[2], n / 10000);
+      BCD4_LE(&out[0], n % 10000);
+      BCD4_LE(&out[2], n / 10000);
       return true; }
 }
 
 // --------------------------------------------------------------
-PUBLIC bool bcdLE_U48(U8 *out, U64 n)
+PUBLIC bool BCD12_LE(U8 *out, U64 n)
 {
    if(n > 999999999999ULL)
       { return false; }
    else {
-      bcdLE_U32(&out[0], n % 100000000);
-      bcdLE_U16(&out[4], n / 100000000);
+      BCD8_LE(&out[0], n % 100000000);
+      BCD4_LE(&out[4], n / 100000000);
       return true; }
 }
 
 // --------------------------------------------------------------
-PUBLIC bool bcdLE_U64(U8 *out, U64 n)
+PUBLIC bool BCD16_LE(U8 *out, U64 n)
 {
    if(n > 9999999999999999ULL)
       { return false; }
    else {
-      bcdLE_U32(&out[0], n % 100000000);
-      bcdLE_U32(&out[4], n / 100000000);
+      BCD8_LE(&out[0], n % 100000000);
+      BCD8_LE(&out[4], n / 100000000);
       return true; }
 }
 

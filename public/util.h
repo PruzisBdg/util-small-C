@@ -107,15 +107,19 @@ static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false
 PUBLIC void u16ToLE(U8 *out, U16 n);
 PUBLIC void s16ToLE(U8 *out, S16 n);
 PUBLIC void u32ToLE(U8 *out, U32 n);
+PUBLIC void u64ToLE(U8 *out, U64 n);
 PUBLIC U16 leToU16(U8 const * src);
 PUBLIC U32 leToU32(U8 const *src);
+PUBLIC U64 leToU64(U8 const *src);
 
 // To BE, non-aligned.
 PUBLIC void u16ToBE(U8 *out, U16 n);
 PUBLIC void s16ToBE(U8 *out, S16 n);
 PUBLIC void u32ToBE(U8 *out, U32 n);
+PUBLIC void u64ToBE(U8 *out, U64 n);
 PUBLIC U16 beToU16(U8 const * src);
 PUBLIC U32 beToU32(U8 const *src);
+PUBLIC U64 beToU64(U8 const *src);
 
 PUBLIC U16 ReverseU16(U16 n);
 PUBLIC U32 ReverseU32(U32 n);
@@ -215,11 +219,11 @@ PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
 /* ---------------------------------- BCD ------------------------------------------- */
-PUBLIC bool bcdLE_U8( U8 *out, U8 n );
-PUBLIC bool bcdLE_U16(U8 *out, U16 n);
-PUBLIC bool bcdLE_U32(U8 *out, U32 n);
-PUBLIC bool bcdLE_U48(U8 *out, U64 n);
-PUBLIC bool bcdLE_U64(U8 *out, U64 n);
+PUBLIC bool BCD2_LE( U8 *out, U8 n );
+PUBLIC bool BCD4_LE(U8 *out, U16 n);
+PUBLIC bool BCD8_LE(U8 *out, U32 n);
+PUBLIC bool BCD12_LE(U8 *out, U64 n);
+PUBLIC bool BCD16_LE(U8 *out, U64 n);
 
 /* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
 typedef U16 T_bit64K;

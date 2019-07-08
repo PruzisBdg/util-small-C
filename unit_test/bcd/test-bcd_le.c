@@ -54,21 +54,21 @@ void test_bcdLE_U8(void)
       U8 prefill = t->out + 1;
       U8 out = prefill;
 
-      bool ret = bcdLE_U8(&out, t->in);
+      bool ret = BCD2_LE(&out, t->in);
 
       if(ret != t->rtn) {
-         printf("bcdLE_U8() failed tst #%d  Return: expected %s got %s",
+         printf("BCD2_LE() failed tst #%d  Return: expected %s got %s",
             i, t->rtn == true ? "true" : "false", ret == true ? "true" : "false");
          TEST_ASSERT_TRUE(FALSE); }
 
       if(out != t->out) {
          if(t->rtn == false) {
             if(out != prefill) {
-               printf("bcdLE_U8() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
+               printf("BCD2_LE() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
                   i, out);
                TEST_ASSERT_TRUE(FALSE); }}
          else {
-            printf("bcdLE_U8() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
+            printf("BCD2_LE() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
                i, t->in, t->out, out);
             TEST_ASSERT_TRUE(FALSE); }}
    }
@@ -100,21 +100,21 @@ void test_bcdLE_U16(void)
       U16 prefill= (t->out + 1) << 1;
       U16 out = prefill;
 
-      bool ret = bcdLE_U16( (U8*)&out, t->in);
+      bool ret = BCD4_LE( (U8*)&out, t->in);
 
       if(ret != t->rtn) {
-         printf("bcdLE_U16() failed tst #%d  Return: expected %s got %s",
+         printf("BCD4_LE() failed tst #%d  Return: expected %s got %s",
             i, t->rtn == true ? "true" : "false", ret == true ? "true" : "false");
          TEST_ASSERT_TRUE(FALSE); }
 
       if(out != t->out) {
          if(t->rtn == false) {
             if(out != prefill) {
-               printf("bcdLE_U16() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
+               printf("BCD4_LE() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
                   i, out);
                TEST_ASSERT_TRUE(FALSE); }}
          else {
-            printf("bcdLE_U16() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
+            printf("BCD4_LE() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
                i, t->in, t->out, out);
             TEST_ASSERT_TRUE(FALSE); }}
    }
@@ -146,21 +146,21 @@ void test_bcdLE_U32(void)
       U32 prefill= (t->out + 1) << 1;
       U32 out = prefill;
 
-      bool ret = bcdLE_U32( (U8*)&out, t->in);
+      bool ret = BCD8_LE( (U8*)&out, t->in);
 
       if(ret != t->rtn) {
-         printf("bcdLE_U32() failed tst #%d  Return: expected %s got %s",
+         printf("BCD8_LE() failed tst #%d  Return: expected %s got %s",
             i, t->rtn == true ? "true" : "false", ret == true ? "true" : "false");
          TEST_ASSERT_TRUE(FALSE); }
 
       if(out != t->out) {
          if(t->rtn == false) {
             if(out != prefill) {
-               printf("bcdLE_U32() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
+               printf("BCD8_LE() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
                   i, out);
                TEST_ASSERT_TRUE(FALSE); }}
          else {
-            printf("bcdLE_U32() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
+            printf("BCD8_LE() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
                i, t->in, t->out, out);
             TEST_ASSERT_TRUE(FALSE); }}
    }
@@ -192,21 +192,21 @@ void test_bcdLE_U48(void)
       U64 prefill= ((t->out+1) << 1) & 0xFFFFFFFFFFFF;
       U64 out = prefill;
 
-      bool ret = bcdLE_U48( (U8*)&out, t->in);
+      bool ret = BCD12_LE( (U8*)&out, t->in);
 
       if(ret != t->rtn) {
-         printf("bcdLE_U48() failed tst #%d  Return: expected %s got %s",
+         printf("BCD12_LE() failed tst #%d  Return: expected %s got %s",
             i, t->rtn == true ? "true" : "false", ret == true ? "true" : "false");
          TEST_ASSERT_TRUE(FALSE); }
 
       if(out != t->out) {
          if(t->rtn == false) {
             if(out != prefill) {
-               printf("bcdLE_U48() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
+               printf("BCD12_LE() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
                   i, out);
                TEST_ASSERT_TRUE(FALSE); }}
          else {
-            printf("bcdLE_U48() failed tst #%d  Expected %lu -> 0x%02lX got 0x%02lX",
+            printf("BCD12_LE() failed tst #%d  Expected %lu -> 0x%02lX got 0x%02lX",
                i, t->in, t->out, out);
             TEST_ASSERT_TRUE(FALSE); }}
    }
@@ -238,21 +238,21 @@ void test_bcdLE_U64(void)
       U64 prefill= (t->out+1) << 1;
       U64 out = prefill;
 
-      bool ret = bcdLE_U64( (U8*)&out, t->in);
+      bool ret = BCD16_LE( (U8*)&out, t->in);
 
       if(ret != t->rtn) {
-         printf("bcdLE_U64() failed tst #%d  Return: expected %s got %s",
+         printf("BCD16_LE() failed tst #%d  Return: expected %s got %s",
             i, t->rtn == true ? "true" : "false", ret == true ? "true" : "false");
          TEST_ASSERT_TRUE(FALSE); }
 
       if(out != t->out) {
          if(t->rtn == false) {
             if(out != prefill) {
-               printf("bcdLE_U64() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
+               printf("BCD16_LE() failed tst #%d  Returned 'false' as expected, but 'out' was overwritten to 0x%02X",
                   i, out);
                TEST_ASSERT_TRUE(FALSE); }}
          else {
-            printf("bcdLE_U64() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
+            printf("BCD16_LE() failed tst #%d  Expected %u -> 0x%02X got 0x%02X",
                i, t->in, t->out, out);
             TEST_ASSERT_TRUE(FALSE); }}
    }
