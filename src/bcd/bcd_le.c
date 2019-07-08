@@ -38,6 +38,17 @@ PUBLIC bool BCD4_LE(U8 *out, U16 n)
 }
 
 // --------------------------------------------------------------
+PUBLIC bool BCD6_LE(U8 *out, U32 n)
+{
+   if(n > 999999)
+      { return false; }
+   else {
+      BCD4_LE(&out[0], n % 10000);
+      out[2] = bcdU8(n / 10000);
+      return true; }
+}
+
+// --------------------------------------------------------------
 PUBLIC bool BCD8_LE(U8 *out, U32 n)
 {
    if(n > 99999999)

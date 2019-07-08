@@ -235,6 +235,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/copys_fills/CopyBytesU8_reversed.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/copys_fills/CopyConstBytesU8.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

@@ -27,6 +27,10 @@ PUBLIC void CopyLBytesU8( U8 RAM_IS *dest, U8 RAM_IS *src, U8 cnt );
 PUBLIC void CopyConstBytesU8( U8 CONST *src, U8 RAM_IS *dest, U8 cnt );
 #define CopyRConstBytesU8(s,d,c)  CopyConstBytesU8((s),(d),(c))
 PUBLIC void CopyLConstBytesU8(U8 RAM_IS *dest, U8 CONST *src, U8 cnt );
+
+PUBLIC void CopyBytesU8_Reversed( U8 RAM_IS *dest, U8 RAM_IS *src, U8 cnt );
+PUBLIC void CopyConstBytesU8_Reversed( U8 RAM_IS *dest, U8 CONST *src, U8 cnt );
+
 PUBLIC void FillBytesU8( U8  RAM_IS *a, U8 n, U8 cnt );
 PUBLIC void ZeroBytesU8(void RAM_IS *p, U8 cnt);
 PUBLIC U16 SumBytesU8( U8 RAM_IS *a, U8 cnt );
@@ -116,7 +120,9 @@ PUBLIC U64 leToU64(U8 const *src);
 PUBLIC void u16ToBE(U8 *out, U16 n);
 PUBLIC void s16ToBE(U8 *out, S16 n);
 PUBLIC void u32ToBE(U8 *out, U32 n);
+PUBLIC void s32ToBE(U8 *out, S32 n);
 PUBLIC void u64ToBE(U8 *out, U64 n);
+PUBLIC void s64ToBE(U8 *out, S64 n);
 PUBLIC U16 beToU16(U8 const * src);
 PUBLIC U32 beToU32(U8 const *src);
 PUBLIC U64 beToU64(U8 const *src);
@@ -221,6 +227,7 @@ PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 /* ---------------------------------- BCD ------------------------------------------- */
 PUBLIC bool BCD2_LE( U8 *out, U8 n );
 PUBLIC bool BCD4_LE(U8 *out, U16 n);
+PUBLIC bool BCD6_LE(U8 *out, U32 n);
 PUBLIC bool BCD8_LE(U8 *out, U32 n);
 PUBLIC bool BCD12_LE(U8 *out, U64 n);
 PUBLIC bool BCD16_LE(U8 *out, U64 n);
