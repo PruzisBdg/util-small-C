@@ -194,6 +194,8 @@ PUBLIC void byteBuf_Unlock(S_byteBuf *b);
 PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b);
 PUBLIC U8 * byteBuf_Reserve(S_byteBuf *b, U8 cnt);
 PUBLIC U8 * byteBuf_ToFill( S_byteBuf *b, U8 cnt);
+PUBLIC U8 * byteBuf_Start(S_byteBuf *b);
+
 
 // Wrapper for a for() loop.
 PUBLIC void RepeatIdxFunc( void( *func)(U8), U8 repeatCnt);
