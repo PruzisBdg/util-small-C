@@ -12,7 +12,7 @@
    Return days in 'month' of 'yr'.  Does Feb 29th.
 */
 
-PRIVATE U8 const daysInMonthTbl[] = {0,31,28,31,30,31,30,31,31,30,31,30,31};
+PRIVATE U8 const daysInMonthTbl[] = {0,31,28,31,30,31,30,31,31,30,31,30,31};  // daysInMonthTbl[0] is pad.
 
 PRIVATE U8 daysInMonth(U16 yr, U8 month) {
    return
