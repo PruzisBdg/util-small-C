@@ -343,7 +343,9 @@ PUBLIC C8 *          SecsTo_YMDHMS_Str(C8 *strOut, T_Seconds32 secs);
 PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
 PUBLIC T_Seconds32   YMDHMS_To_Secs(S_DateTime const *dt);
 PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
+PUBLIC BOOLEAN       Legal_HMS(S_TimeHMS const *t);
 PUBLIC U8            YMDHMS_ToStr(S_DateTime const *t, C8 *outStr);
+PUBLIC U8            HMS_ToStr(S_TimeHMS const *t, C8 *outStr);
 PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);
 PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
 
