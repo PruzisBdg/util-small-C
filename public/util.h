@@ -180,6 +180,7 @@ typedef struct {
 } S_byteBuf;
 
 PUBLIC void byteBuf_Init  ( S_byteBuf *b, U8 *buf, U8 size);
+PUBLIC U8 * byteBuf_Start (S_byteBuf *b);
 PUBLIC BOOL byteBuf_Exists( S_byteBuf *b);
 PUBLIC void byteBuf_Flush ( S_byteBuf *b);
 PUBLIC BIT  byteBuf_Write ( S_byteBuf *b, U8 const *src, U8 bytesToWrite);
