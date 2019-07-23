@@ -11,8 +11,14 @@ PUBLIC void s16ToLE(U8 *out, S16 n)
 PUBLIC void u32ToLE(U8 *out, U32 n)
 	{ u16ToLE(&out[0], LOW_WORD(n)); u16ToLE(&out[2], HIGH_WORD(n)); }
 
+PUBLIC void s32ToLE(U8 *out, S32 n)
+	{ s16ToLE(&out[0], LOW_WORD(n)); s16ToLE(&out[2], HIGH_WORD(n)); }
+
 PUBLIC void u64ToLE(U8 *out, U64 n)
 	{ u32ToLE(&out[0], LOW_DWORD(n)); u32ToLE(&out[4], HIGH_DWORD(n)); }
+
+PUBLIC void s64ToLE(U8 *out, S64 n)
+	{ s32ToLE(&out[0], LOW_DWORD(n)); s32ToLE(&out[4], HIGH_DWORD(n)); }
 
 
 
