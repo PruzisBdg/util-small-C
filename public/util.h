@@ -191,6 +191,7 @@ PUBLIC BIT  byteBuf_ReadAt( S_byteBuf *b, U8 *dest, U8 from, U8 bytesToRead );
 PUBLIC BIT  byteBuf_Locked( S_byteBuf *b);
 PUBLIC U8   byteBuf_Count ( S_byteBuf *b);
 PUBLIC U8   byteBuf_Size  ( S_byteBuf *b);
+PUBLIC U8   byteBuf_Free  (S_byteBuf *b);
 PUBLIC void byteBuf_Unlock(S_byteBuf *b);
 
 // Direct acces to buffer.

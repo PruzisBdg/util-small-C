@@ -255,7 +255,7 @@ PUBLIC void byteBuf_Unlock(S_byteBuf *b)
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 byteBuf_Count ( S_byteBuf *b)
+PUBLIC U8 byteBuf_Count(S_byteBuf *b)
 {
    return b->cnt;
 }
@@ -266,9 +266,20 @@ PUBLIC U8 byteBuf_Count ( S_byteBuf *b)
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 byteBuf_Size  ( S_byteBuf *b)
+PUBLIC U8 byteBuf_Size(S_byteBuf *b)
 {
    return b->size;
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  byteBuf_Free()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 byteBuf_Free(S_byteBuf *b)
+{
+   return b->size - b->cnt;
 }
 
 // ------------------------------------ eof -------------------------------------------------
