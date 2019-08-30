@@ -338,10 +338,13 @@ typedef struct {
 #define _HMSStr_Maxlen 10
 
 PUBLIC void          SecsToHMS(T_Seconds32 secs, S_TimeHMS *hms);
-PUBLIC U8            SecsToHMSStr(T_Seconds32 secsCnt, C8 *strOut);
+PUBLIC U8            SecsToHMSStr(   T_Seconds32 secsCnt, C8 *strOut);
+PUBLIC U8            SecsToHMS32_Str(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHrMinStr(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut);
-PUBLIC C8 const *    SecsToHMSStrRtn(T_Seconds32 secsCnt, C8 *strOut);
+PUBLIC C8 const *    SecsToHMSStrRtn(   T_Seconds32 secsCnt, C8 *strOut);
+PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
+
 PUBLIC void          SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
 PUBLIC C8 *          SecsTo_YMDHMS_Str(C8 *strOut, T_Seconds32 secs);
 PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
