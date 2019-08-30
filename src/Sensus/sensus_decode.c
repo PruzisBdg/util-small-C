@@ -415,7 +415,7 @@ PRIVATE enc_S_MsgData legalEmptyEncoder = {
 
       Mag               V;RBrrrrrrrrr;IBssssssss;GCaa;Mbbbbbbbb,xxxxxxxx<CR>
 
-   where:PUBLIC C8 const* GetNextHexASCII_U24(C8 const *hexStr, U32 *out)
+   where:
 
       RBrrrrrrrrr          - totaliser, 6 to 9 digits
       IBssssssssss         - serial number; 1-10 alphanumeric
