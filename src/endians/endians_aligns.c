@@ -8,8 +8,8 @@ PUBLIC void u16ToLE(U8 *out, U16 n)
 PUBLIC void s16ToLE(U8 *out, S16 n)
 	{ out[0] = LOW_BYTE(n); out[1] = HIGH_BYTE(n); }
 
-PUBLIC void u32ToLE(U8 *out, U32 n)
-	{ u16ToLE(&out[0], LOW_WORD(n)); u16ToLE(&out[2], HIGH_WORD(n)); }
+PUBLIC U8 * u32ToLE(U8 *out, U32 n)
+	{ u16ToLE(&out[0], LOW_WORD(n)); u16ToLE(&out[2], HIGH_WORD(n)); return out; }
 
 PUBLIC void s32ToLE(U8 *out, S32 n)
 	{ s16ToLE(&out[0], LOW_WORD(n)); s16ToLE(&out[2], HIGH_WORD(n)); }

@@ -110,7 +110,7 @@ static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false
 // To LE, non-aligned.
 PUBLIC void u16ToLE(U8 *out, U16 n);
 PUBLIC void s16ToLE(U8 *out, S16 n);
-PUBLIC void u32ToLE(U8 *out, U32 n);
+PUBLIC U8 * u32ToLE(U8 *out, U32 n);
 PUBLIC void s32ToLE(U8 *out, S32 n);
 PUBLIC void u64ToLE(U8 *out, U64 n);
 PUBLIC void s64ToLE(U8 *out, S64 n);
