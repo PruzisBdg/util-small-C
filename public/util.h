@@ -321,6 +321,7 @@ typedef struct {
 */
 #define _YMDHMS_BytesPacked 7
 
+typedef struct {U16 yr; U8 mnth, day; } S_YMD;
 
 // Up to 9999 hrs when rendered as an ISO8601 string i.e max is "9999:59:59".
 typedef struct {
@@ -344,6 +345,7 @@ PUBLIC U8            SecsToHrMinStr(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMSStrRtn(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
+PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
 
 PUBLIC void          SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
 PUBLIC C8 *          SecsTo_YMDHMS_Str(C8 *strOut, T_Seconds32 secs);

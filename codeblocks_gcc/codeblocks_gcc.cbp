@@ -586,6 +586,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/ymdhms_equal.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/ymdhms_to_secs.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
