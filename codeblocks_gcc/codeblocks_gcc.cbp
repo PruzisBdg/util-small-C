@@ -541,6 +541,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/days_in_month.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/epoch_to_2000AD.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

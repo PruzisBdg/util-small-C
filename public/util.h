@@ -338,6 +338,7 @@ typedef struct {
 
 #define _HMSStr_Maxlen 10
 
+PUBLIC U8            DaysInMonth(U16 yr, U8 month);
 PUBLIC void          SecsToHMS(T_Seconds32 secs, S_TimeHMS *hms);
 PUBLIC U8            SecsToHMSStr(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHMS32_Str(T_Seconds32 secsCnt, C8 *strOut);
