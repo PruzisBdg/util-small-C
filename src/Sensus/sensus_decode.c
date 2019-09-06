@@ -364,7 +364,7 @@ _EXPORT_FOR_TEST C8 const * getXP(C8 const *src,  enc_S_MsgData *ed ) {
 
    Zeros, empty strings, <null> fields for pressure and temperature.
 */
-PRIVATE enc_S_MsgData legalEmptyEncoder = {
+PRIVATE enc_S_MsgData const legalEmptyEncoder = {
    .serialWord = "",
    .kStr = "",
    .noMag = {

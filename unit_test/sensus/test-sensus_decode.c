@@ -429,7 +429,7 @@ void test_Sensus_DecodeMsg_NoMag(void)
       {.msg = "V;RB123;IBabc123\r",            .filt = mADE,     .rtn = false,   .out = &_UnknownEncoder("abc123", 123,   3) },        // 3 digits bad
       {.msg = "V;RB1234567890;IBabc123\r",     .filt = mADE,     .rtn = false,   .out = &legalEmptyEncoder },                          // 10 digits bad
 
-      {.msg = "V;RB1234;IBabcdef\r",           .filt = mADE,     .rtn = true,    .out = &_ADE("abcdef", 123456, 6) },                  // 6 char serial OK
+      {.msg = "V;RB1234;IBabcdef\r",           .filt = mADE,     .rtn = true,    .out = &_ADE("abcdef", 1234, 4) },                    // 4 char serial OK
       {.msg = "V;RB123456;IBabcdef\r",         .filt = mADE,     .rtn = true,    .out = &_ADE("abcdef", 123456, 6) },                  // 6 char serial OK
       {.msg = "V;RB123456;IBabcdefg\r",        .filt = mADE,     .rtn = true,    .out = &_ADE("abcdefg", 123456, 6) },                 // 7 chars OK
 
