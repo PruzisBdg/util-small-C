@@ -37,6 +37,11 @@ typedef U32 U8bag_T_Line;
 PUBLIC void U8bag_Clear(S_U8bag *m)
    { memset(m, 0, sizeof(S_U8bag)); }
 
+/* ------------------------------ U8bag_Copy ------------------------------- */
+
+PUBLIC void U8bag_Copy(S_U8bag *dest, S_U8bag const *src)
+   { memcpy(dest, src, sizeof(S_U8bag)); }
+
 /* --------------------------------- U8bag_Add/RemoveRange ------------------------------- */
 
 PRIVATE void addRemove(S_U8bag *m, U8 from, U8 to, BOOL add)
@@ -73,7 +78,7 @@ PUBLIC void U8bag_AddRange(S_U8bag *m, U8 from, U8 to)
 PUBLIC void U8bag_RemoveRange(S_U8bag *m, U8 from, U8 to)
    { addRemove(m, from, to, FALSE); }
 
-/* --------------------------------- U8bag_Add/RemoveCh ------------------------------- */
+/* --------------------------------- U8bag_Add/RemoveOne ------------------------------- */
 
 PRIVATE void addRemoveOne(S_U8bag *m, U8 n, BOOL add)
 {
@@ -112,6 +117,17 @@ PUBLIC BOOL U8bag_Contains(S_U8bag const *m, U8 n)
    return (m->lines[ln] & (1L << lsb)) > 0 ? TRUE : FALSE;
 }
 
+/* ------------------------------ U8bag_sEqual ------------------------------- */
+
+PUBLIC bool U8bag_sEqual(S_U8bag const *a, S_U8bag const *b)
+{
+   for(U8 i = 0; i < _U8bag_NumLines; i++) {
+      if(a->lines[i] != b->lines[i]) {
+         return false; }}
+   return true;
+}
+
+
 /* ------------------------------ U8bag_Print ------------------------------- */
 
 PUBLIC void U8bag_Print(S_U8bag const *m)
@@ -127,9 +143,12 @@ PUBLIC void U8bag_Print(S_U8bag const *m)
 #define CR  0x0D
 #define LF  0x0A
 
-/* ---------------------------------- U8bag_List ----------------------------- */
+/* ---------------------------------- U8bag_ListCh -----------------------------
 
-PUBLIC C8 * U8bag_List(C8 *buf, S_U8bag const *m)
+   List (printables) as a string. Note that 0 (zero) cannot be in the bag; otherwise the
+   list will be the empty string.
+*/
+PUBLIC C8 * U8bag_ListCh(C8 *out, S_U8bag const *m)
 {
    U16 i, c;
    for(c = 0, i = 0; c < 256; c++)
@@ -138,15 +157,29 @@ PUBLIC C8 * U8bag_List(C8 *buf, S_U8bag const *m)
       {
          switch(c)
          {
-            case CR:  buf[i++] = '\\'; buf[i++] = 'r'; break;
-            case LF:  buf[i++] = '\\'; buf[i++] = 'n'; break;
-            case TAB: buf[i++] = '\\'; buf[i++] = 't'; break;
-            default: buf[i++] = c;
+            case CR:  out[i++] = '\\'; out[i++] = 'r'; break;
+            case LF:  out[i++] = '\\'; out[i++] = 'n'; break;
+            case TAB: out[i++] = '\\'; out[i++] = 't'; break;
+            default: out[i++] = c;
          }
       }
    }
-   buf[i] = '\0';
-   return buf;
+   out[i] = '\0';
+   return out;
+}
+
+/* ----------------------------------- U8bag_List ---------------------------------- */
+
+PUBLIC C8 * U8bag_List(C8 *out, S_U8bag const *m, U8 *cnt)
+{
+   U16 i, c;
+   for(c = 0, i = 0; c < 256; c++)
+   {
+      if(U8bag_Contains(m, c))
+         { out[i++] = c; }
+   }
+   *cnt = i;         // Return number of items which were in 'm' and are now in 'out'.
+   return out;
 }
 
 // -------------------------------- end ----------------------------------------

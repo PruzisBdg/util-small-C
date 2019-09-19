@@ -418,14 +418,17 @@ typedef struct {
 } S_U8bag;
 
 PUBLIC void U8bag_Clear       (S_U8bag *m);
+PUBLIC void U8bag_Copy        (S_U8bag *dest, S_U8bag const *src);
 PUBLIC void U8bag_AddRange    (S_U8bag *m, U8 from, U8 to);
 PUBLIC void U8bag_RemoveRange (S_U8bag *m, U8 from, U8 to);
 PUBLIC void U8bag_AddOne      (S_U8bag *m, U8 n);
 PUBLIC void U8bag_RemoveOne   (S_U8bag *m, U8 n);
 PUBLIC void U8bag_Invert      (S_U8bag *m);
+PUBLIC bool U8bag_sEqual      (S_U8bag const *a, S_U8bag const *b);
 PUBLIC BOOL U8bag_Contains    (S_U8bag const *m, U8 n);
 PUBLIC void U8bag_Print       (S_U8bag const *m);
-PUBLIC C8 * U8bag_List(C8 *buf, S_U8bag const *m);
+PUBLIC C8 * U8bag_List        (C8 *out, S_U8bag const *m, U8 *cnt);
+PUBLIC C8 * U8bag_ListCh      (C8 *out, S_U8bag const *m);
 
 /* ---------------------- Bag holding unique chars (C8) -----------------------------------
 
