@@ -566,6 +566,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/legal_ymd.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/secs_to_YMDHMS.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -587,6 +592,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/timedate/secs_to_ymdhms_str.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/ymd_to_str.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
