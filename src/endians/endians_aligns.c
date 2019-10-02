@@ -25,13 +25,38 @@ PUBLIC void s64ToLE(U8 *out, S64 n)
 PUBLIC U16 leToU16(U8 const * src)
 	{ return ((U16)src[1] << 8) + src[0]; }
 
+PUBLIC U32 leToU24(U8 const *src)
+	{ return ((U32)src[2] << 16) + leToU16(&src[0]); }
+
 PUBLIC U32 leToU32(U8 const *src)
 	{ return ((U32)leToU16(&src[2]) << 16) + leToU16(&src[0]); }
+
+PUBLIC U64 leToU48(U8 const *src)
+	{ return ((U64)leToU16(&src[4]) << 32) + leToU32(&src[0]); }
 
 PUBLIC U64 leToU64(U8 const *src)
 	{ return ((U64)leToU32(&src[4]) << 32) + leToU32(&src[0]); }
 
+PUBLIC float leToFloat(U8 const *src)
+{
+   union utag { U8 b[4]; float f; } u;
 
+   #ifdef __BYTE_ORDER__
+      #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+         // Swap and align;
+         u.b[0] = src[3]; u.b[1] = src[2]; u.b[2] = src[1]; u.b[3] = src[0];
+      #else
+         // else just align;
+         u.b[0] = src[0]; u.b[1] = src[1]; u.b[2] = src[2]; u.b[3] = src[3];
+      #endif
+   #else
+      #warning "ToSysEndian_U16() Endian undefined - bytes will always be copied no-reverse."
+      // Just align;
+      u.b[0] = src[0]; u.b[1] = src[1]; u.b[2] = src[2]; u.b[3] = src[3];
+   #endif // __BYTE_ORDER__
+
+   return u.f;    // Return as float.
+}
 
 // ---- Big endian
 PUBLIC void u16ToBE(U8 *out, U16 n)

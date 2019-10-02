@@ -115,8 +115,11 @@ PUBLIC void s32ToLE(U8 *out, S32 n);
 PUBLIC void u64ToLE(U8 *out, U64 n);
 PUBLIC void s64ToLE(U8 *out, S64 n);
 PUBLIC U16 leToU16(U8 const * src);
+PUBLIC U32 leToU24(U8 const *src);
 PUBLIC U32 leToU32(U8 const *src);
+PUBLIC U64 leToU48(U8 const *src);
 PUBLIC U64 leToU64(U8 const *src);
+PUBLIC float leToFloat(U8 const *src);
 
 // To BE, non-aligned.
 PUBLIC void u16ToBE(U8 *out, U16 n);
@@ -231,12 +234,18 @@ PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
 /* ---------------------------------- BCD ------------------------------------------- */
-PUBLIC bool BCD2_LE( U8 *out, U8 n );
+PUBLIC bool BCD2_LE(U8 *out, U8 n );
 PUBLIC bool BCD4_LE(U8 *out, U16 n);
 PUBLIC bool BCD6_LE(U8 *out, U32 n);
 PUBLIC bool BCD8_LE(U8 *out, U32 n);
 PUBLIC bool BCD12_LE(U8 *out, U64 n);
 PUBLIC bool BCD16_LE(U8 *out, U64 n);
+
+PUBLIC bool BCDtoU8      ( U8  *out, U8 const *in);
+PUBLIC bool BCD4le_toU16 ( U16 *out, U8 const *in);
+PUBLIC bool BCD6le_toU32 ( U32 *out, U8 const *in);
+PUBLIC bool BCD8le_toU32 ( U32 *out, U8 const *in);
+PUBLIC bool BCD12le_toU64( U64 *out, U8 const *in);
 
 /* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
 typedef U16 T_bit64K;
