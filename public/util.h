@@ -359,6 +359,7 @@ PUBLIC C8 const *    SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMSStrRtn(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
+PUBLIC BOOLEAN       HMS_Equal(S_TimeHMS const *a, S_TimeHMS const *b);
 
 PUBLIC void          SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
 PUBLIC C8 *          SecsTo_YMDHMS_Str(C8 *strOut, T_Seconds32 secs);
@@ -384,6 +385,8 @@ extern S16 const     DaysToMonthStartTbl[];
 #define _HMS_MaxStr   (sizeof("65535:59:59") + 2)
 #define _ISO8601_HMS_MaxSpaces "           "
 #define _ISO8601_HMS_AsSpaces "        "
+
+#define _ISO8601_YMD_MaxStr (sizeof("2018-03-06") + 1)
 
 /* --------------------------- Pretty Prints -------------------------------------- */
 PUBLIC C8 const * ArrayPrettyPrint(C8 *out, U16 outBufLen, C8 const *prefix, U8 const *src, size_t len, U16 maxLine);
