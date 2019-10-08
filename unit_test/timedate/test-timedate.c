@@ -115,7 +115,7 @@ void test_Legal_YMDHMS(void)
       YMDHMS_ToStr(&t->dt, dtStr);
       C8 b0[100];
       sprintf(b0, "%s -> %d", dtStr, rtn);
-      TEST_ASSERT_EQUAL_UINT8_MESSAGE(t->res, rtn, b0);// This is a by-element compare; which will handle differing alignments and packing.
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(t->res, rtn, b0);
    }
 }
 
@@ -242,6 +242,179 @@ void test_YMDHMS_To_Secs(void)
          C8 b0[100];
          sprintf(b0, "%s -> 0x%lx/%lud (%s) [lims 0x%lx -> 0x%lx]", expected, res, res, got, t->utcLo, t->utcHi);
          TEST_FAIL_MESSAGE(b0);
+      }
+   }
+}
+
+/* ----------------------------------- test_LegalYMD ------------------------------------------- */
+
+void test_LegalYMD(void)
+{
+   typedef struct { S_YMD ymd; bool res; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .ymd = {.yr = 0, .mnth = 0, .day = 0 }, .res = false },
+
+      // Legal spans 2000 - 2132.
+      { .ymd = {.yr = 2000, .mnth = 1,  .day = 1  }, .res = true },
+      { .ymd = {.yr = 2135, .mnth = 12, .day = 31 }, .res = true },
+
+      // Illegal thisn'that.
+      { .ymd = {.yr = 1999, .mnth = 12, .day = 31 }, .res = false },
+      { .ymd = {.yr = 2136, .mnth = 12, .day = 31 }, .res = false },
+      { .ymd = {.yr = 1999, .mnth = 12, .day = 31 }, .res = false },
+      { .ymd = {.yr = 2020, .mnth = 13, .day = 1  }, .res = false },
+
+      // 30 days hath December, etc.
+      { .ymd = {.yr = 2020, .mnth = 1, .day = 31  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 1, .day = 32  }, .res = false },
+
+      { .ymd = {.yr = 2019, .mnth = 2, .day = 28  }, .res = true },
+      { .ymd = {.yr = 2019, .mnth = 2, .day = 29  }, .res = false },
+      // Leap year
+      { .ymd = {.yr = 2020, .mnth = 2, .day = 29  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 2, .day = 30  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 3, .day = 31  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 3, .day = 32  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 4, .day = 30  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 4, .day = 31  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 5, .day = 31  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 5, .day = 32  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 6, .day = 30  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 6, .day = 31  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 7, .day = 31  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 7, .day = 32  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 8, .day = 31  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 8, .day = 32  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 9, .day = 30  }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 9, .day = 31  }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 10, .day = 31 }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 10, .day = 32 }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 11, .day = 30 }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 11, .day = 31 }, .res = false },
+
+      { .ymd = {.yr = 2020, .mnth = 12, .day = 31 }, .res = true },
+      { .ymd = {.yr = 2020, .mnth = 12, .day = 32 }, .res = false },
+
+      // Wildcards
+      { .ymd = {.yr = 0xFEFE, .mnth = 1,    .day = 1  }, .res = true },
+      { .ymd = {.yr = 2001, .mnth = 0xFE, .day = 31  }, .res = true },     // 31st is legal for a wildcard month
+      { .ymd = {.yr = 2001, .mnth = 0xFE, .day = 0   }, .res = false },     // But not these...
+      { .ymd = {.yr = 2001, .mnth = 0xFE, .day = 32  }, .res = false },
+      { .ymd = {.yr = 2001, .mnth = 0xFE, .day = 0xFE}, .res = true },
+      { .ymd = {.yr = 2099, .mnth = 1,    .day = 0xFE}, .res = true },
+      // Matches anything -> always true.
+      { .ymd = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE}, .res = true },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = Legal_YMD(&t->ymd);
+
+      U8 dtStr[_ISO8601_YMD_MaxStr+1];
+      YMD_ToStr(&t->ymd, dtStr);
+      C8 b0[100];
+      sprintf(b0, "%s -> %d", dtStr, rtn);
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(t->res, rtn, b0);
+   }
+}
+
+/* -------------------------------- test_YMD_ToStr ----------------------------------------- */
+
+void test_YMD_ToStr(void)
+{
+   typedef struct { S_YMD ymd; C8 const *out; U8 rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .ymd = {.yr = 0,    .mnth = 0, .day = 0 },          .rtn = 10, .out = "0000-00-00" },
+      { .ymd = {.yr = 2135, .mnth = 12, .day = 31 },        .rtn = 10, .out = "2135-12-31" },
+
+      // Wildcards
+      { .ymd = {.yr = 0xFEFE, .mnth = 12,   .day = 31   },    .rtn = 10, .out = "****-12-31" },
+      { .ymd = {.yr = 2135,   .mnth = 0xFE, .day = 31   },    .rtn = 10, .out = "2135-**-31" },
+      { .ymd = {.yr = 2135,   .mnth = 12,   .day = 0xFE },    .rtn = 10, .out = "2135-12-**" },
+      { .ymd = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE },    .rtn = 10, .out = "****-**-**" },
+
+      // Cannot be printed as 0000-00-00.
+      { .ymd = {.yr = 10000, .mnth = 12, .day = 31 },       .rtn = 10, .out = "\?\?\?\?-12-31" },
+      { .ymd = {.yr = 2135,  .mnth = 100, .day = 31 },      .rtn = 10, .out = "2135-\?\?-31" },
+      { .ymd = {.yr = 2135,  .mnth = 12, .day = 100 },      .rtn = 10, .out = "2135-12-\?\?" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      #define _OutSize (_ISO8601_YMD_MaxStr+10)
+      U8 dtStr[_OutSize];
+      memset(dtStr, 0x5A, _OutSize);
+      dtStr[_OutSize-1] = '\0';
+      #undef _OutSize
+
+      U8 rtn = YMD_ToStr(&t->ymd, dtStr);
+
+      if(rtn != t->rtn) {
+         printf("tst #%d: in <- (%u %u %u) Bad return; expected %u, got %u", i, t->ymd.yr, t->ymd.mnth, t->ymd.day, t->rtn, rtn);
+         TEST_FAIL();
+      }
+      else if( strcmp(t->out, dtStr) != 0 ) {
+         printf("tst #%d: in <- (%u %u %u) bad string; expected \"%s\", got \"%s\"", i, t->ymd.yr, t->ymd.mnth, t->ymd.day, t->out, dtStr);
+         TEST_FAIL();
+      }
+   }
+}
+
+/* -------------------------------- test_YMDHMS_ToStr ----------------------------------------- */
+
+void test_YMDHMS_ToStr(void)
+{
+   typedef struct { S_DateTime dt; C8 const *out; U8 rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .dt = {.yr = 0,    .mnth = 0,  .day = 0,  .hr = 0,  .min = 0,  .sec = 0 },           .rtn = 19, .out = "0000-00-00" },
+      { .dt = {.yr = 2135, .mnth = 12, .day = 31, .hr = 0,  .min = 0,  .sec = 0 },           .rtn = 19, .out = "2135-12-31" },
+
+      // Wildcards
+      { .dt = {.yr = 0xFEFE, .mnth = 12,   .day = 31,   .hr = 0,  .min = 0,  .sec = 0   },   .rtn = 19, .out = "****-12-31" },
+      { .dt = {.yr = 2135,   .mnth = 0xFE, .day = 31,   .hr = 0,  .min = 0,  .sec = 0   },   .rtn = 19, .out = "2135-**-31" },
+      { .dt = {.yr = 2135,   .mnth = 12,   .day = 0xFE, .hr = 0,  .min = 0,  .sec = 0 },     .rtn = 19, .out = "2135-12-**" },
+      { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0,  .min = 0,  .sec = 0 },     .rtn = 19, .out = "****-**-**" },
+
+      // Cannot be printed as 0000-00-00.
+      { .dt = {.yr = 10000, .mnth = 12, .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },         .rtn = 19, .out = "\?\?\?\?-12-31" },
+      { .dt = {.yr = 2135,  .mnth = 100, .day = 31, .hr = 0,  .min = 0,  .sec = 0 },         .rtn = 19, .out = "2135-\?\?-31" },
+      { .dt = {.yr = 2135,  .mnth = 12, .day = 100, .hr = 0,  .min = 0,  .sec = 0 },         .rtn = 19, .out = "2135-12-\?\?" },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      #define _OutSize (_ISO8601_YMDHMS_MaxStr+10)
+      U8 dtStr[_OutSize];
+      memset(dtStr, 0x5A, _OutSize);
+      dtStr[_OutSize-1] = '\0';
+
+      U8 rtn = YMDHMS_ToStr(&t->dt, dtStr);
+
+      if(rtn != t->rtn) {
+         printf("tst #%d: in <- (%u %u %u) Bad return; expected %u, got %u", i, t->dt.yr, t->dt.mnth, t->dt.day, t->rtn, rtn);
+         TEST_FAIL();
+      }
+      else if( strcmp(t->out, dtStr) != 0 ) {
+         printf("tst #%d: in <- (%u %u %u) bad string; expected \"%s\", got \"%s\"", i, t->dt.yr, t->dt.mnth, t->dt.day, t->out, dtStr);
+         TEST_FAIL();
       }
    }
 }

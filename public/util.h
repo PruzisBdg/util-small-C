@@ -325,6 +325,10 @@ typedef struct {
        min,sec;      // 0 - 59
    } S_DateTime;
 
+#define _YMD_Wilds      0xFE           // Means 'any month' or 'any day'.
+#define _YMD_WildYear   0xFEFE         // Means 'any year',
+#define _DateTime_Wilds _YMD_Wilds     // Hours, minutes, secs too.
+
 // If you want to call 'S_DateTime' this to be consistent with below.
 #define S_YMDHMS  S_DateTime
 
@@ -333,13 +337,21 @@ typedef struct {
 */
 #define _YMDHMS_BytesPacked 7
 
-typedef struct {U16 yr; U8 mnth, day;} S_YMD;
+typedef struct {
+   U16 yr;        // 2000AD to 2000AD + 32bits of seconds = 2130.
+   U8 mnth,       // 1-12
+      day;        // 1-28,29,30,31, depending.
+   } S_YMD;
+
 
 // Up to 9999 hrs when rendered as an ISO8601 string i.e max is "9999:59:59".
 typedef struct {
    U16 hr;           // 0 - 9999
    U8 min, sec;      // 0 - 59
    } S_TimeHMS;
+
+#define _HMS_WildHr _YMD_WildYear   // i.e for U16.
+#define _HMS_Wilds  _YMD_Wilds
 
 /* Used when exporting this struct (to another device). Then the contents are packed, regardless
    of the format internal to the code.

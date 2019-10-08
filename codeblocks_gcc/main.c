@@ -6,6 +6,9 @@
 
 int main (void)
 {
+
+   Legal_YMD( &(S_YMD){.yr = 2001, .mnth = 0xFE, .day = 1});
+
    enc_S_MsgData md = {
       .encoderType = mADE | mGen1,
       .weGot.bs.serWord = 1,

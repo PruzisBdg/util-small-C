@@ -15,6 +15,7 @@ include ../util_common_pre.mak
 SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)ISO8601_Str_to_secs.c \
 								$(SRCDIR)legal_YMDHMS.c \
+								$(SRCDIR)legal_YMD.c \
 								$(SRCDIR)Secs_to_HMS.c \
 								$(SRCDIR)secs_to_hms_str.c \
 								$(SRCDIR)secs_to_hr_min_str.c \
