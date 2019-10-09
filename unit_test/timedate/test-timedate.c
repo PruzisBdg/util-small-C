@@ -382,19 +382,27 @@ void test_YMDHMS_ToStr(void)
    typedef struct { S_DateTime dt; C8 const *out; U8 rtn; } S_Tst;
 
    S_Tst const tsts[] = {
-      { .dt = {.yr = 0,    .mnth = 0,  .day = 0,  .hr = 0,  .min = 0,  .sec = 0 },           .rtn = 19, .out = "0000-00-00" },
-      { .dt = {.yr = 2135, .mnth = 12, .day = 31, .hr = 0,  .min = 0,  .sec = 0 },           .rtn = 19, .out = "2135-12-31" },
+      { .dt = {.yr = 0,    .mnth = 0,  .day = 0,  .hr = 0,  .min = 0,  .sec = 0},            .rtn = 19, .out = "0000-00-00T00:00:00" },
+      { .dt = {.yr = 2001, .mnth = 1,  .day = 15, .hr = 4,  .min = 33, .sec = 25},           .rtn = 19, .out = "2001-01-15T04:33:25" },
+      { .dt = {.yr = 2135, .mnth = 12, .day = 31, .hr = 23, .min = 59, .sec = 59 },          .rtn = 19, .out = "2135-12-31T23:59:59" },
 
       // Wildcards
-      { .dt = {.yr = 0xFEFE, .mnth = 12,   .day = 31,   .hr = 0,  .min = 0,  .sec = 0   },   .rtn = 19, .out = "****-12-31" },
-      { .dt = {.yr = 2135,   .mnth = 0xFE, .day = 31,   .hr = 0,  .min = 0,  .sec = 0   },   .rtn = 19, .out = "2135-**-31" },
-      { .dt = {.yr = 2135,   .mnth = 12,   .day = 0xFE, .hr = 0,  .min = 0,  .sec = 0 },     .rtn = 19, .out = "2135-12-**" },
-      { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0,  .min = 0,  .sec = 0 },     .rtn = 19, .out = "****-**-**" },
+      { .dt = {.yr = 0xFEFE, .mnth = 12,   .day = 31,   .hr = 0,     .min = 0,   .sec = 0   },   .rtn = 19, .out = "****-12-31T00:00:00" },
+      { .dt = {.yr = 2135,   .mnth = 0xFE, .day = 31,   .hr = 0,     .min = 0,   .sec = 0   },   .rtn = 19, .out = "2135-**-31T00:00:00" },
+      { .dt = {.yr = 2135,   .mnth = 12,   .day = 0xFE, .hr = 0,     .min = 0,   .sec = 0 },     .rtn = 19, .out = "2135-12-**T00:00:00" },
+      { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0,     .min = 0,   .sec = 0 },     .rtn = 19, .out = "****-**-**T00:00:00" },
+      { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0xFE,  .min = 0,   .sec = 0 },     .rtn = 19, .out = "****-**-**T**:00:00" },
+      { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0xFE,  .min = 0xFE,.sec = 0 },     .rtn = 19, .out = "****-**-**T**:**:00" },
+      { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0xFE,  .min = 0xFE,.sec = 0xFE },  .rtn = 19, .out = "****-**-**T**:**:**" },
 
-      // Cannot be printed as 0000-00-00.
-      { .dt = {.yr = 10000, .mnth = 12, .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },         .rtn = 19, .out = "\?\?\?\?-12-31" },
-      { .dt = {.yr = 2135,  .mnth = 100, .day = 31, .hr = 0,  .min = 0,  .sec = 0 },         .rtn = 19, .out = "2135-\?\?-31" },
-      { .dt = {.yr = 2135,  .mnth = 12, .day = 100, .hr = 0,  .min = 0,  .sec = 0 },         .rtn = 19, .out = "2135-12-\?\?" },
+      // If too many digits will print '?'s.
+      { .dt = {.yr = 10000, .mnth = 12,  .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "\?\?\?\?-12-31T00:00:00" },
+      { .dt = {.yr = 2135,  .mnth = 100, .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "2135-\?\?-31T00:00:00" },
+      { .dt = {.yr = 1642,  .mnth = 12,  .day = 100, .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "1642-12-\?\?T00:00:00" },
+      { .dt = {.yr = 2204,  .mnth = 12,  .day = 9,   .hr = 100,.min = 5,  .sec = 55 },       .rtn = 19, .out = "2204-12-09T\?\?:05:55" },
+      { .dt = {.yr = 2135,  .mnth = 12,  .day = 9,   .hr = 100,.min = 5,  .sec = 55 },       .rtn = 19, .out = "2135-12-09T\?\?:05:55" },
+      { .dt = {.yr = 9999,  .mnth = 99,  .day = 99,  .hr = 99, .min = 100,.sec = 2  },       .rtn = 19, .out = "9999-99-99T99:\?\?:02" },
+      { .dt = {.yr = 9999,  .mnth = 99,  .day = 99,  .hr = 99, .min = 14, .sec = 100},       .rtn = 19, .out = "9999-99-99T99:14:\?\?" },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
