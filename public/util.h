@@ -108,12 +108,12 @@ typedef enum { eNoEndian = 0, eLittleEndian, eBigEndian } E_EndianIs;
 static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false; }
 
 // To LE, non-aligned.
-PUBLIC void u16ToLE(U8 *out, U16 n);
-PUBLIC void s16ToLE(U8 *out, S16 n);
+PUBLIC U8 * u16ToLE(U8 *out, U16 n);
+PUBLIC U8 * s16ToLE(U8 *out, S16 n);
 PUBLIC U8 * u32ToLE(U8 *out, U32 n);
-PUBLIC void s32ToLE(U8 *out, S32 n);
-PUBLIC void u64ToLE(U8 *out, U64 n);
-PUBLIC void s64ToLE(U8 *out, S64 n);
+PUBLIC U8 * s32ToLE(U8 *out, S32 n);
+PUBLIC U8 * u64ToLE(U8 *out, U64 n);
+PUBLIC U8 * s64ToLE(U8 *out, S64 n);
 PUBLIC U16 leToU16(U8 const * src);
 PUBLIC U32 leToU24(U8 const *src);
 PUBLIC U32 leToU32(U8 const *src);
@@ -122,12 +122,12 @@ PUBLIC U64 leToU64(U8 const *src);
 PUBLIC float leToFloat(U8 const *src);
 
 // To BE, non-aligned.
-PUBLIC void u16ToBE(U8 *out, U16 n);
-PUBLIC void s16ToBE(U8 *out, S16 n);
-PUBLIC void u32ToBE(U8 *out, U32 n);
-PUBLIC void s32ToBE(U8 *out, S32 n);
-PUBLIC void u64ToBE(U8 *out, U64 n);
-PUBLIC void s64ToBE(U8 *out, S64 n);
+PUBLIC U8 * u16ToBE(U8 *out, U16 n);
+PUBLIC U8 * s16ToBE(U8 *out, S16 n);
+PUBLIC U8 * u32ToBE(U8 *out, U32 n);
+PUBLIC U8 * s32ToBE(U8 *out, S32 n);
+PUBLIC U8 * u64ToBE(U8 *out, U64 n);
+PUBLIC U8 * s64ToBE(U8 *out, S64 n);
 PUBLIC U16 beToU16(U8 const * src);
 PUBLIC U32 beToU32(U8 const *src);
 PUBLIC U64 beToU64(U8 const *src);

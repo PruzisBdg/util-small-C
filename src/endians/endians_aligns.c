@@ -2,23 +2,23 @@
 #include "util.h"
 
 // ---- Little endian
-PUBLIC void u16ToLE(U8 *out, U16 n)
-	{ out[0] = LOW_BYTE(n); out[1] = HIGH_BYTE(n); }
+PUBLIC U8* u16ToLE(U8 *out, U16 n)
+	{ out[0] = LOW_BYTE(n); out[1] = HIGH_BYTE(n); return out; }
 
-PUBLIC void s16ToLE(U8 *out, S16 n)
-	{ out[0] = LOW_BYTE(n); out[1] = HIGH_BYTE(n); }
+PUBLIC U8 * s16ToLE(U8 *out, S16 n)
+	{ out[0] = LOW_BYTE(n); out[1] = HIGH_BYTE(n); return out; }
 
 PUBLIC U8 * u32ToLE(U8 *out, U32 n)
 	{ u16ToLE(&out[0], LOW_WORD(n)); u16ToLE(&out[2], HIGH_WORD(n)); return out; }
 
-PUBLIC void s32ToLE(U8 *out, S32 n)
-	{ s16ToLE(&out[0], LOW_WORD(n)); s16ToLE(&out[2], HIGH_WORD(n)); }
+PUBLIC U8 * s32ToLE(U8 *out, S32 n)
+	{ s16ToLE(&out[0], LOW_WORD(n)); s16ToLE(&out[2], HIGH_WORD(n)); return out; }
 
-PUBLIC void u64ToLE(U8 *out, U64 n)
-	{ u32ToLE(&out[0], LOW_DWORD(n)); u32ToLE(&out[4], HIGH_DWORD(n)); }
+PUBLIC U8 * u64ToLE(U8 *out, U64 n)
+	{ u32ToLE(&out[0], LOW_DWORD(n)); u32ToLE(&out[4], HIGH_DWORD(n)); return out; }
 
-PUBLIC void s64ToLE(U8 *out, S64 n)
-	{ s32ToLE(&out[0], LOW_DWORD(n)); s32ToLE(&out[4], HIGH_DWORD(n)); }
+PUBLIC U8 * s64ToLE(U8 *out, S64 n)
+	{ s32ToLE(&out[0], LOW_DWORD(n)); s32ToLE(&out[4], HIGH_DWORD(n)); return out; }
 
 
 
@@ -59,23 +59,23 @@ PUBLIC float leToFloat(U8 const *src)
 }
 
 // ---- Big endian
-PUBLIC void u16ToBE(U8 *out, U16 n)
-	{ out[0] = HIGH_BYTE(n); out[1] = LOW_BYTE(n); }
+PUBLIC U8 * u16ToBE(U8 *out, U16 n)
+	{ out[0] = HIGH_BYTE(n); out[1] = LOW_BYTE(n); return out; }
 
-PUBLIC void s16ToBE(U8 *out, S16 n)
-	{ out[0] = HIGH_BYTE(n); out[1] = LOW_BYTE(n); }
+PUBLIC U8 * s16ToBE(U8 *out, S16 n)
+	{ out[0] = HIGH_BYTE(n); out[1] = LOW_BYTE(n); return out; }
 
-PUBLIC void u32ToBE(U8 *out, U32 n)
-	{ u16ToBE(&out[0], HIGH_WORD(n)); u16ToBE(&out[2], LOW_WORD(n)); }
+PUBLIC U8 * u32ToBE(U8 *out, U32 n)
+	{ u16ToBE(&out[0], HIGH_WORD(n)); u16ToBE(&out[2], LOW_WORD(n)); return out; }
 
-PUBLIC void s32ToBE(U8 *out, S32 n)
-	{ s16ToBE(&out[0], HIGH_WORD(n)); s16ToBE(&out[2], LOW_WORD(n)); }
+PUBLIC U8 * s32ToBE(U8 *out, S32 n)
+	{ s16ToBE(&out[0], HIGH_WORD(n)); s16ToBE(&out[2], LOW_WORD(n)); return out; }
 
-PUBLIC void u64ToBE(U8 *out, U64 n)
-	{ u32ToBE(&out[0], HIGH_DWORD(n)); u32ToBE(&out[4], LOW_DWORD(n)); }
+PUBLIC U8 * u64ToBE(U8 *out, U64 n)
+	{ u32ToBE(&out[0], HIGH_DWORD(n)); u32ToBE(&out[4], LOW_DWORD(n)); return out; }
 
-PUBLIC void s64ToBE(U8 *out, S64 n)
-	{ s32ToBE(&out[0], HIGH_DWORD(n)); s32ToBE(&out[4], LOW_DWORD(n)); }
+PUBLIC U8 * s64ToBE(U8 *out, S64 n)
+	{ s32ToBE(&out[0], HIGH_DWORD(n)); s32ToBE(&out[4], LOW_DWORD(n)); return out; }
 
 
 
