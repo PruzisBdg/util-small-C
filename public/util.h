@@ -381,6 +381,7 @@ PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
 PUBLIC BOOLEAN       Legal_YMD(S_YMD const *t);
 PUBLIC BOOLEAN       Legal_HMS(S_TimeHMS const *t);
 PUBLIC U8            YMDHMS_ToStr(S_DateTime const *t, C8 *outStr);
+PUBLIC C8 const *    YMDHStoStr_Raw(C8 *out, S_DateTime const *dt);
 PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
 PUBLIC U8            HMS_ToStr(S_TimeHMS const *t, C8 *outStr);
 PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);

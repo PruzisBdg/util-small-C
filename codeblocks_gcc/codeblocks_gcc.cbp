@@ -621,6 +621,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/ymdhms_to_str_raw.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/wordlist/romstring.c">
 			<Option compilerVar="CC" />
 		</Unit>

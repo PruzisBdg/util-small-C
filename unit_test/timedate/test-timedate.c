@@ -347,9 +347,9 @@ void test_YMD_ToStr(void)
       { .ymd = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE },    .rtn = 10, .out = "****-**-**" },
 
       // Cannot be printed as 0000-00-00.
-      { .ymd = {.yr = 10000, .mnth = 12, .day = 31 },       .rtn = 10, .out = "\?\?\?\?-12-31" },
-      { .ymd = {.yr = 2135,  .mnth = 100, .day = 31 },      .rtn = 10, .out = "2135-\?\?-31" },
-      { .ymd = {.yr = 2135,  .mnth = 12, .day = 100 },      .rtn = 10, .out = "2135-12-\?\?" },
+      { .ymd = {.yr = 10000, .mnth = 12, .day = 31 },       .rtn = 10, .out = "^^^^-12-31" },
+      { .ymd = {.yr = 2135,  .mnth = 100, .day = 31 },      .rtn = 10, .out = "2135-^^-31" },
+      { .ymd = {.yr = 2135,  .mnth = 12, .day = 100 },      .rtn = 10, .out = "2135-12-^^" },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -396,13 +396,13 @@ void test_YMDHMS_ToStr(void)
       { .dt = {.yr = 0xFEFE, .mnth = 0xFE, .day = 0xFE, .hr = 0xFE,  .min = 0xFE,.sec = 0xFE },  .rtn = 19, .out = "****-**-**T**:**:**" },
 
       // If too many digits will print '?'s.
-      { .dt = {.yr = 10000, .mnth = 12,  .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "\?\?\?\?-12-31T00:00:00" },
-      { .dt = {.yr = 2135,  .mnth = 100, .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "2135-\?\?-31T00:00:00" },
-      { .dt = {.yr = 1642,  .mnth = 12,  .day = 100, .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "1642-12-\?\?T00:00:00" },
-      { .dt = {.yr = 2204,  .mnth = 12,  .day = 9,   .hr = 100,.min = 5,  .sec = 55 },       .rtn = 19, .out = "2204-12-09T\?\?:05:55" },
-      { .dt = {.yr = 2135,  .mnth = 12,  .day = 9,   .hr = 100,.min = 5,  .sec = 55 },       .rtn = 19, .out = "2135-12-09T\?\?:05:55" },
-      { .dt = {.yr = 9999,  .mnth = 99,  .day = 99,  .hr = 99, .min = 100,.sec = 2  },       .rtn = 19, .out = "9999-99-99T99:\?\?:02" },
-      { .dt = {.yr = 9999,  .mnth = 99,  .day = 99,  .hr = 99, .min = 14, .sec = 100},       .rtn = 19, .out = "9999-99-99T99:14:\?\?" },
+      { .dt = {.yr = 10000, .mnth = 12,  .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "^^^^-12-31T00:00:00" },
+      { .dt = {.yr = 2135,  .mnth = 100, .day = 31,  .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "2135-^^-31T00:00:00" },
+      { .dt = {.yr = 1642,  .mnth = 12,  .day = 100, .hr = 0,  .min = 0,  .sec = 0 },        .rtn = 19, .out = "1642-12-^^T00:00:00" },
+      { .dt = {.yr = 2204,  .mnth = 12,  .day = 9,   .hr = 100,.min = 5,  .sec = 55 },       .rtn = 19, .out = "2204-12-09T^^:05:55" },
+      { .dt = {.yr = 2135,  .mnth = 12,  .day = 9,   .hr = 100,.min = 5,  .sec = 55 },       .rtn = 19, .out = "2135-12-09T^^:05:55" },
+      { .dt = {.yr = 9999,  .mnth = 99,  .day = 99,  .hr = 99, .min = 100,.sec = 2  },       .rtn = 19, .out = "9999-99-99T99:^^:02" },
+      { .dt = {.yr = 9999,  .mnth = 99,  .day = 99,  .hr = 99, .min = 14, .sec = 100},       .rtn = 19, .out = "9999-99-99T99:14:^^" },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -429,16 +429,12 @@ void test_YMDHMS_ToStr(void)
 
 /* ------------------------------------ test_YMDHMS_Equal ---------------------------------------- */
 
-static C8 const *printYMDHMS(C8 *out, S_DateTime const *dt) {
-   sprintf(out, "%u-%u-%uT%u:%u:%u", dt->yr, dt->mnth, dt->day, dt->hr, dt->min, dt->sec);
-   return out; }
-
 void chkEq(U16 i, S_DateTime const *a, S_DateTime const *b, bool rtn) {
    bool got;
    C8 b0[50], b1[50];
 
    if(rtn != (got = YMDHMS_Equal(a,b))) {
-      printf("tst #%d. Wrong return a = %s b = %s. expected %d, got %d\r\n", i, printYMDHMS(b0,a), printYMDHMS(b1,b), rtn, got);
+      printf("tst #%d. Wrong return a = %s b = %s. expected %d, got %d\r\n", i, YMDHStoStr_Raw(b0,a), YMDHStoStr_Raw(b1,b), rtn, got);
       TEST_FAIL(); }}
 
 static U16 nextYr(U16 y) {

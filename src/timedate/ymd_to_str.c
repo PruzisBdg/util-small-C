@@ -23,7 +23,7 @@ PUBLIC C8 const * ymd_Format2Digits(C8 *out, U8 n) {
    if(n == _YMD_Wilds) {
       strcpy(out, "**"); }
    else if(n > 99) {
-      strcpy(out, "??"); }
+      strcpy(out, "^^"); }
    else {
       sprintf(out, "%02d", n); }
    return out;
@@ -33,7 +33,7 @@ PUBLIC C8 const * ymd_Format4Digits(C8 *out, U16 n) {
    if(n == _YMD_WildYear) {
       strcpy(out, "****"); }
    else if(n > 9999) {
-      strcpy(out, "????"); }
+      strcpy(out, "^^^^"); }
    else {
       sprintf(out, "%04d", n); }
    return out;
