@@ -427,4 +427,112 @@ void test_YMDHMS_ToStr(void)
    }
 }
 
+/* ------------------------------------ test_YMDHMS_Equal ---------------------------------------- */
+
+static C8 const *printYMDHMS(C8 *out, S_DateTime const *dt) {
+   sprintf(out, "%u-%u-%uT%u:%u:%u", dt->yr, dt->mnth, dt->day, dt->hr, dt->min, dt->sec);
+   return out; }
+
+void chkEq(U16 i, S_DateTime const *a, S_DateTime const *b, bool rtn) {
+   bool got;
+   C8 b0[50], b1[50];
+
+   if(rtn != (got = YMDHMS_Equal(a,b))) {
+      printf("tst #%d. Wrong return a = %s b = %s. expected %d, got %d\r\n", i, printYMDHMS(b0,a), printYMDHMS(b1,b), rtn, got);
+      TEST_FAIL(); }}
+
+static U16 nextYr(U16 y) {
+   return y == _YMD_WildYear-1 ? _YMD_WildYear+1 : y+1; }
+
+static U16 nextMDHMS(U8 n) {
+   return n == _DateTime_Wilds-1 ? _DateTime_Wilds+1 : n+1; }
+
+void test_YMDHMS_Equal(void)
+{
+   typedef struct { S_DateTime const a; S_DateTime const b; bool rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .a = {0}, .b = {0},                           .rtn = true  },
+
+      { .a = {0}, .b = {.yr = 1},                     .rtn = false },
+      { .a = {0}, .b = {.yr = _YMD_WildYear},         .rtn = true  },
+      { .a = {.yr = _YMD_WildYear}, .b = {0},         .rtn = true  },
+
+      { .a = {0}, .b = {.mnth = 11},                  .rtn = false },
+      { .a = {0}, .b = {.mnth = _DateTime_Wilds},     .rtn = true  },
+      { .a = {.mnth = _DateTime_Wilds}, .b = {0},     .rtn = true  },
+
+      { .a = {0}, .b = {.day = 23},                   .rtn = false },
+      { .a = {0}, .b = {.day = _DateTime_Wilds},      .rtn = true  },
+      { .a = {.day = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+
+      { .a = {0}, .b = {.hr = 4},                     .rtn = false },
+      { .a = {0}, .b = {.hr = _DateTime_Wilds},       .rtn = true  },
+      { .a = {.hr = _DateTime_Wilds}, .b = {0},       .rtn = true  },
+
+      { .a = {0}, .b = {.min = 57},                   .rtn = false },
+      { .a = {0}, .b = {.min = _DateTime_Wilds},      .rtn = true  },
+      { .a = {.min = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+
+      { .a = {0}, .b = {.sec = 19},                   .rtn = false },
+      { .a = {0}, .b = {.sec = _DateTime_Wilds},      .rtn = true  },
+      { .a = {.sec = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = YMDHMS_Equal(&t->a, &t->b);
+
+      if(rtn != t->rtn) {
+         printf("tst #%d: Bad return; expected %u, got %u", i, t->rtn, rtn);
+         TEST_FAIL();
+      }
+   }
+
+   // Check (100)  random Date/times.
+   for(U8 i = 0; i < 100; i++)
+   {
+      S_DateTime dt0 = {.yr = randU16(), .mnth = randU8(), .day = randU8(), .hr = randU8(), .min = randU8(), .sec = randU8() };
+      S_DateTime dt1 = dt0;
+      chkEq(i, &dt0, &dt1, true);
+
+      // Bump all dt0 to avoid any wildcards
+      dt0.yr = nextYr(dt0.yr);
+      dt0.mnth = nextMDHMS(dt0.mnth);
+      dt0.day = nextMDHMS(dt0.day);
+      dt0.hr = nextMDHMS(dt0.hr);
+      dt0.min = nextMDHMS(dt0.min);
+      dt0.sec = nextMDHMS(dt0.sec);
+
+      // Start with dt1 <- dt0. Change each filed in dt1, one at a time. Check for NOT equal.
+      dt1 = dt0;
+
+      dt1.yr = nextYr(dt1.yr);
+      chkEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.mnth = nextMDHMS(dt1.mnth);
+      chkEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.day = nextMDHMS(dt1.day);
+      chkEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.hr = nextMDHMS(dt1.hr);
+      chkEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.min = nextMDHMS(dt1.min);
+      chkEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.sec = nextMDHMS(dt1.sec);
+      chkEq(i, &dt0, &dt1, false);
+   }
+}
+
 // ----------------------------------------- eof --------------------------------------------
