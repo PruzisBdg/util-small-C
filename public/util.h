@@ -410,13 +410,6 @@ PUBLIC C8 const * PrintS16s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, S16 con
 /* -------------------------- Table search ----------------------------------------- */
 
 PUBLIC void const * TblSearchSAR_AscendKeyU16(void const *tbl, U16 numRecords, U8 bytesPerRec, U16 keyToMatch);
-/* --------------------------- Safe String ------------------------------------------- */
-
-PUBLIC U16 SafeStrCopy(C8 *out, C8 const *src, U16 maxCh);
-PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh);
-
-PUBLIC C8 * EndStr(C8 const* str);  // Spot the end of a non-const string.
-PUBLIC U8 strlenU8(C8 const* str);
 
 /* ---------------------------- S-Records -------------------------------------------*/
 
@@ -527,14 +520,6 @@ typedef U32 T_IPAddrNum;
 #define _MaxIPAddrChars sizeof("255.255.255.255")
 PUBLIC C8 const *PrintIPAddr(C8 *out, T_IPAddrNum ip);
 PUBLIC C8 const * ReadIPAddr(C8 const *src, T_IPAddrNum *ip);
-
-/* ------------------------------ String Safety ----------------------------------------------------*/
-
-PUBLIC BOOL IsPrintableStr_NoLongerThan(C8 const *str, U8 maxLen);
-
-typedef S16 tSoftMatchStr;
-PUBLIC tSoftMatchStr SoftMatchStr(C8 const *ref, C8 const *str, C8 const **matchAt);
-
 
 /* ------------------------------ Baby Regex --------------------------------------------*/
 
@@ -650,6 +635,38 @@ PUBLIC void		Heap1w_Return(Heap1w_S *h, Heap1w_T_Size numBytes);
 PUBLIC void		Heap1w_Untake(Heap1w_S *h, Heap1w_T_Size n);
 PUBLIC Heap1w_T_Size Heap1w_Used(Heap1w_S const *h);
 PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
+
+/* ---------------------------- Bounded (Safe) Strings ----------------------------------------------- */
+
+typedef struct {
+    C8   *buf;
+    U16  maxBytes;
+    BOOL writeable;
+} S_Str;
+
+#define _S_Str_Writeable TRUE
+#define _S_Str_ReadOnly  FALSE
+
+PUBLIC S_Str * str_Make(S_Str *s, C8 *buf, U16 size, BOOL writeable);
+PUBLIC void    str_Delete(S_Str *s);
+PUBLIC bool    str_Write(S_Str *s, C8 const *src, U16 maxBytes);
+PUBLIC C8 *    str_Read(S_Str *s, C8 *out, U16 maxBytes);
+PUBLIC C8      str_GetCh(S_Str *s, U16 idx);
+
+/* ------------------------------ String Safety ----------------------------------------------------*/
+
+PUBLIC BOOL IsPrintableStr_NoLongerThan(C8 const *str, U8 maxLen);
+
+typedef S16 tSoftMatchStr;
+PUBLIC tSoftMatchStr SoftMatchStr(C8 const *ref, C8 const *str, C8 const **matchAt);
+
+PUBLIC U16 SafeStrCopy(C8 *out, C8 const *src, U16 maxCh);
+PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh);
+
+PUBLIC C8 * EndStr(C8 const* str);  // Spot the end of a non-const string.
+PUBLIC U8 strlenU8(C8 const* str);
+
+
 
 // ================================= Macros ======================================================
 

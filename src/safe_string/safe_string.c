@@ -19,24 +19,27 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-typedef struct
-{
-    C8 *buf;
-    U16 maxBytes;
-    BOOL writeable;
-} S_Str;
-
-PUBLIC void str_Make(S_Str *s, C8 *buf, U16 size, BOOL writeable)
-    { s->buf = buf; s->buf[0] = '\0'; s->maxBytes = size; s->writeable = writeable; }
+PUBLIC S_Str * str_Make(S_Str *s, C8 *buf, U16 size, BOOL writeable) {
+   if(s != NULL) {
+      if(s->buf == NULL) {                      // Did not supply buffer?
+         str_Delete(s); }                       // then will return a read-only empty 's'
+      else {
+         s->buf = buf; s->buf[0] = '\0';        // else attach buf[] & start as ""
+         s->maxBytes = size;                    // Max size is this
+         s->writeable = writeable == _S_Str_Writeable ? TRUE : FALSE; }}    // Set writable?
+   return s; }
 
 PUBLIC void str_Delete(S_Str *s)
     { s->buf = ""; s->maxBytes = 0; s->writeable = FALSE; }
 
-PUBLIC void str_Write(S_Str *s, C8 const *src, U16 maxBytes)
-    { strncpy(s->buf, src, MinU16(maxBytes, s->maxBytes)); }
+PUBLIC bool str_Write(S_Str *s, C8 const *src, U16 maxBytes) {
+   if(s->writeable == TRUE) {
+      strncpy(s->buf, src, MinU16(maxBytes, s->maxBytes));
+      return true; }
+   return false; }
 
-PUBLIC void str_Read(S_Str *s, C8 *out, U16 maxBytes)
-    { strncpy(out, s->buf, MinU16(maxBytes, s->maxBytes)); }
+PUBLIC C8 *str_Read(S_Str *s, C8 *out, U16 maxBytes)
+    { strncpy(out, s->buf, MinU16(maxBytes, s->maxBytes)); return out; }
 
 PUBLIC C8 str_GetCh(S_Str *s, U16 idx)
     { return s->buf[MinU16(idx, s->maxBytes)]; }
@@ -76,6 +79,6 @@ PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh) {
 	U16 chs;
 	for(chs = 0; (isprint(*str) || isspace(*str)) && chs < maxCh; chs++, str++) {}
 	return *str != '\0' ? 0 : chs+1; }
-	
+
 
 // --------------------- eof --------------------------------  -
