@@ -21,7 +21,7 @@
 
 PUBLIC S_Str * str_Make(S_Str *s, C8 *buf, U16 size, BOOL writeable) {
    if(s != NULL) {
-      if(s->buf == NULL) {                      // Did not supply buffer?
+      if(buf == NULL) {                         // Did not supply buffer?
          str_Delete(s); }                       // then will return a read-only empty 's'
       else {
          s->buf = buf; s->buf[0] = '\0';        // else attach buf[] & start as ""
