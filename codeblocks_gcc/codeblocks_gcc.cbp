@@ -16,6 +16,7 @@
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-g" />
+					<Add option="-Wno-pointer-sign" />
 					<Add option="-DTPRINT_IS_FLOAT" />
 				</Compiler>
 			</Target>
