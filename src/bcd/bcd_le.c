@@ -8,7 +8,7 @@
 // ============================= To BCD ========================================
 
 // ---- unprotected --------------------------------------------
-static U8 bcdU8(U8 n) {
+PUBLIC U8 U8toBCD(U8 n) {
    return ((n / 10) << 4) + (n % 10); }
 
 /* ----------------- BCD2_LE..U64 ------------------------------
@@ -25,7 +25,7 @@ PUBLIC bool BCD2_LE(U8 *out, U8 n)
    if(n > 99)
       { return false; }
    else {
-      out[0] = bcdU8(n);
+      out[0] = U8toBCD(n);
       return true; }
 }
 
@@ -35,8 +35,8 @@ PUBLIC bool BCD4_LE(U8 *out, U16 n)
    if(n > 9999)
       { return false; }
    else {
-      out[0] = bcdU8(n % 100);
-      out[1] = bcdU8(n / 100);
+      out[0] = U8toBCD(n % 100);
+      out[1] = U8toBCD(n / 100);
       return true; }
 }
 
@@ -47,7 +47,7 @@ PUBLIC bool BCD6_LE(U8 *out, U32 n)
       { return false; }
    else {
       BCD4_LE(&out[0], n % 10000);
-      out[2] = bcdU8(n / 10000);
+      out[2] = U8toBCD(n / 10000);
       return true; }
 }
 

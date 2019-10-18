@@ -234,6 +234,8 @@ PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
 /* ---------------------------------- BCD ------------------------------------------- */
+PUBLIC U8 U8toBCD(U8 n);   // unprotected.
+
 PUBLIC bool BCD2_LE(U8 *out, U8 n );
 PUBLIC bool BCD4_LE(U8 *out, U16 n);
 PUBLIC bool BCD6_LE(U8 *out, U32 n);
@@ -246,6 +248,8 @@ PUBLIC bool BCD4le_toU16 ( U16 *out, U8 const *in);
 PUBLIC bool BCD6le_toU32 ( U32 *out, U8 const *in);
 PUBLIC bool BCD8le_toU32 ( U32 *out, U8 const *in);
 PUBLIC bool BCD12le_toU64( U64 *out, U8 const *in);
+
+PUBLIC U32 MangleU32toBCD(U32 n);
 
 /* ------------------------ Bit field, 64kbit. LE and BE bit-orders. ------------------------- */
 typedef U16 T_bit64K;
@@ -667,6 +671,16 @@ PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh);
 PUBLIC C8 * EndStr(C8 const* str);  // Spot the end of a non-const string.
 PUBLIC U8 strlenU8(C8 const* str);
 
+/* ------------------------------- (crude) Random ----------------------------------------------
+
+   Mainly for tests & harnesses.
+*/
+PUBLIC U8  randU8(void);
+PUBLIC U16 randU16(void);
+PUBLIC U16 randU32(void);
+PUBLIC S16 randS16(void);
+PUBLIC S32 randS32(void);
+PUBLIC S8  randS8(void);
 
 
 // ================================= Macros ======================================================
