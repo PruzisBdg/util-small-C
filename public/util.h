@@ -371,6 +371,7 @@ PUBLIC C8 const *    SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMSStrRtn(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
+PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
 PUBLIC BOOLEAN       HMS_Equal(S_TimeHMS const *a, S_TimeHMS const *b);
 
 PUBLIC void          SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);

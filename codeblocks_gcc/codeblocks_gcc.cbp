@@ -602,6 +602,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/ymd_equal.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/ymd_to_str.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

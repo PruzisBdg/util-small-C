@@ -491,6 +491,7 @@ void test_YMDHMS_Equal(void)
    // Check (100)  random Date/times.
    for(U8 i = 0; i < 100; i++)
    {
+      // First check random equal YMDHMS are seen as equal.
       S_DateTime dt0 = {.yr = randU16(), .mnth = randU8(), .day = randU8(), .hr = randU8(), .min = randU8(), .sec = randU8() };
       S_DateTime dt1 = dt0;
       chkEq(i, &dt0, &dt1, true);
@@ -528,6 +529,77 @@ void test_YMDHMS_Equal(void)
       dt1 = dt0;
       dt1.sec = nextMDHMS(dt1.sec);
       chkEq(i, &dt0, &dt1, false);
+   }
+}
+
+/* ------------------------------------ test_YMD_Equal ---------------------------------------- */
+
+void chkYmdEq(U16 i, S_YMD const *a, S_YMD const *b, bool rtn) {
+   bool got;
+   C8 b0[50], b1[50];
+
+   if(rtn != (got = YMD_Equal(a,b))) {
+      printf("tst #%d. Wrong return a = %s b = %s. expected %d, got %d\r\n", i, YMD_ToStr(a,b0), YMD_ToStr(b,b1), rtn, got);
+      TEST_FAIL(); }}
+
+void test_YMD_Equal(void)
+{
+   typedef struct { S_YMD const a; S_YMD const b; bool rtn; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .a = {0}, .b = {0},                           .rtn = true  },
+
+      { .a = {0}, .b = {.yr = 1},                     .rtn = false },
+      { .a = {0}, .b = {.yr = _YMD_WildYear},         .rtn = true  },
+      { .a = {.yr = _YMD_WildYear}, .b = {0},         .rtn = true  },
+
+      { .a = {0}, .b = {.mnth = 11},                  .rtn = false },
+      { .a = {0}, .b = {.mnth = _DateTime_Wilds},     .rtn = true  },
+      { .a = {.mnth = _DateTime_Wilds}, .b = {0},     .rtn = true  },
+
+      { .a = {0}, .b = {.day = 23},                   .rtn = false },
+      { .a = {0}, .b = {.day = _DateTime_Wilds},      .rtn = true  },
+      { .a = {.day = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = YMD_Equal(&t->a, &t->b);
+
+      if(rtn != t->rtn) {
+         printf("tst #%d: Bad return; expected %u, got %u", i, t->rtn, rtn);
+         TEST_FAIL();
+      }
+   }
+
+   // Check (100)  random Date/times.
+   for(U8 i = 0; i < 100; i++)
+   {
+      // First check random equal YMD are seen as equal.
+      S_YMD dt0 = {.yr = randU16(), .mnth = randU8(), .day = randU8() };
+      S_YMD dt1 = dt0;
+      chkYmdEq(i, &dt0, &dt1, true);
+
+      // Bump all dt0 to avoid any wildcards
+      dt0.yr = nextYr(dt0.yr);
+      dt0.mnth = nextMDHMS(dt0.mnth);
+      dt0.day = nextMDHMS(dt0.day);
+
+      // Start with dt1 <- dt0. Change each filed in dt1, one at a time. Check for NOT equal.
+      dt1 = dt0;
+
+      dt1.yr = nextYr(dt1.yr);
+      chkYmdEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.mnth = nextMDHMS(dt1.mnth);
+      chkYmdEq(i, &dt0, &dt1, false);
+
+      dt1 = dt0;
+      dt1.day = nextMDHMS(dt1.day);
+      chkYmdEq(i, &dt0, &dt1, false);
    }
 }
 
