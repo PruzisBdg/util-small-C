@@ -23,6 +23,8 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)secs_to_ymdhms_str.c \
 								$(SRCDIR)ymdhms_to_secs.c \
 								$(SRCDIR)ymdhms_to_str.c \
+								$(SRCDIR)ymdhms_A_GTE_B.c \
+								$(SRCDIR)ymdhms_add_secs.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build

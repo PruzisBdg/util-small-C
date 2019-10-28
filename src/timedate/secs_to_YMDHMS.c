@@ -83,6 +83,16 @@ PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *
 
    yr4 = secsSince2000AD/_4yr_secs;                               // Divide total secs into 4-year chunks...
    secsRem = secsSince2000AD - ((U32)yr4 * _4yr_secs);            // and (0 - 126,230,400) seconds. ...
+
+   /* Centurial leap year correction.
+
+      1600, 2000 & 2400 are leap years but 1900, 2100 & 2300 are not. S_DateTime spans 2000AD
+      to 2136, so we must account for no Feb 29th 2100.
+   */
+   #define _Midnite_Feb28_2100 (4107542399 - _12am_Jan_1st_2000_Epoch_secs)
+   if(secsSince2000AD > _Midnite_Feb28_2100) {                    // Past midnite Feb 28th 2100?
+      secsRem += (24*3600UL); }                                   // there's no Feb 29th; add back in 1 day which we should not have subtracted above..
+
    daysRem = secsRem/(3600L*24);                                  // ... which are 0 - 1461 days left over.
    yearsRem =                                                     // ... or 0 - 3 years left over
       daysRem <= 366-1
@@ -106,8 +116,7 @@ PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *
    /* Split days-left-over into a month and day-of-month. Note we must convert
       'daysRem' into a calender count; 1 upwards.
    */
-   #define _leapYr(rem)  (rem==0)
-   dt->day = splitDaysIntoMD(daysRem+1, &dt->mnth, _leapYr(yearsRem));
+   dt->day = splitDaysIntoMD(daysRem+1, &dt->mnth, IsaLeapYear(dt->yr));
 
    secsRem =                                                      // Seconds remaining in the final day are....
       secsRem -                                                   // secs left over after 4-years chunks removed, minus...

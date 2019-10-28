@@ -18,7 +18,7 @@
 PRIVATE S16 daysToMonthStart(U8 month, U16 year) {
    return
       DaysToMonthStartTbl[month-1] +               // days to e.g May 1st AND
-      ((year %4) == 0 && (month-1) >= 2 ? 1 : 0);  // add a day if a leap year AND March onwards.
+      ( IsaLeapYear(year) == true && (month-1) >= 2 ? 1 : 0);  // add a day if a leap year AND March onwards.
 }
 
 
@@ -28,7 +28,7 @@ PRIVATE S16 daysToMonthStart(U8 month, U16 year) {
    Days from 1st Jan 2000 to 1st Jan of 'year'
 */
 
-PRIVATE U32 days2000ToYear(U16 year) {
+PRIVATE U32 days2000ToYear_wo_Centurial(U16 year) {
    return
       year < _2000AD
          ? 0
@@ -41,6 +41,15 @@ PRIVATE U32 days2000ToYear(U16 year) {
                      ? 366+365+365
                      : 0 ))));                           // else no extra years.
 }
+
+/* Centurial leap year correction.
+
+   1600, 2000 & 2400 are leap years but 1900, 2100 & 2300 are not. S_DateTime spans 2000AD
+   to 2136, so we must account for no Feb 29th 2100.
+*/
+PRIVATE U32 days2000ToYear(U16 year) {
+   U32 d = days2000ToYear_wo_Centurial(year);
+   return year > 2100 ? d-1 : d; }              // If 2101 onwards then subtract 1 day for missing Feb 29th.
 
 /* -------------------------------- YMDHMS_To_Secs --------------------------------
 

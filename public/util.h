@@ -369,6 +369,7 @@ typedef struct {
 #define _HMS_BytesPacked 4
 
 #define _2000AD 2000    // 32bit seconds are offset from midnight, New-years eve 2000AD.
+#define _2136AD 2136    // Last year of S_DateTime.
 
 #define _HMSStr_Maxlen 10
 
@@ -399,6 +400,7 @@ PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
 PUBLIC U8            HMS_ToStr(S_TimeHMS const *t, C8 *outStr);
 PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);
 PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
+PUBLIC BOOLEAN       IsaLeapYear(U16 yr);
 
 #define _12am_Jan_1st_2000_Epoch_secs 946684800UL
 

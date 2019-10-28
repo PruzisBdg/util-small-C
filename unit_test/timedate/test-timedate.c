@@ -49,13 +49,13 @@ void test_Legal_YMDHMS(void)
    S_Tst const tsts[] = {
       { .dt = {.yr = 0, .mnth = 0, .day = 0, .hr = 0, .min = 0, .sec = 0 }, .res = false },
 
-      // Legal spans 2000 - 2132.
+      // Legal spans 2000 - 2136.
       { .dt = {.yr = 2000, .mnth = 1,  .day = 1,  .hr = 0,  .min = 0,  .sec = 0 }, .res = true },
-      { .dt = {.yr = 2135, .mnth = 12, .day = 31, .hr = 23, .min = 59, .sec = 59 }, .res = true },
+      { .dt = {.yr = 2136, .mnth = 2,  .day = 7,  .hr = 6,  .min = 28, .sec = 15 }, .res = true },
 
       // Illegal thisn'that.
       { .dt = {.yr = 1999, .mnth = 12, .day = 31, .hr = 23, .min = 59, .sec = 59 }, .res = false },
-      { .dt = {.yr = 2136, .mnth = 12, .day = 31, .hr = 23, .min = 59, .sec = 59 }, .res = false },
+      { .dt = {.yr = 2137, .mnth = 12, .day = 31, .hr = 23, .min = 59, .sec = 59 }, .res = false },
       { .dt = {.yr = 1999, .mnth = 12, .day = 31, .hr = 23, .min = 59, .sec = 59 }, .res = false },
       { .dt = {.yr = 2020, .mnth = 13, .day = 1,  .hr = 0,  .min = 0,  .sec = 0  }, .res = false },
 
@@ -131,10 +131,16 @@ void test_SecsToYMDHMS(void)
       // Zero -> midnite of millennium; Max time must be > 2135.
       { .utc = 0,          .dt = {.yr = 2000, .mnth = 1,  .day = 1,  .hr = 0,  .min = 0,  .sec = 0 } },
       { .utc = MAX_U32,    .dt = {.yr = 2135, .mnth = 1,  .day = 1,  .hr = 0,  .min = 0,  .sec = 0 }, .compare = eGTE },
+      { .utc = MAX_U32,    .dt = {.yr = 2136, .mnth = 2,  .day = 7,  .hr = 6,  .min = 28,  .sec = 15 }},
+
+//      { .utc = MAX_U32-(365*24*3600),    .dt = {.yr = 2135, .mnth = 2,  .day = 7,  .hr = 6,  .min = 28,  .sec = 15 }},
 
       // Random times from UTC calculator. Enough span to capture all the internal arithmetic, leap years etc.
       // Some allowance for leap-seconds
       { .utc = 0x25BEC970, .dt = {.yr = 2020, .mnth = 1,  .day = 25,  .hr = 9,  .min = 40,  .sec = 0 } },
+      { .utc = 0x49B3C970, .dt = {.yr = 2039, .mnth = 3,  .day = 8,   .hr = 13, .min = 34,  .sec = 40 } },
+      { .utc = 0xABCD1234, .dt = {.yr = 2091, .mnth = 5,  .day = 3,   .hr = 10, .min = 57,  .sec = 56 } },
+      { .utc = 0xFE9623B1, .dt = {.yr = 2135, .mnth = 5,  .day = 8,   .hr = 19, .min = 00,  .sec = 01 } },
 
       // SecsToYMDHMS(0x376ADD7E) -> 23:59:58  UTC -> 23:59:59
       // SecsToYMDHMS() does not do leap-seconds; so allow a window.
@@ -159,7 +165,7 @@ void test_SecsToYMDHMS(void)
          YMDHMS_ToStr(&out, got);
 
          C8 b0[100];
-         sprintf(b0, "%s -> %s", expected, got);
+         sprintf(b0, "expected %lu -> %s, got %s", t->utc, expected, got);
          TEST_FAIL_MESSAGE(b0);
       }
    }
@@ -174,6 +180,8 @@ void test_YMDHMS_To_Secs(void)
    S_Tst const tsts[] = {
       // Zero -> midnite of millennium; Max time must be > 2135.
       { .dt = {.yr = 2000, .mnth = 1,  .day = 1,  .hr = 0,  .min = 0,  .sec = 0 }, .utcLo = 0, .utcHi = 0 },
+      //{ .dt = {.yr = 2135, .mnth = 12,  .day = 31,  .hr = 23,  .min = 59, .sec = 59}, .utcLo = 0xFFFFFFFF, .utcHi = 0xFFFFFFFF },
+      { .dt = {.yr = 2136, .mnth = 2,  .day = 7,  .hr = 6,  .min = 28, .sec = 15}, .utcLo = 0xFFFFFFFF, .utcHi = 0xFFFFFFFF },
 
       { .dt = {.yr = 2000, .mnth = 1,  .day = 1,  .hr = 0,  .min = 1,  .sec = 0  }, .utcLo = 0x3C,       .utcHi = 0x3C       },
       { .dt = {.yr = 2000, .mnth = 1,  .day = 1,  .hr = 1,  .min = 0,  .sec = 0  }, .utcLo = 0xE10,      .utcHi = 0xE10      },
@@ -255,13 +263,13 @@ void test_LegalYMD(void)
    S_Tst const tsts[] = {
       { .ymd = {.yr = 0, .mnth = 0, .day = 0 }, .res = false },
 
-      // Legal spans 2000 - 2132.
+      // Legal spans 2000 - 2136.
       { .ymd = {.yr = 2000, .mnth = 1,  .day = 1  }, .res = true },
-      { .ymd = {.yr = 2135, .mnth = 12, .day = 31 }, .res = true },
+      { .ymd = {.yr = 2136, .mnth = 2,  .day = 7 }, .res = true },
 
       // Illegal thisn'that.
       { .ymd = {.yr = 1999, .mnth = 12, .day = 31 }, .res = false },
-      { .ymd = {.yr = 2136, .mnth = 12, .day = 31 }, .res = false },
+      { .ymd = {.yr = 2136, .mnth = 2,  .day = 8  }, .res = false },
       { .ymd = {.yr = 1999, .mnth = 12, .day = 31 }, .res = false },
       { .ymd = {.yr = 2020, .mnth = 13, .day = 1  }, .res = false },
 
@@ -668,21 +676,27 @@ void test_YMDHMS_aGTEb(void)
 
 void test_YMDHMS_AddSecs(void)
 {
-   typedef struct {S_DateTime const * out; S_DateTime const * in; S32 secs; bool rtn;} S_Tst;
+   typedef struct {S_DateTime const * out; S_DateTime const * in; S32 secs;} S_Tst;
 
    S_Tst const tsts[] = {
       // Add nothing to a Time/Date. Get it back unchanged.
-      { .out = _dt(2013,11,23,5,17,44),    .in = _dt(2013,11,23,5,17,44),  .secs = 0,  .rtn = true },
+      { .out = _dt(2013,11,23,5,17,44),    .in = _dt(2013,11,23,5,17,44),     .secs = 0               },
 
-      { .out = _dt(2013,11,23,5,17,59),    .in = _dt(2013,11,23,5,17,00),  .secs = 59,  .rtn = true },
-      { .out = _dt(2013,11,23,5,18,1),     .in = _dt(2013,11,23,5,17,00),  .secs = 61,  .rtn = true },
+      // Adds and subtracts
+      { .out = _dt(2013,11,23,5,17,59),    .in = _dt(2013,11,23,5,17,00),     .secs = 59,             },    // + 1sec
+      { .out = _dt(2014,1,1,00,00,00),     .in = _dt(2013,12,31,23,59,59),    .secs = 1,              },    // Rollover to the new year
+      { .out = _dt(2013,12,31,23,59,59),   .in = _dt(2014,1,1,00,00,00),      .secs = -1,             },    // Rollunder to the previous year
+      { .out = _dt(2013,11,23,5,18,1),     .in = _dt(2013,11,23,5,17,00),     .secs = 61,             },    // + 1min
+      { .out = _dt(2013,11,23,6,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 3600,           },    // +1hr
+      { .out = _dt(2013,11,24,5,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 24*3600L,       },    // +1day
+      { .out = _dt(2013,2,23,5,17,00),     .in = _dt(2013,1,23,5,17,00),      .secs = 31*24*3600L,    },    // Jan -> Feb
+      { .out = _dt(2013,1,23,5,17,00),     .in = _dt(2013,2,23,5,17,00),      .secs = -31*24*3600L,   },    // Feb -> Jan
+      { .out = _dt(2014,11,23,5,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 365*24*3600L,   },    // 2013 -> 2014
+      { .out = _dt(2013,11,23,5,17,00),    .in = _dt(2014,11,23,5,17,00),     .secs = -365*24*3600L,  },    // 2014-> 2013
 
-      { .out = _dt(2013,11,23,6,17,00),    .in = _dt(2013,11,23,5,17,00),  .secs = 3600,        .rtn = true },          // +1hr
-      { .out = _dt(2013,11,24,5,17,00),    .in = _dt(2013,11,23,5,17,00),  .secs = 24*3600L,    .rtn = true },      // +1day
-      { .out = _dt(2013,2,23,5,17,00),     .in = _dt(2013,1,23,5,17,00),   .secs = 31*24*3600L, .rtn = true },      // Jan -> Feb
-      { .out = _dt(2013,1,23,5,17,00),     .in = _dt(2013,2,23,5,17,00),   .secs = -31*24*3600L, .rtn = true },      // Feb -> Jan
-      { .out = _dt(2014,11,23,5,17,00),    .in = _dt(2013,11,23,5,17,00),  .secs = 365*24*3600L,.rtn = true },      // 2013 -> 2014
-      { .out = _dt(2013,11,23,5,17,00),    .in = _dt(2014,11,23,5,17,00),  .secs = -365*24*3600L,.rtn = true },      // 2014-> 2013
+      // Clip at upper and lower bounds of S_DateTime.
+      { .out = _dt(2000,1,1,0,0,0),        .in = _dt(2014,1,1,00,00,00),      .secs = MIN_S32,        },
+      { .out = _dt(2136,2,7,6,28,15),      .in = _dt(2081,4,7,21,42,15),      .secs = MAX_S32,        },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -692,7 +706,11 @@ void test_YMDHMS_AddSecs(void)
       S_DateTime out;
       S_DateTime const * rtn = YMDHMS_AddSecs(&out, t->in, t->secs);
 
-      if( YMDHMS_Equal(&out, t->out) == false) {
+      if(rtn != &out) {
+         printf("tst #d function return did not equal out ptr\r\n");
+         TEST_FAIL(); }
+
+      else if( YMDHMS_Equal(&out, t->out) == false) {
          C8 b0[_ISO8601_YMDHMS_MaxStr], b1[_ISO8601_YMDHMS_MaxStr], b2[_ISO8601_YMDHMS_MaxStr];
 
          YMDHMS_ToStr(t->in, b0);

@@ -572,6 +572,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/is_leap_year.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/legal_YMDHMS.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
