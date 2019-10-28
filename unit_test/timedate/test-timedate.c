@@ -438,10 +438,10 @@ void chkEq(U16 i, S_DateTime const *a, S_DateTime const *b, bool rtn) {
       TEST_FAIL(); }}
 
 static U16 nextYr(U16 y) {
-   return y == _YMD_WildYear-1 ? _YMD_WildYear+1 : y+1; }
+   return y == _YMD_AnyYear-1 ? _YMD_AnyYear+1 : y+1; }
 
 static U16 nextMDHMS(U8 n) {
-   return n == _DateTime_Wilds-1 ? _DateTime_Wilds+1 : n+1; }
+   return n == _DateTime_AnyMDHMS-1 ? _DateTime_AnyMDHMS+1 : n+1; }
 
 void test_YMDHMS_Equal(void)
 {
@@ -451,28 +451,28 @@ void test_YMDHMS_Equal(void)
       { .a = {0}, .b = {0},                           .rtn = true  },
 
       { .a = {0}, .b = {.yr = 1},                     .rtn = false },
-      { .a = {0}, .b = {.yr = _YMD_WildYear},         .rtn = true  },
-      { .a = {.yr = _YMD_WildYear}, .b = {0},         .rtn = true  },
+      { .a = {0}, .b = {.yr = _YMD_AnyYear},         .rtn = true  },
+      { .a = {.yr = _YMD_AnyYear}, .b = {0},         .rtn = true  },
 
       { .a = {0}, .b = {.mnth = 11},                  .rtn = false },
-      { .a = {0}, .b = {.mnth = _DateTime_Wilds},     .rtn = true  },
-      { .a = {.mnth = _DateTime_Wilds}, .b = {0},     .rtn = true  },
+      { .a = {0}, .b = {.mnth = _DateTime_AnyMDHMS},     .rtn = true  },
+      { .a = {.mnth = _DateTime_AnyMDHMS}, .b = {0},     .rtn = true  },
 
       { .a = {0}, .b = {.day = 23},                   .rtn = false },
-      { .a = {0}, .b = {.day = _DateTime_Wilds},      .rtn = true  },
-      { .a = {.day = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+      { .a = {0}, .b = {.day = _DateTime_AnyMDHMS},      .rtn = true  },
+      { .a = {.day = _DateTime_AnyMDHMS}, .b = {0},      .rtn = true  },
 
       { .a = {0}, .b = {.hr = 4},                     .rtn = false },
-      { .a = {0}, .b = {.hr = _DateTime_Wilds},       .rtn = true  },
-      { .a = {.hr = _DateTime_Wilds}, .b = {0},       .rtn = true  },
+      { .a = {0}, .b = {.hr = _DateTime_AnyMDHMS},       .rtn = true  },
+      { .a = {.hr = _DateTime_AnyMDHMS}, .b = {0},       .rtn = true  },
 
       { .a = {0}, .b = {.min = 57},                   .rtn = false },
-      { .a = {0}, .b = {.min = _DateTime_Wilds},      .rtn = true  },
-      { .a = {.min = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+      { .a = {0}, .b = {.min = _DateTime_AnyMDHMS},      .rtn = true  },
+      { .a = {.min = _DateTime_AnyMDHMS}, .b = {0},      .rtn = true  },
 
       { .a = {0}, .b = {.sec = 19},                   .rtn = false },
-      { .a = {0}, .b = {.sec = _DateTime_Wilds},      .rtn = true  },
-      { .a = {.sec = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+      { .a = {0}, .b = {.sec = _DateTime_AnyMDHMS},      .rtn = true  },
+      { .a = {.sec = _DateTime_AnyMDHMS}, .b = {0},      .rtn = true  },
 
    };
 
@@ -550,16 +550,16 @@ void test_YMD_Equal(void)
       { .a = {0}, .b = {0},                           .rtn = true  },
 
       { .a = {0}, .b = {.yr = 1},                     .rtn = false },
-      { .a = {0}, .b = {.yr = _YMD_WildYear},         .rtn = true  },
-      { .a = {.yr = _YMD_WildYear}, .b = {0},         .rtn = true  },
+      { .a = {0}, .b = {.yr = _YMD_AnyYear},          .rtn = true  },
+      { .a = {.yr = _YMD_AnyYear}, .b = {0},          .rtn = true  },
 
       { .a = {0}, .b = {.mnth = 11},                  .rtn = false },
-      { .a = {0}, .b = {.mnth = _DateTime_Wilds},     .rtn = true  },
-      { .a = {.mnth = _DateTime_Wilds}, .b = {0},     .rtn = true  },
+      { .a = {0}, .b = {.mnth = _DateTime_AnyMDHMS},  .rtn = true  },
+      { .a = {.mnth = _DateTime_AnyMDHMS}, .b = {0},  .rtn = true  },
 
       { .a = {0}, .b = {.day = 23},                   .rtn = false },
-      { .a = {0}, .b = {.day = _DateTime_Wilds},      .rtn = true  },
-      { .a = {.day = _DateTime_Wilds}, .b = {0},      .rtn = true  },
+      { .a = {0}, .b = {.day = _DateTime_AnyMDHMS},   .rtn = true  },
+      { .a = {.day = _DateTime_AnyMDHMS}, .b = {0},   .rtn = true  },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -600,6 +600,108 @@ void test_YMD_Equal(void)
       dt1 = dt0;
       dt1.day = nextMDHMS(dt1.day);
       chkYmdEq(i, &dt0, &dt1, false);
+   }
+}
+
+/* --------------------------------- test_YMDHMS_aGTEb ----------------------------------------- */
+
+void test_YMDHMS_aGTEb(void)
+{
+   typedef struct {S_DateTime const * a; S_DateTime const * b; bool rtn;} S_Tst;
+
+   #define _dt(_yr, _mnth, _day, _hr, _min, _sec) \
+      &(S_DateTime){.yr = _yr, .mnth = _mnth, .day = _day, .hr = _hr, .min = _min, .sec = _sec}
+
+   S_Tst const tsts[] = {
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,44),    .rtn = true },        // Equal
+
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2014,14,23,5,17,44),    .rtn = false },       // a.yr < b.yr -> false
+      { .a = _dt(2013,3,23,5,17,44),            .b = _dt(2013,4,23,5,17,44),     .rtn = false },       // a.mnth < b.mnth -> false
+      { .a = _dt(2013,11,7,5,17,44),            .b = _dt(2013,11,8,5,17,44),     .rtn = false },       // a.day < b.day -> false
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,6,17,44),    .rtn = false },       // a.hr < b.hr -> false
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,20,44),    .rtn = false },       // a.min < b.min -> false
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,50),    .rtn = false },       // a.sec < b.sec -> false
+
+      // Wildcards for any field give true for comparison of that field.
+      { .a = _dt(_YMD_AnyYear,11,23,5,17,44),   .b = _dt(2013,2,23,5,17,44),              .rtn = true },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(_YMD_AnyYear,11,9,5,17,44),      .rtn = true },
+      { .a = _dt(2013,_YMD_AnyMnth,23,5,17,44), .b = _dt(2013,11,23,5,17,44),             .rtn = true },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,_YMD_AnyMnth,23,5,17,44),   .rtn = true },
+      { .a = _dt(2013,11,_YMD_AnyDay,5,17,44),  .b = _dt(2013,11,23,5,17,44),             .rtn = true },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,_YMD_AnyDay,5,17,44),    .rtn = true },
+      { .a = _dt(2013,11,23,_YMD_AnyHr,17,44),  .b = _dt(2013,11,23,5,17,44),             .rtn = true },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,_YMD_AnyHr,17,44),    .rtn = true },
+      { .a = _dt(2013,11,23,5,_YMD_AnyMinute,44), .b = _dt(2013,11,23,5,17,44),           .rtn = true },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,_YMD_AnyMinute,44), .rtn = true },
+      { .a = _dt(2013,11,23,5,17,_YMD_AnySec),  .b = _dt(2013,11,23,5,17,44),             .rtn = true },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,_YMD_AnySec),    .rtn = true },
+
+      // Other field are still compared, largest units to smallest.
+      { .a = _dt(_YMD_AnyYear,2,23,5,17,44),    .b = _dt(2013,11,23,5,17,44),             .rtn = false },
+      { .a = _dt(2013,2,9,5,17,44),             .b = _dt(_YMD_AnyYear,11,9,5,17,44),      .rtn = false },
+      { .a = _dt(2013,_YMD_AnyMnth,1,5,17,44),  .b = _dt(2013,11,23,5,17,44),             .rtn = false },
+      { .a = _dt(2013,11,1,5,17,44),            .b = _dt(2013,_YMD_AnyMnth,23,5,17,44),   .rtn = false },
+      { .a = _dt(2013,11,_YMD_AnyDay,5,17,44),  .b = _dt(2013,11,23,7,17,44),             .rtn = false },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,_YMD_AnyDay,7,17,44),    .rtn = false },
+      { .a = _dt(2013,11,23,_YMD_AnyHr,1,44),   .b = _dt(2013,11,23,5,17,44),             .rtn = false },
+      { .a = _dt(2013,11,23,5,1,44),            .b = _dt(2013,11,23,_YMD_AnyHr,17,44),    .rtn = false },
+      { .a = _dt(2013,11,23,5,_YMD_AnyMinute,22), .b = _dt(2013,11,23,5,17,44),           .rtn = false },
+      { .a = _dt(2013,11,23,5,17,22),           .b = _dt(2013,11,23,5,_YMD_AnyMinute,44), .rtn = false },
+      { .a = _dt(2013,1,23,5,17,_YMD_AnySec),   .b = _dt(2013,3,23,5,17,44),              .rtn = false },
+      { .a = _dt(2013,1,23,5,17,44),            .b = _dt(2013,3,23,5,17,_YMD_AnySec),     .rtn = false },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = YMDHMS_aGTEb(t->a, t->b);
+
+      if(rtn != t->rtn) {
+         printf("tst #%d: Bad return; expected %u, got %u", i, t->rtn, rtn);
+         TEST_FAIL();
+      }
+   }
+}
+
+/* --------------------------------------- test_YMDHMS_AddSecs ------------------------------------ */
+
+void test_YMDHMS_AddSecs(void)
+{
+   typedef struct {S_DateTime const * out; S_DateTime const * in; S32 secs; bool rtn;} S_Tst;
+
+   S_Tst const tsts[] = {
+      // Add nothing to a Time/Date. Get it back unchanged.
+      { .out = _dt(2013,11,23,5,17,44),    .in = _dt(2013,11,23,5,17,44),  .secs = 0,  .rtn = true },
+
+      { .out = _dt(2013,11,23,5,17,59),    .in = _dt(2013,11,23,5,17,00),  .secs = 59,  .rtn = true },
+      { .out = _dt(2013,11,23,5,18,1),     .in = _dt(2013,11,23,5,17,00),  .secs = 61,  .rtn = true },
+
+      { .out = _dt(2013,11,23,6,17,00),    .in = _dt(2013,11,23,5,17,00),  .secs = 3600,        .rtn = true },          // +1hr
+      { .out = _dt(2013,11,24,5,17,00),    .in = _dt(2013,11,23,5,17,00),  .secs = 24*3600L,    .rtn = true },      // +1day
+      { .out = _dt(2013,2,23,5,17,00),     .in = _dt(2013,1,23,5,17,00),   .secs = 31*24*3600L, .rtn = true },      // Jan -> Feb
+      { .out = _dt(2013,1,23,5,17,00),     .in = _dt(2013,2,23,5,17,00),   .secs = -31*24*3600L, .rtn = true },      // Feb -> Jan
+      { .out = _dt(2014,11,23,5,17,00),    .in = _dt(2013,11,23,5,17,00),  .secs = 365*24*3600L,.rtn = true },      // 2013 -> 2014
+      { .out = _dt(2013,11,23,5,17,00),    .in = _dt(2014,11,23,5,17,00),  .secs = -365*24*3600L,.rtn = true },      // 2014-> 2013
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      S_DateTime out;
+      S_DateTime const * rtn = YMDHMS_AddSecs(&out, t->in, t->secs);
+
+      if( YMDHMS_Equal(&out, t->out) == false) {
+         C8 b0[_ISO8601_YMDHMS_MaxStr], b1[_ISO8601_YMDHMS_MaxStr], b2[_ISO8601_YMDHMS_MaxStr];
+
+         YMDHMS_ToStr(t->in, b0);
+         YMDHMS_ToStr(t->out, b1);
+         YMDHMS_ToStr(&out, b2);
+
+         printf("tst #%d: %s + %ld secs -> expected %s, got %s\r\n", i, b0, t->secs, b1, b2);
+         TEST_FAIL();
+      }
    }
 }
 

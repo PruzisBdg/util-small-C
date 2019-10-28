@@ -329,9 +329,15 @@ typedef struct {
        min,sec;      // 0 - 59
    } S_DateTime;
 
-#define _YMD_Wilds      0xFE           // Means 'any month' or 'any day'.
-#define _YMD_WildYear   0xFEFE         // Means 'any year',
-#define _DateTime_Wilds _YMD_Wilds     // Hours, minutes, secs too.
+#define _YMD_AnyMDHMS      0xFE           // Means 'any month' or 'any day'.
+#define _YMD_AnyYear       0xFEFE         // Means 'any year',
+#define _YMD_AnyMnth       _YMD_AnyMDHMS
+#define _YMD_AnyDay        _YMD_AnyMDHMS
+#define _YMD_AnyHr         _YMD_AnyMDHMS
+#define _YMD_AnyMinute     _YMD_AnyMDHMS
+#define _YMD_AnySec        _YMD_AnyMDHMS
+
+#define _DateTime_AnyMDHMS _YMD_AnyMDHMS     // Hours, minutes, secs too.
 
 // If you want to call 'S_DateTime' this to be consistent with below.
 #define S_YMDHMS  S_DateTime
@@ -354,8 +360,8 @@ typedef struct {
    U8 min, sec;      // 0 - 59
    } S_TimeHMS;
 
-#define _HMS_WildHr _YMD_WildYear   // i.e for U16.
-#define _HMS_Wilds  _YMD_Wilds
+#define _HMS_WildHr _YMD_AnyYear   // i.e for U16.
+#define _HMS_Wilds  _YMD_AnyMDHMS
 
 /* Used when exporting this struct (to another device). Then the contents are packed, regardless
    of the format internal to the code.
@@ -377,8 +383,10 @@ PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
 PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
 PUBLIC BOOLEAN       HMS_Equal(S_TimeHMS const *a, S_TimeHMS const *b);
+PUBLIC BOOLEAN       YMDHMS_aGTEb(S_DateTime const *a, S_DateTime const *b);
+PUBLIC S_DateTime const * YMDHMS_AddSecs(S_DateTime *out, S_DateTime const *dt, S32 secs);
 
-PUBLIC void          SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
+PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
 PUBLIC C8 *          SecsTo_YMDHMS_Str(C8 *strOut, T_Seconds32 secs);
 PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
 PUBLIC T_Seconds32   YMDHMS_To_Secs(S_DateTime const *dt);

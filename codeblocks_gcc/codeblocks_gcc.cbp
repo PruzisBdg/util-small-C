@@ -622,6 +622,16 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/ymdhms_A_GTE_B.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/ymdhms_add_secs.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/ymdhms_equal.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

@@ -20,7 +20,7 @@
 PUBLIC C8 const ISO8601_DateFormatter[] = "%04d-%02d-%02d";   // Make public to avoid ARM gcc linker bug.
 
 PUBLIC C8 const * ymd_Format2Digits(C8 *out, U8 n) {
-   if(n == _YMD_Wilds) {
+   if(n == _YMD_AnyMDHMS) {
       strcpy(out, "**"); }
    else if(n > 99) {
       strcpy(out, "^^"); }
@@ -30,7 +30,7 @@ PUBLIC C8 const * ymd_Format2Digits(C8 *out, U8 n) {
 }
 
 PUBLIC C8 const * ymd_Format4Digits(C8 *out, U16 n) {
-   if(n == _YMD_WildYear) {
+   if(n == _YMD_AnyYear) {
       strcpy(out, "****"); }
    else if(n > 9999) {
       strcpy(out, "^^^^"); }

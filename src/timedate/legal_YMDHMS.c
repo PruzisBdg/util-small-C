@@ -12,7 +12,7 @@
    Return TRUE if 't' is a legal date and time for use as a 32 bit internal time which
    starts at 200AD.. Hours, minutes etc must be legal; the year must be 2000AD - 2130AD.
 
-   Also allows wildcards e.g _YMD_WildYear (0xFEFE) -> every year.
+   Also allows wildcards e.g _YMD_AnyYear (0xFEFE) -> every year.
 */
 PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
 {

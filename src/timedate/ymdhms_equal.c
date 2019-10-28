@@ -2,7 +2,7 @@
 |
 | Return TRUE if 'a', 'b' are the same Date/Time.
 |
-| Allows wildcards e.g _YMD_WildYear (0xFEFE) -> any year; '_DateTime_Wilds' (0xFE)
+| Allows wildcards e.g _YMD_AnyYear (0xFEFE) -> any year; '_DateTime_AnyMDHMS' (0xFE)
 | any month, day, hour etc.
 |
 | Does NOT check that 'a','b' are a legal S_DateTime. Most times 'a', 'b' or both will
@@ -16,12 +16,12 @@
 PUBLIC BOOLEAN YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b)
 {
    return
-      (a->yr == _YMD_WildYear     || b->yr == _YMD_WildYear     || a->yr == b->yr) &&
-      (a->mnth == _DateTime_Wilds || b->mnth == _DateTime_Wilds || a->mnth == b->mnth) &&
-      (a->day == _DateTime_Wilds  || b->day == _DateTime_Wilds  || a->day == b->day) &&
-      (a->hr == _DateTime_Wilds   || b->hr == _DateTime_Wilds   || a->hr == b->hr) &&
-      (a->min == _DateTime_Wilds  || b->min == _DateTime_Wilds  || a->min == b->min) &&
-      (a->sec == _DateTime_Wilds  || b->sec == _DateTime_Wilds  || a->sec == b->sec)
+      (a->yr == _YMD_AnyYear     || b->yr == _YMD_AnyYear     || a->yr == b->yr) &&
+      (a->mnth == _DateTime_AnyMDHMS || b->mnth == _DateTime_AnyMDHMS || a->mnth == b->mnth) &&
+      (a->day == _DateTime_AnyMDHMS  || b->day == _DateTime_AnyMDHMS  || a->day == b->day) &&
+      (a->hr == _DateTime_AnyMDHMS   || b->hr == _DateTime_AnyMDHMS   || a->hr == b->hr) &&
+      (a->min == _DateTime_AnyMDHMS  || b->min == _DateTime_AnyMDHMS  || a->min == b->min) &&
+      (a->sec == _DateTime_AnyMDHMS  || b->sec == _DateTime_AnyMDHMS  || a->sec == b->sec)
             ? TRUE : FALSE;
 }
 

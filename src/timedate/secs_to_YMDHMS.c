@@ -73,7 +73,7 @@ PRIVATE U8 splitDaysIntoMD(U16 allDays, U8 *monthOut, BOOLEAN isLeapYear) {
 
    This routine does NOT handle leap-seconds.
 */
-PUBLIC void SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
+PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
 
    U8    yearsRem;
    U16   yr4, daysRem;
@@ -123,6 +123,8 @@ PUBLIC void SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
    dt->hr = secsRem/3600;                                         // Hours in the final day are..
    dt->min = (secsRem - (3600L * dt->hr)) / 60;                   // Minutes left over are.. (subtract hour*3600)
    dt->sec = secsRem - (3600L * dt->hr) - (60 * dt->min);         // Secs left over are..(subtract hour*3600 + minutes*60)
+
+   return dt;
 }
 
 // -------------------------------- eof ---------------------------------------------
