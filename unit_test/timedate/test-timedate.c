@@ -721,6 +721,28 @@ void test_YMDHMS_AddSecs(void)
          TEST_FAIL();
       }
    }
+
+   /* 'in' and 'out' in YMDHMS_AddSecs() may be the same object. Check this by running the same tests
+       returning the input onto itself.
+   */
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      S_DateTime out = *(t->in);
+      S_DateTime const * rtn = YMDHMS_AddSecs(&out, &out, t->secs);     // 'out' <- 'out'.
+
+      if( YMDHMS_Equal(&out, t->out) == false) {
+         C8 b0[_ISO8601_YMDHMS_MaxStr], b1[_ISO8601_YMDHMS_MaxStr], b2[_ISO8601_YMDHMS_MaxStr];
+
+         YMDHMS_ToStr(t->in, b0);
+         YMDHMS_ToStr(t->out, b1);
+         YMDHMS_ToStr(&out, b2);
+
+         printf("tst #%d: %s + %ld secs -> expected %s, got %s\r\n", i, b0, t->secs, b1, b2);
+         TEST_FAIL();
+      }
+   }
 }
 
 // ----------------------------------------- eof --------------------------------------------

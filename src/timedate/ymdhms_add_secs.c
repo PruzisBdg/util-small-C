@@ -5,6 +5,8 @@
 /* -------------------------------- YMDHMS_AddSecs ------------------------------------
 
    Add 'secs' to 'dt, result in 'out'. 'secs' is signed, so may be negative.
+
+   'dt' and 'out' may reference the same object.
 */
 PUBLIC S_DateTime const * YMDHMS_AddSecs(S_DateTime *out, S_DateTime const *dt, S32 secs) {
    return
