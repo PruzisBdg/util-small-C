@@ -119,7 +119,7 @@ PUBLIC BOOL C8bag_Contains(S_C8bag const *m, C8 n)
 
       ln = n / _BitsPerLine;
       lsb = n - (ln * _BitsPerLine);
-      return (m->lines[ln] & (1L << lsb)) > 0 ? TRUE : FALSE;
+      return (m->lines[ln] & (1UL << lsb)) > 0 ? TRUE : FALSE;
    }
 }
 

@@ -114,7 +114,7 @@ PUBLIC BOOL U8bag_Contains(S_U8bag const *m, U8 n)
 
    ln = n / _BitsPerLine;
    lsb = n - (ln * _BitsPerLine);
-   return (m->lines[ln] & (1L << lsb)) > 0 ? TRUE : FALSE;
+   return (m->lines[ln] & (1UL << lsb)) > 0 ? TRUE : FALSE;
 }
 
 /* ------------------------------ U8bag_sEqual ------------------------------- */
