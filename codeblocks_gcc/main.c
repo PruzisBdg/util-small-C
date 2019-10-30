@@ -6,18 +6,12 @@
 
 int main (void)
 {
+   #define _dt(_yr, _mnth, _day, _hr, _min, _sec) \
+      &(S_DateTime){.yr = _yr, .mnth = _mnth, .day = _day, .hr = _hr, .min = _min, .sec = _sec}
 
-   Legal_YMD( &(S_YMD){.yr = 2001, .mnth = 0xFE, .day = 1});
+   S_DateTime out;
 
-   enc_S_MsgData md = {
-      .encoderType = mADE | mGen1,
-      .weGot.bs.serWord = 1,
-      .fwdTot = 1234, .dials = 6,
-      .noMag.pres = {._min=0xFF, ._max=0xFF, ._avg=0xFF} };
-
-   C8 b0[200];
-   Sensus_PrintMsgData(b0,&md);
-   printf("%s", b0);
+   YMDHMSfull_AddSecs(&out, _dt(2000,1,1,0,0,0), -(365+365+365+366)*24*3600L);
 }
 
 // ------------------------------------- eof ---------------------------------------------

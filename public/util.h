@@ -315,6 +315,9 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
 
    Zero seconds is midnight, New-years Eve 2000AD and spans forward 132 years to
    2132AD.
+
+   S_DateTime (below) can represent any year from 0000AD onwards, function which use
+   32-bit seconds run from 2000AD - 2136AD,
 */
 
 /* A 32bit count of seconds. Will count 132 years */
@@ -329,6 +332,11 @@ typedef struct {
        min,sec;      // 0 - 59
    } S_DateTime;
 
+/* ------------------------------ Wildcards ----------------------------------------
+
+   Comparison and equality functions below for 'S_TimeDate', 'S_YMD' & 'S_HMS' will
+   handle wildcards for any of the fields.
+*/
 #define _YMD_AnyMDHMS      0xFE           // Means 'any month' or 'any day'.
 #define _YMD_AnyYear       0xFEFE         // Means 'any year',
 #define _YMD_AnyMnth       _YMD_AnyMDHMS
@@ -353,7 +361,6 @@ typedef struct {
       day;        // 1-28,29,30,31, depending.
    } S_YMD;
 
-
 // Up to 9999 hrs when rendered as an ISO8601 string i.e max is "9999:59:59".
 typedef struct {
    U16 hr;           // 0 - 9999
@@ -373,7 +380,14 @@ typedef struct {
 
 #define _HMSStr_Maxlen 10
 
+// To switch between 2000-2136AD and 32-bit Unix Epoch (1970...). Offset is 30 years.
+PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);
+PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
+
 PUBLIC U8            DaysInMonth(U16 yr, U8 month);
+PUBLIC BOOLEAN       IsaLeapYear(U16 yr);
+
+// Hours, minutes, sec.
 PUBLIC void          SecsToHMS(T_Seconds32 secs, S_TimeHMS *hms);
 PUBLIC U8            SecsToHMSStr(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHMS32_Str(T_Seconds32 secsCnt, C8 *strOut);
@@ -381,32 +395,36 @@ PUBLIC U8            SecsToHrMinStr(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMSStrRtn(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
-PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
-PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
+PUBLIC BOOLEAN       Legal_HMS(S_TimeHMS const *t);
 PUBLIC BOOLEAN       HMS_Equal(S_TimeHMS const *a, S_TimeHMS const *b);
+PUBLIC U8            HMS_ToStr(S_TimeHMS const *t, C8 *outStr);
+
+// Year month, day.
+PUBLIC BOOLEAN       Legal_YMD(S_YMD const *t);
+PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
+PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
+
+// Full Time/Date to the second.
+PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
+PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
 PUBLIC BOOLEAN       YMDHMS_aGTEb(S_DateTime const *a, S_DateTime const *b);
 PUBLIC S_DateTime const * YMDHMS_AddSecs(S_DateTime *out, S_DateTime const *dt, S32 secs);
-
+PUBLIC S_DateTime const * YMDHMSfull_AddSecs(S_DateTime *out, S_DateTime const *in, S32 secs);
 PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
+
+// To ISO8601 string and back.
 PUBLIC C8 *          SecsTo_YMDHMS_Str(C8 *strOut, T_Seconds32 secs);
-PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
 PUBLIC T_Seconds32   YMDHMS_To_Secs(S_DateTime const *dt);
-PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
-PUBLIC BOOLEAN       Legal_YMD(S_YMD const *t);
-PUBLIC BOOLEAN       Legal_HMS(S_TimeHMS const *t);
 PUBLIC U8            YMDHMS_ToStr(S_DateTime const *t, C8 *outStr);
 PUBLIC C8 const *    YMDHStoStr_Raw(C8 *out, S_DateTime const *dt);
-PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
-PUBLIC U8            HMS_ToStr(S_TimeHMS const *t, C8 *outStr);
-PUBLIC T_Seconds32   EpochTo2000AD(T_Seconds32 epochSecs);
-PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
-PUBLIC BOOLEAN       IsaLeapYear(U16 yr);
+
+PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
 
 #define _12am_Jan_1st_2000_Epoch_secs 946684800UL
 
-
 extern S16 const     DaysToMonthStartTbl[];
 
+// ISO8601 string sizes.
 #define _ISO8601_YMDHMS_MaxStr (sizeof("2018-03-06T20:28:44") + 2)
 #define _ISO8601_YMDHMS_AsSpaces       "                   "
 

@@ -79,10 +79,12 @@ PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *
    U16   yr4, daysRem;
    U32   secsRem;
 
-   #define _4yr_secs (3600L*24*(365+365+365+366))                 // Seconds in 4 years
+   #define _4yr_days (365+365+365+366)
+   #define _4yr_secs (3600L*24*_4yr_days)                         // Seconds in 4 years
 
    yr4 = secsSince2000AD/_4yr_secs;                               // Divide total secs into 4-year chunks...
    secsRem = secsSince2000AD - ((U32)yr4 * _4yr_secs);            // and (0 - 126,230,400) seconds. ...
+   daysRem = secsRem/(3600L*24);                                  // ... which are 0 - 1461 days left over.
 
    /* Centurial leap year correction.
 
@@ -90,10 +92,16 @@ PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *
       to 2136, so we must account for no Feb 29th 2100.
    */
    #define _Midnite_Feb28_2100 (4107542399 - _12am_Jan_1st_2000_Epoch_secs)
-   if(secsSince2000AD > _Midnite_Feb28_2100) {                    // Past midnite Feb 28th 2100?
-      secsRem += (24*3600UL); }                                   // there's no Feb 29th; add back in 1 day which we should not have subtracted above..
 
-   daysRem = secsRem/(3600L*24);                                  // ... which are 0 - 1461 days left over.
+   if(secsSince2000AD > _Midnite_Feb28_2100) {                    // Past midnite Feb 28th 2100?
+      secsRem += (24*3600UL);                                     // there's no Feb 29th; pre-add the 1 day which will be subtracted (below).
+      if(daysRem >= _4yr_days-1) {                                // Another whole 4 years?
+            yr4 += 1;                                             // then bump 4-year count.
+            daysRem = 0;                                          // No days left over
+            secsRem -= _4yr_secs; }                               // 4 years less of seconds.
+      else {
+         daysRem += 1; }}                                         // else bump the day count.
+
    yearsRem =                                                     // ... or 0 - 3 years left over
       daysRem <= 366-1
          ? 0

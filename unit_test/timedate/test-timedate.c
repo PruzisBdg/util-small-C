@@ -694,7 +694,7 @@ void test_YMDHMS_AddSecs(void)
       { .out = _dt(2014,11,23,5,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 365*24*3600L,   },    // 2013 -> 2014
       { .out = _dt(2013,11,23,5,17,00),    .in = _dt(2014,11,23,5,17,00),     .secs = -365*24*3600L,  },    // 2014-> 2013
 
-      { .out = _dt(1910,1,1,0,5,0),        .in = _dt(1910,1,1,0,0,0),         .secs = 300,  },
+      //{ .out = _dt(1910,1,1,0,5,0),        .in = _dt(1910,1,1,0,0,0),         .secs = 300,  },
 
       // Clip at upper and lower bounds of S_DateTime.
       { .out = _dt(2000,1,1,0,0,0),        .in = _dt(2014,1,1,00,00,00),      .secs = MIN_S32,        },
@@ -706,6 +706,7 @@ void test_YMDHMS_AddSecs(void)
       S_Tst const *t = &tsts[i];
 
       S_DateTime out;
+
       S_DateTime const * rtn = YMDHMS_AddSecs(&out, t->in, t->secs);
 
       if(rtn != &out) {
@@ -741,7 +742,91 @@ void test_YMDHMS_AddSecs(void)
          YMDHMS_ToStr(t->out, b1);
          YMDHMS_ToStr(&out, b2);
 
+         printf("YMDHMS_AddSecs() tst #%d: %s + %ld secs -> expected %s, got %s\r\n", i, b0, t->secs, b1, b2);
+         TEST_FAIL();
+      }
+   }
+}
+
+/* --------------------------------------- test_YMDHMSfull_AddSecs ------------------------------------ */
+
+void test_YMDHMSfull_AddSecs(void)
+{
+   typedef struct {S_DateTime const * out; S_DateTime const * in; S32 secs;} S_Tst;
+
+   S_Tst const tsts[] = {
+      // Add nothing to a Time/Date. Get it back unchanged.
+      { .out = _dt(2013,11,23,5,17,44),    .in = _dt(2013,11,23,5,17,44),     .secs = 0               },
+
+      // Adds and subtracts
+      { .out = _dt(2013,11,23,5,17,59),    .in = _dt(2013,11,23,5,17,00),     .secs = 59,             },    // + 1sec
+      { .out = _dt(2014,1,1,00,00,00),     .in = _dt(2013,12,31,23,59,59),    .secs = 1,              },    // Rollover to the new year
+      { .out = _dt(2013,12,31,23,59,59),   .in = _dt(2014,1,1,00,00,00),      .secs = -1,             },    // Rollunder to the previous year
+      { .out = _dt(2013,11,23,5,18,1),     .in = _dt(2013,11,23,5,17,00),     .secs = 61,             },    // + 1min
+      { .out = _dt(2013,11,23,6,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 3600,           },    // +1hr
+      { .out = _dt(2013,11,24,5,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 24*3600L,       },    // +1day
+      { .out = _dt(2013,2,23,5,17,00),     .in = _dt(2013,1,23,5,17,00),      .secs = 31*24*3600L,    },    // Jan -> Feb
+      { .out = _dt(2013,1,23,5,17,00),     .in = _dt(2013,2,23,5,17,00),      .secs = -31*24*3600L,   },    // Feb -> Jan
+      { .out = _dt(2014,11,23,5,17,00),    .in = _dt(2013,11,23,5,17,00),     .secs = 365*24*3600L,   },    // 2013 -> 2014
+      { .out = _dt(2013,11,23,5,17,00),    .in = _dt(2014,11,23,5,17,00),     .secs = -365*24*3600L,  },    // 2014-> 2013
+
+      // Back and forward through the millennium (2000AD).
+      { .out = _dt(1910,1,1,0,5,0),        .in = _dt(1910,1,1,0,0,0),         .secs = 300,  },
+      { .out = _dt(1999,12,31,23,59,59),   .in = _dt(2000,1,1,0,0,0),         .secs = -1,  },               // Back 1 sec, bfore millennium
+      { .out = _dt(2000,1,1,0,0,0),        .in = _dt(1999,12,31,23,59,59),    .secs = +1,  },               // Fwd 1 sec, into millennium
+
+      { .out = _dt(1999,1,1,0,0,0),        .in = _dt(2000,1,1,0,0,0),         .secs = -365*24*3600L,  },    // Back 1 year, b4 millennium
+      { .out = _dt(2000,1,1,0,0,0),        .in = _dt(1999,1,1,0,0,0),         .secs = +365*24*3600L,  },    // Fwd 1 year, into millennium
+
+      { .out = _dt(1996,1,1,0,0,0),        .in = _dt(2000,1,1,0,0,0),         .secs = -(365+365+365+366)*24*3600L,  },  // Back 4 years...
+      { .out = _dt(2000,1,1,0,0,0),        .in = _dt(1996,1,1,0,0,0),         .secs = (365+365+365+366)*24*3600L,  },  // Fwd 4 years...
+
+      { .out = _dt(1945,12,13,20,45,52),   .in = _dt(2014,1,1,00,00,00),      .secs = MIN_S32,        },    // UTC Tool says Dec 13th; but may be wrong.
+      { .out = _dt(2149,4,26,00,56,22),      .in = _dt(2081,4,7,21,42,15),      .secs = MAX_S32,        },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      S_DateTime out;
+
+      S_DateTime const * rtn = YMDHMSfull_AddSecs(&out, t->in, t->secs);
+
+      if(rtn != &out) {
+         printf("tst #d function return did not equal out ptr\r\n");
+         TEST_FAIL(); }
+
+      else if( YMDHMS_Equal(&out, t->out) == false) {
+         C8 b0[_ISO8601_YMDHMS_MaxStr], b1[_ISO8601_YMDHMS_MaxStr], b2[_ISO8601_YMDHMS_MaxStr];
+
+         YMDHMS_ToStr(t->in, b0);
+         YMDHMS_ToStr(t->out, b1);
+         YMDHMS_ToStr(&out, b2);
+
          printf("tst #%d: %s + %ld secs -> expected %s, got %s\r\n", i, b0, t->secs, b1, b2);
+         TEST_FAIL();
+      }
+   }
+
+   /* 'in' and 'out' in YMDHMS_AddSecs() may be the same object. Check this by running the same tests
+       returning the input onto itself.
+   */
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      S_DateTime out = *(t->in);
+      S_DateTime const * rtn = YMDHMSfull_AddSecs(&out, &out, t->secs);     // 'out' <- 'out'.
+
+      if( YMDHMS_Equal(&out, t->out) == false) {
+         C8 b0[_ISO8601_YMDHMS_MaxStr], b1[_ISO8601_YMDHMS_MaxStr], b2[_ISO8601_YMDHMS_MaxStr];
+
+         YMDHMS_ToStr(t->in, b0);
+         YMDHMS_ToStr(t->out, b1);
+         YMDHMS_ToStr(&out, b2);
+
+         printf("YMDHMS_AddSecs() tst #%d: %s + %ld secs -> expected %s, got %s\r\n", i, b0, t->secs, b1, b2);
          TEST_FAIL();
       }
    }
