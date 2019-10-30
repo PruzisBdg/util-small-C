@@ -409,7 +409,7 @@ PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
 PUBLIC BOOLEAN       YMDHMS_Equal(S_DateTime const *a, S_DateTime const *b);
 PUBLIC BOOLEAN       YMDHMS_aGTEb(S_DateTime const *a, S_DateTime const *b);
 PUBLIC S_DateTime const * YMDHMS_AddSecs(S_DateTime *out, S_DateTime const *dt, S32 secs);
-PUBLIC S_DateTime const * YMDHMSfull_AddSecs(S_DateTime *out, S_DateTime const *in, S32 secs);
+PUBLIC S_DateTime const * Full_YMDHMS_AddSecs(S_DateTime *out, S_DateTime const *in, S32 secs);
 PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt);
 
 // To ISO8601 string and back.

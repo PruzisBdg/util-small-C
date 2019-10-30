@@ -748,9 +748,9 @@ void test_YMDHMS_AddSecs(void)
    }
 }
 
-/* --------------------------------------- test_YMDHMSfull_AddSecs ------------------------------------ */
+/* --------------------------------------- test_Full_YMDHMS_AddSecs ------------------------------------ */
 
-void test_YMDHMSfull_AddSecs(void)
+void test_Full_YMDHMS_AddSecs(void)
 {
    typedef struct {S_DateTime const * out; S_DateTime const * in; S32 secs;} S_Tst;
 
@@ -791,7 +791,7 @@ void test_YMDHMSfull_AddSecs(void)
 
       S_DateTime out;
 
-      S_DateTime const * rtn = YMDHMSfull_AddSecs(&out, t->in, t->secs);
+      S_DateTime const * rtn = Full_YMDHMS_AddSecs(&out, t->in, t->secs);
 
       if(rtn != &out) {
          printf("tst #d function return did not equal out ptr\r\n");
@@ -817,7 +817,7 @@ void test_YMDHMSfull_AddSecs(void)
       S_Tst const *t = &tsts[i];
 
       S_DateTime out = *(t->in);
-      S_DateTime const * rtn = YMDHMSfull_AddSecs(&out, &out, t->secs);     // 'out' <- 'out'.
+      S_DateTime const * rtn = Full_YMDHMS_AddSecs(&out, &out, t->secs);     // 'out' <- 'out'.
 
       if( YMDHMS_Equal(&out, t->out) == false) {
          C8 b0[_ISO8601_YMDHMS_MaxStr], b1[_ISO8601_YMDHMS_MaxStr], b2[_ISO8601_YMDHMS_MaxStr];

@@ -2,7 +2,7 @@
 #include "util.h"
 #include "arith.h"
 
-/* -------------------------------- YMDHMSfull_AddSecs -------------------------------
+/* -------------------------------- Full_YMDHMS_AddSecs -------------------------------
 
    Add 'secs' to 'dt, result in 'out'. 'secs' is signed, so may be negative.
 
@@ -12,9 +12,9 @@
    'dt' and 'out' may reference the same object.
 */
 
-PUBLIC S_DateTime const * YMDHMSfull_AddSecs(S_DateTime *out, S_DateTime const *in, S32 secs) {
+PUBLIC S_DateTime const * Full_YMDHMS_AddSecs(S_DateTime *out, S_DateTime const *in, S32 secs) {
 
-   /* Get a multiple of 4 years to bring 'in' to 2000-2004AD so can use YMDHMSfull_AddSecs() to
+   /* Get a multiple of 4 years to bring 'in' to 2000-2004AD so can use Full_YMDHMS_AddSecs() to
       add 'secs'.
    */
    S_DateTime dt = *in;                               // A local copy because 'in' is const.
