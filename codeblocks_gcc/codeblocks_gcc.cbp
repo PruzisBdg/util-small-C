@@ -276,6 +276,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/copys_fills/all_bytes_equal_u16.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/copys_fills/fill_floats_u8.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

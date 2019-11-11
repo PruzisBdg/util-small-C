@@ -35,6 +35,7 @@ PUBLIC void FillBytesU8( U8  RAM_IS *a, U8 n, U8 cnt );
 PUBLIC void ZeroBytesU8(void RAM_IS *p, U8 cnt);
 PUBLIC U16 SumBytesU8( U8 RAM_IS *a, U8 cnt );
 PUBLIC void SwapBytesU8(void RAM_IS *a, void RAM_IS *b, U8 cnt);
+PUBLIC BOOLEAN AllBytesAre_U16(U8 const *src, U8 n, U16 cnt);
 
 /* ------------------------- On floats -------------------------------- */
 
