@@ -87,6 +87,7 @@ PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out);
 PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out);
 PUBLIC BIT        GotFloatFromASCII(U8 const *inTxt, float *out);
 PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out);
+PUBLIC BOOL       Stream_ReadDirtyASCIIInt(BOOL(*getCh)(C8*), S16 *out);
 PUBLIC C8 const * ReadDirtyASCII_S32(C8 const *inTxt, S32 *out);
 PUBLIC C8 const * ReadAsciiS32(C8 const *inTxt, S32 *out);
 PUBLIC U8 const * ReadDirtyBinaryWord(U8 const *inTxt, U16 *out);
@@ -186,7 +187,6 @@ typedef struct {
 } S_byteBuf;
 
 PUBLIC void byteBuf_Init  ( S_byteBuf *b, U8 *buf, U8 size);
-PUBLIC U8 * byteBuf_Start (S_byteBuf *b);
 PUBLIC BOOL byteBuf_Exists( S_byteBuf *b);
 PUBLIC void byteBuf_Flush ( S_byteBuf *b);
 PUBLIC BIT  byteBuf_Write ( S_byteBuf *b, U8 const *src, U8 bytesToWrite);

@@ -6,7 +6,7 @@
 
 #include "GenericTypeDefs.h"
 #include <ctype.h>              // isdigit()
-#include "small_utils.h"
+#include "util.h"
 #include "arith.h"
 
 /*-----------------------------------------------------------------------------------------

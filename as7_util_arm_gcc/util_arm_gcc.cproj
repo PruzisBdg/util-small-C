@@ -197,9 +197,33 @@
       <SubType>compile</SubType>
       <Link>src\ascii_num\read_dirty_int_pass_char.c</Link>
     </Compile>
+    <Compile Include="..\src\ascii_num\read_dirty_s32.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\ascii_num\read_dirty_s32.c</Link>
+    </Compile>
     <Compile Include="..\src\ascii_num\read_next_float.c">
       <SubType>compile</SubType>
       <Link>src\ascii_num\read_next_float.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_next_number.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\ascii_num\read_next_number.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_tagged_int.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\ascii_num\read_tagged_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\stream_read_dirty_ascii_int.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\ascii_num\stream_read_dirty_ascii_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\bcd\bcd_le.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\bcd\bcd_le.c</Link>
+    </Compile>
+    <Compile Include="..\src\bcd\mangle_to_bcd.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\bcd\mangle_to_bcd.c</Link>
     </Compile>
     <Compile Include="..\src\bits\bit64k_copy.c">
       <SubType>compile</SubType>
@@ -217,6 +241,10 @@
       <SubType>compile</SubType>
       <Link>src\bits\idx_to_1st_bit_set_u32.c</Link>
     </Compile>
+    <Compile Include="..\src\bits\idx_to_1st_bit_set_u8.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\bits\idx_to_1st_bit_set_u8.c</Link>
+    </Compile>
     <Compile Include="..\src\bits\make_masks.c">
       <SubType>compile</SubType>
       <Link>src\bits\make_masks.c</Link>
@@ -229,9 +257,21 @@
       <SubType>compile</SubType>
       <Link>src\bits\num_bits_set_u32.c</Link>
     </Compile>
+    <Compile Include="..\src\bits\swar_32.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\bits\swar_32.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\all_bytes_equal_u16.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\copys_fills\all_bytes_equal_u16.c</Link>
+    </Compile>
     <Compile Include="..\src\copys_fills\CopyBytesU8.c">
       <SubType>compile</SubType>
       <Link>src\copys_fills\CopyBytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\CopyBytesU8_reversed.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\copys_fills\CopyBytesU8_reversed.c</Link>
     </Compile>
     <Compile Include="..\src\copys_fills\CopyConstBytesU8.c">
       <SubType>compile</SubType>
@@ -260,6 +300,10 @@
     <Compile Include="..\src\copys_fills\ZerobytesU8.c">
       <SubType>compile</SubType>
       <Link>src\copys_fills\ZerobytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\endians_aligns.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\endians\endians_aligns.c</Link>
     </Compile>
     <Compile Include="..\src\endians\endian_iterator.c">
       <SubType>compile</SubType>
@@ -312,6 +356,10 @@
     <Compile Include="..\src\hexascii\Get_next_hexASCII_u32.c">
       <SubType>compile</SubType>
       <Link>src\hexascii\Get_next_hexASCII_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\Get_next_hexASCII_u8_to_u32.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\hexascii\Get_next_hexASCII_u8_to_u32.c</Link>
     </Compile>
     <Compile Include="..\src\hexascii\hexascii_to_byte.c">
       <SubType>compile</SubType>
@@ -409,6 +457,10 @@
       <SubType>compile</SubType>
       <Link>src\queues\byte_queue.c</Link>
     </Compile>
+    <Compile Include="..\src\rand\rand_basic.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\rand\rand_basic.c</Link>
+    </Compile>
     <Compile Include="..\src\repeat_idx_func.c">
       <SubType>compile</SubType>
       <Link>src\misc2\repeat_idx_func.c</Link>
@@ -420,6 +472,18 @@
     <Compile Include="..\src\safe_string\safe_string.c">
       <SubType>compile</SubType>
       <Link>src\safe_string\safe_string.c</Link>
+    </Compile>
+    <Compile Include="..\src\safe_string\strlenU8.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\safe_string\strlenU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\Sensus\sensus_codec_support.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\sensus\sensus_codec_support.c</Link>
+    </Compile>
+    <Compile Include="..\src\Sensus\sensus_decode.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\sensus\sensus_decode.c</Link>
     </Compile>
     <Compile Include="..\src\srecord\parse_s_record.c">
       <SubType>compile</SubType>
@@ -457,13 +521,37 @@
       <SubType>compile</SubType>
       <Link>src\timedate\AD2000_to_epoch.c</Link>
     </Compile>
+    <Compile Include="..\src\timedate\days_in_month.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\days_in_month.c</Link>
+    </Compile>
     <Compile Include="..\src\timedate\epoch_to_2000AD.c">
       <SubType>compile</SubType>
       <Link>src\timedate\epoch_to_2000AD.c</Link>
     </Compile>
+    <Compile Include="..\src\timedate\hms_equal.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\hms_equal.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\hms_to_str.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\hms_to_str.c</Link>
+    </Compile>
     <Compile Include="..\src\timedate\ISO8601_Str_to_secs.c">
       <SubType>compile</SubType>
       <Link>src\timedate\ISO8601_Str_to_secs.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\is_leap_year.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\is_leap_year.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\legal_hms.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\legal_hms.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\legal_ymd.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\legal_ymd.c</Link>
     </Compile>
     <Compile Include="..\src\timedate\legal_YMDHMS.c">
       <SubType>compile</SubType>
@@ -472,6 +560,10 @@
     <Compile Include="..\src\timedate\Secs_to_HMS.c">
       <SubType>compile</SubType>
       <Link>src\timedate\Secs_to_HMS.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\secs_to_hms32_str.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\secs_to_hms32_str.c</Link>
     </Compile>
     <Compile Include="..\src\timedate\secs_to_hms_str.c">
       <SubType>compile</SubType>
@@ -489,6 +581,22 @@
       <SubType>compile</SubType>
       <Link>src\timedate\secs_to_ymdhms_str.c</Link>
     </Compile>
+    <Compile Include="..\src\timedate\ymdhms_add_secs.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymdhms_add_secs.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_add_secs_full.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymdhms_add_secs_full.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_A_GTE_B.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymdhms_A_GTE_B.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_equal.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymdhms_equal.c</Link>
+    </Compile>
     <Compile Include="..\src\timedate\ymdhms_to_secs.c">
       <SubType>compile</SubType>
       <Link>src\timedate\ymdhms_to_secs.c</Link>
@@ -496,6 +604,18 @@
     <Compile Include="..\src\timedate\ymdhms_to_str.c">
       <SubType>compile</SubType>
       <Link>src\timedate\ymdhms_to_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_to_str_raw.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymdhms_to_str_raw.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymd_equal.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymd_equal.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymd_to_str.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\timedate\ymd_to_str.c</Link>
     </Compile>
     <Compile Include="..\src\wordlist\romstring.c">
       <SubType>compile</SubType>
@@ -585,7 +705,17 @@
   <ItemGroup>
     <Folder Include="as7_util_arm_gcc\" />
     <Folder Include="as7_util_arm_gcc\src\" />
+    <Folder Include="as7_util_arm_gcc\src\ascii_num\" />
+    <Folder Include="as7_util_arm_gcc\src\bcd\" />
+    <Folder Include="as7_util_arm_gcc\src\bits\" />
+    <Folder Include="as7_util_arm_gcc\src\copys_fills\" />
+    <Folder Include="as7_util_arm_gcc\src\endians\" />
+    <Folder Include="as7_util_arm_gcc\src\hexascii\" />
+    <Folder Include="as7_util_arm_gcc\src\rand\" />
+    <Folder Include="as7_util_arm_gcc\src\safe_string\" />
+    <Folder Include="as7_util_arm_gcc\src\sensus\" />
     <Folder Include="as7_util_arm_gcc\src\stacks\" />
+    <Folder Include="as7_util_arm_gcc\src\timedate\" />
     <Folder Include="Debug\" />
     <Folder Include="Debug\src\" />
     <Folder Include="Debug\src\stacks\" />
@@ -603,6 +733,9 @@
     <Folder Include="src\misc" />
     <Folder Include="src\network" />
     <Folder Include="src\misc2" />
+    <Folder Include="src\bcd" />
+    <Folder Include="src\sensus" />
+    <Folder Include="src\rand" />
     <Folder Include="src\stacks" />
     <Folder Include="src\words" />
     <Folder Include="src\wordlist" />
