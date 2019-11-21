@@ -560,4 +560,51 @@ void test_BCD12le_toU64(void)
    }
 }
 
+/* -------------------------------------- test_BCDle_toU64 ------------------------------------------ */
+
+void test_BCDle_toU64(void)
+{
+   typedef struct { U8 const *src; U8 numBytes; bool rtn; U64 res; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .src = (U8[]){0x00, 0x00, 0x00, 0x00, 0x00, 0x00},  .numBytes = 0, .rtn = true, .res = 0  },
+      { .src = (U8[]){0x12},                                .numBytes = 1, .rtn = true, .res = 12 },
+      { .src = (U8[]){0x34, 0x12},                          .numBytes = 2, .rtn = true, .res = 1234 },
+      { .src = (U8[]){0x56, 0x34, 0x12},                    .numBytes = 3, .rtn = true, .res = 123456UL },
+      { .src = (U8[]){0x78, 0x56, 0x34, 0x12},              .numBytes = 4, .rtn = true, .res = 12345678UL },
+      { .src = (U8[]){0x43, 0x78, 0x56, 0x34, 0x12},        .numBytes = 5, .rtn = true, .res = 1234567843UL },
+      { .src = (U8[]){0x91, 0x50, 0x78, 0x56, 0x34, 0x12},  .numBytes = 6, .rtn = true, .res = 123456785091ULL },
+      { .src = (U8[]){0x28, 0x91, 0x50, 0x78, 0x56, 0x34, 0x12},  .numBytes = 7, .rtn = true, .res = 12345678509128ULL },
+      { .src = (U8[]){0x72, 0x28, 0x91, 0x50, 0x78, 0x56, 0x34, 0x12},  .numBytes = 8, .rtn = true, .res = 1234567850912872ULL },
+   };
+
+   C8 b0[200];
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      U64 out = 0x5A5A5A5A5A5A5A5AULL;
+      bool rtn = BCDle_toU64(&out, t->src, t->numBytes);
+
+      if(t->rtn == false) {
+         if(rtn == true) {
+            sprintf(b0, "Expected false; got true");
+            failwMsg(i, b0); }
+         else if(out != 0x5A5A5A5A5A5A5A5AULL) {
+            sprintf(b0, "Returned false but 'out' was modified to %llu/0x%04x", out, out);
+            failwMsg(i, b0); }
+      }
+      else {
+         if(rtn == false) {
+            sprintf(b0, "Expected true; got false");
+            failwMsg(i, b0); }
+         else if(out != t->res) {
+            sprintf(b0, "Wrong output: expected %llu, got %llu", t->res, out);
+            failwMsg(i, b0); }
+      }
+   }
+
+}
+
 // ----------------------------------------- eof --------------------------------------------

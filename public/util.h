@@ -122,6 +122,7 @@ PUBLIC U32 leToU32(U8 const *src);
 PUBLIC U64 leToU48(U8 const *src);
 PUBLIC U64 leToU64(U8 const *src);
 PUBLIC float leToFloat(U8 const *src);
+PUBLIC U64 BytesLEtoU64(U8 const *src, U8 numBytes);
 
 // To BE, non-aligned.
 PUBLIC U8 * u16ToBE(U8 *out, U16 n);
@@ -249,6 +250,7 @@ PUBLIC bool BCD4le_toU16 ( U16 *out, U8 const *in);
 PUBLIC bool BCD6le_toU32 ( U32 *out, U8 const *in);
 PUBLIC bool BCD8le_toU32 ( U32 *out, U8 const *in);
 PUBLIC bool BCD12le_toU64( U64 *out, U8 const *in);
+PUBLIC bool BCDle_toU64(U64 *out, U8 const *in, U8 numBytes);
 
 PUBLIC U32 MangleU32toBCD(U32 n);
 

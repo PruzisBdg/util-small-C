@@ -37,6 +37,12 @@ PUBLIC U64 leToU48(U8 const *src)
 PUBLIC U64 leToU64(U8 const *src)
 	{ return ((U64)leToU32(&src[4]) << 32) + leToU32(&src[0]); }
 
+PUBLIC U64 BytesLEtoU64(U8 const *src, U8 numBytes) {
+   U64 out = 0;
+   for(U8 i = numBytes; i > 0; i--) {
+      out = (out << 8) + src[i-1]; }
+   return out; }
+
 PUBLIC float leToFloat(U8 const *src)
 {
    union utag { U8 b[4]; float f; } u;

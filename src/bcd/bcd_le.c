@@ -139,6 +139,17 @@ PUBLIC bool BCD12le_toU64( U64 *out, U8 const *in) {
          return true; }}
    return false; }
 
+// --------------------------------------------------------------
+PUBLIC bool BCDle_toU64(U64 *out, U8 const *in, U8 numBytes) {
+   U8 n;
+   *out = 0;
+   for(U8 i = numBytes; i > 0; i--) {        // For each (BCD) byte...
+      if(BCDtoU8(&n, in[i-1]) == false) {    // Not a BCD?
+         return false; }                     // then bail.
+      *out = (100 * *out) + n; }             // else add to 'out' little-endian.
+   return true; }
+
+
 
 
 // ----------------------------------- eof -------------------------------------------------
