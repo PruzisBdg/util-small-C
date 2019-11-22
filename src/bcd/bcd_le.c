@@ -86,8 +86,11 @@ PUBLIC bool BCD16_LE(U8 *out, U64 n)
 
 
 
-// ============================= From BCD ========================================
+/* ============================= From BCD little-endian ===================================
 
+   1. Return false if the input is not all BCD.
+   2. If return false then output is unmodified.
+*/
 static bool isBCD(U8 n) {
    return LOW_NIBBLE(n) <= 9 && HIGH_NIBBLE(n) <= 9; }
 
@@ -139,14 +142,18 @@ PUBLIC bool BCD12le_toU64( U64 *out, U8 const *in) {
          return true; }}
    return false; }
 
-// --------------------------------------------------------------
+/* ----------------------- BCDle_toU64 -----------------------
+
+   Up to 8 BCD bytes into a U64.
+*/
 PUBLIC bool BCDle_toU64(U64 *out, U8 const *in, U8 numBytes) {
    U8 n;
-   *out = 0;
+   U64 _u64 = 0;
    for(U8 i = numBytes; i > 0; i--) {        // For each (BCD) byte...
       if(BCDtoU8(&n, in[i-1]) == false) {    // Not a BCD?
          return false; }                     // then bail.
-      *out = (100 * *out) + n; }             // else add to 'out' little-endian.
+      _u64 = (100 * _u64) + n; }             // else add to 'out' little-endian.
+   *out = _u64;
    return true; }
 
 
