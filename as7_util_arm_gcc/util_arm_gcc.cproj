@@ -38,7 +38,7 @@
         <documentation help="" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.34.1" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.39.0" />
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
@@ -264,6 +264,10 @@
     <Compile Include="..\src\copys_fills\all_bytes_equal_u16.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\copys_fills\all_bytes_equal_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\all_bytes_test_true_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\all_bytes_test_true_u16.c</Link>
     </Compile>
     <Compile Include="..\src\copys_fills\CopyBytesU8.c">
       <SubType>compile</SubType>
