@@ -32,17 +32,6 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data>
-<<<<<<< HEAD
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.39.0" />
-  </dependencies>
-</framework-data>
-=======
         <options />
         <configurations />
         <files />
@@ -52,7 +41,6 @@
           <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.39.0" />
         </dependencies>
       </framework-data>
->>>>>>> 8d6297c833e2cb13c3c6a30a21be80c580abad58
     </AsfFrameworkConfig>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
