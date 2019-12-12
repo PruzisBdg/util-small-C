@@ -69,7 +69,7 @@
 			<Add directory="../public" />
 			<Add directory="../src" />
 			<Add directory="$(SPJ_SWR_LOC)/arith/public" />
-			<Add directory="../../tiny2/public" />
+			<Add directory="$(SPJ_SWR_LOC)/tiny2/public" />
 		</Compiler>
 		<Unit filename="../../unity_tdd/tdd_common.c">
 			<Option compilerVar="CC" />
