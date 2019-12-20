@@ -189,6 +189,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/bcd/bcd_bin.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/bcd/bcd_le.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
