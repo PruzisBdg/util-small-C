@@ -32,27 +32,27 @@ PUBLIC S_DateTime const * Full_YMDHMS_AddSecs(S_DateTime *out, S_DateTime const 
    */
    S16 n =
       (secs > 0
-         ? (_2000AD - dt.yr)
-         : ( 2096 - dt.yr));
+         ? (_2000AD - dt.ymd.yr)
+         : ( 2096 - dt.ymd.yr));
 
    S16 ofs4yr = 4 * (n / 4);
 
-   dt.yr += ofs4yr;
+   dt.ymd.yr += ofs4yr;
 
    /* Bump 'n' to avoid round-down. So we don't get e.g
          4*((2000-1998)/4) -> 0
       which would leave 1998 at 1998 + 0 -> 1998, which is outside 2000AD -> 2136AD.
    */
-   if(dt.yr < 2068) {
-      dt.yr += 4;
+   if(dt.ymd.yr < 2068) {
+      dt.ymd.yr += 4;
       ofs4yr += 4; }
    else {
-      dt.yr -= 4;
+      dt.ymd.yr -= 4;
       ofs4yr -= 4; }
 
    YMDHMS_AddSecs(&dt, &dt, secs);
 
-   dt.yr -= ofs4yr;
+   dt.ymd.yr -= ofs4yr;
    *out = dt;
    return out; }
 

@@ -328,11 +328,20 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
 typedef U32 T_Seconds32;
 #define _Max_T_Seconds32 MAX_U32
 
+/* Used when exporting this struct (to another device). Then the contents are packed, regardless
+   of the format internal to the code.
+*/
+#define _YMDHMS_BytesPacked 7
+
 typedef struct {
-   U16 yr;           // 0000 - 9999.  0000 = 1.BC 0001 = 1.AD
-   U8  mnth,         // 1 - 12 = Jan -> Dec
-       day,          // 1 - 31
-       hr,           // 0 - 23
+   U16 yr;        // 2000AD to 2000AD + 32bits of seconds = 2130.
+   U8 mnth,       // 1-12 = Jan -> Dec.
+      day;        // 1-28,29,30,31, depending.
+   } S_YMD;
+
+typedef struct {
+   S_YMD ymd;
+   U8  hr,           // 0 - 23
        min,sec;      // 0 - 59
    } S_DateTime;
 
@@ -353,17 +362,6 @@ typedef struct {
 
 // If you want to call 'S_DateTime' this to be consistent with below.
 #define S_YMDHMS  S_DateTime
-
-/* Used when exporting this struct (to another device). Then the contents are packed, regardless
-   of the format internal to the code.
-*/
-#define _YMDHMS_BytesPacked 7
-
-typedef struct {
-   U16 yr;        // 2000AD to 2000AD + 32bits of seconds = 2130.
-   U8 mnth,       // 1-12
-      day;        // 1-28,29,30,31, depending.
-   } S_YMD;
 
 // Up to 9999 hrs when rendered as an ISO8601 string i.e max is "9999:59:59".
 typedef struct {

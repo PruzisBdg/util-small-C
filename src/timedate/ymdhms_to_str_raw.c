@@ -19,7 +19,7 @@
 */
 
 PUBLIC C8 const *YMDHStoStr_Raw(C8 *out, S_DateTime const *dt) {
-   sprintf(out, "%04d-%02d-%02dT%02d:%02d:%02d", dt->yr, dt->mnth, dt->day, dt->hr, dt->min, dt->sec);
+   sprintf(out, "%04d-%02d-%02dT%02d:%02d:%02d", dt->ymd.yr, dt->ymd.mnth, dt->ymd.day, dt->hr, dt->min, dt->sec);
    return out; }
 
 // --------------------------------- eof ---------------------------------------------------

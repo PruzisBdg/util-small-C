@@ -28,7 +28,7 @@ PUBLIC BOOLEAN ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut ) {
 
    S_DateTime t;
 
-   if( sscanf(dateStr, ISO8601Formatter, &t.yr, &t.mnth, &t.day, &t.hr, &t.min, &t.sec) != 6) { // Wasn't ISO8601 string?
+   if( sscanf(dateStr, ISO8601Formatter, &t.ymd.yr, &t.ymd.mnth, &t.ymd.day, &t.hr, &t.min, &t.sec) != 6) { // Wasn't ISO8601 string?
       return FALSE;                                                                    // then fail
       }
    else if( !Legal_YMDHMS(&t) ) {                                                      // else values in string are legal?

@@ -30,9 +30,9 @@ PUBLIC U8 YMDHMS_ToStr(S_DateTime const *t, C8 *outStr) {
    C8 b0[10], b1[10], b2[10], b3[10], b4[10], b5[10];
 
    return sprintf(outStr, "%s-%s-%sT%s:%s:%s",
-                  ymd_Format4Digits(b0, t->yr),
-                  ymd_Format2Digits(b1, t->mnth),
-                  ymd_Format2Digits(b2, t->day),
+                  ymd_Format4Digits(b0, t->ymd.yr),
+                  ymd_Format2Digits(b1, t->ymd.mnth),
+                  ymd_Format2Digits(b2, t->ymd.day),
                   ymd_Format2Digits(b3, t->hr),
                   ymd_Format2Digits(b4, t->min),
                   ymd_Format2Digits(b5, t->sec) ); }

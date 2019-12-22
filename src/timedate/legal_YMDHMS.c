@@ -18,7 +18,7 @@ PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
 {
    return
       Legal_HMS( &(S_TimeHMS const){.hr = t->hr, .min = t->min, .sec = t->sec} ) == true &&
-      Legal_YMD( &(S_YMD const){.yr = t->yr, .mnth = t->mnth, .day = t->day}  ) == true;
+      Legal_YMD( &(S_YMD const){.yr = t->ymd.yr, .mnth = t->ymd.mnth, .day = t->ymd.day}  ) == true;
 }
 
 
