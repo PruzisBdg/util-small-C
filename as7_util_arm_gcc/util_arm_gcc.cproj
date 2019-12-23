@@ -613,6 +613,10 @@
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\timedate\ymdhms_to_str_raw.c</Link>
     </Compile>
+    <Compile Include="..\src\timedate\ymd_A_GTE_B.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymd_A_GTE_B.c</Link>
+    </Compile>
     <Compile Include="..\src\timedate\ymd_equal.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\timedate\ymd_equal.c</Link>

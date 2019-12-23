@@ -405,6 +405,7 @@ PUBLIC U8            HMS_ToStr(S_TimeHMS const *t, C8 *outStr);
 PUBLIC BOOLEAN       Legal_YMD(S_YMD const *t);
 PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
 PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
+PUBLIC BOOLEAN       YMD_aGTEb(S_YMD const *a, S_YMD const *b);
 
 // Full Time/Date to the second.
 PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
