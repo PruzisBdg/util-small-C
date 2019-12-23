@@ -63,7 +63,7 @@ PUBLIC T_Seconds32 YMDHMS_To_Secs(S_DateTime const *dt) {
       Legal_YMDHMS(dt) == false
          ? 0
          : dt->sec + (60 * dt->min) + (3600L * dt->hr) +
-               24*3600L * ((dt->day-1) + daysToMonthStart(dt->mnth, dt->yr) + days2000ToYear(dt->yr)); }
+               24*3600L * ((dt->ymd.day-1) + daysToMonthStart(dt->ymd.mnth, dt->ymd.yr) + days2000ToYear(dt->ymd.yr)); }
 
 // -------------------------------- eof ---------------------------------------
 

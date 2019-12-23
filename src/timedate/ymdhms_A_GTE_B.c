@@ -24,11 +24,11 @@ static BOOLEAN dtLTu8(U8 a, U8 b) {
 
 PUBLIC BOOLEAN YMDHMS_aGTEb(S_DateTime const *a, S_DateTime const *b) {
    return
-      (a->yr != _YMD_AnyYear && b->yr != _YMD_AnyYear && a->yr < b->yr)    // Year 'a' < year 'b'?
-         ? false                                                           // then 'a' cannot be GTE 'b'
-         : (dtLTu8(a->mnth, b->mnth) == true                               // else month 'a' < month 'b'?
-            ? false                                                        // then 'a' cannot be GTE 'b'.
-            : (dtLTu8(a->day, b->day) == true                              // etc...
+      (a->ymd.yr != _YMD_AnyYear && b->ymd.yr != _YMD_AnyYear && a->ymd.yr < b->ymd.yr)   // Year 'a' < year 'b'?
+         ? false                                                                          // then 'a' cannot be GTE 'b'
+         : (dtLTu8(a->ymd.mnth, b->ymd.mnth) == true                                      // else month 'a' < month 'b'?
+            ? false                                                                       // then 'a' cannot be GTE 'b'.
+            : (dtLTu8(a->ymd.day, b->ymd.day) == true                                     // etc...
                ? false
                :(dtLTu8(a->hr, b->hr) == true
                  ? false

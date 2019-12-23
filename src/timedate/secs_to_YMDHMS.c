@@ -109,7 +109,7 @@ PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *
             ? 1
             : (daysRem <= (366+365+365-1) ? 2 : 3));
 
-   dt->yr = _2000AD + (4*yr4) + yearsRem;                         // Year is 2000AD + 4 x 4-year chunks + years-left-over
+   dt->ymd.yr = _2000AD + (4*yr4) + yearsRem;                     // Year is 2000AD + 4 x 4-year chunks + years-left-over
 
    daysRem =                                                      // Days left over after the last year is...
       daysRem -                                                   // days remaining after 4-year chunks, minus...
@@ -124,7 +124,7 @@ PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *
    /* Split days-left-over into a month and day-of-month. Note we must convert
       'daysRem' into a calender count; 1 upwards.
    */
-   dt->day = splitDaysIntoMD(daysRem+1, &dt->mnth, IsaLeapYear(dt->yr));
+   dt->ymd.day = splitDaysIntoMD(daysRem+1, &dt->ymd.mnth, IsaLeapYear(dt->ymd.yr));
 
    secsRem =                                                      // Seconds remaining in the final day are....
       secsRem -                                                   // secs left over after 4-years chunks removed, minus...
