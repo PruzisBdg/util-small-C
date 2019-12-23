@@ -5,9 +5,9 @@
 |   Text items can be justified, combined/overlaid, blinked or scrolled.
 |   A text field can show 2 different strings alternately.
 |
-|   TextBld_ handles optional translations through string tables. If a transation
+|   TextBld_ handles optional translations through string tables. If a transition
 |   exists for a given text string AND the current language isn't the default (English)
-|   then TextBld will substitute the string, correctly justifed.
+|   then TextBld will substitute the string, correctly justified.
 |
 |   TextBld_ supports optional scrolling. If a string or it's translation is too large
 |   for the display window, TextBld_ will scroll it; otherwise no.

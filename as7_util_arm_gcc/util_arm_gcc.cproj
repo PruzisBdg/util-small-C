@@ -217,6 +217,10 @@
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\ascii_num\stream_read_dirty_ascii_int.c</Link>
     </Compile>
+    <Compile Include="..\src\bcd\bcd_bin.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\bcd\bcd_bin.c</Link>
+    </Compile>
     <Compile Include="..\src\bcd\bcd_le.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\bcd\bcd_le.c</Link>
