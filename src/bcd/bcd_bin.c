@@ -1,14 +1,38 @@
 #include "libs_support.h"
 #include "util.h"
 
+// ---------------------------------------------------------------------------
+static U16 _u16toBCD(U16 n) {
+   return ((U16)U8toBCD(n/100) << 8) + U8toBCD(n % 100); }
+
+// ---------------------------------------------------------------------------
+static U32 _u32toBCD(U32 n) {
+   return ((U16)_u16toBCD(n/10000) << 16) + _u16toBCD(n % 10000); }
+
+// ---------------------------------------------------------------------------
+PUBLIC bool U16toBCD(U16 *bcd, U16 n) {
+   if(n > 9999)
+      { return false; }
+   else {
+      *bcd = _u16toBCD(n);
+      return true; }
+}
+
+// ---------------------------------------------------------------------------
 PUBLIC bool U32toBCD(U32 *bcd, U32 n) {
    if(n > 99999999)
       { return false; }
    else {
-      typedef union { U32 _u32; U8 bytes[sizeof(U32)]; } U_U32;
+      *bcd = ((U32)_u16toBCD(n / 10000) << 16) + _u16toBCD(n % 10000);
+      return true; }
+}
 
-      for(U8 i = 0; i < sizeof(U32); i++) {
-         ((U_U32*)bcd)->bytes[i] = U8toBCD( ((U_U32*)&n)->bytes[i] ); }
+// ---------------------------------------------------------------------------
+PUBLIC bool U64toBCD(U64 *bcd, U64 n) {
+   if(n > 9999999999999999ULL)
+      { return false; }
+   else {
+      *bcd = ((U64)_u32toBCD(n / 100000000UL) << 32) + _u32toBCD(n % 100000000UL);
       return true; }
 }
 

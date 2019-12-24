@@ -237,9 +237,10 @@ PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
 /* ---------------------------------- BCD ------------------------------------------- */
-PUBLIC U8 U8toBCD(U8 n);   // unprotected.
-
+PUBLIC U8 U8toBCD(U8 n);                  // unprotected.
+PUBLIC bool U16toBCD(U16 *bcd, U16 n);
 PUBLIC bool U32toBCD(U32 *bcd, U32 n);
+PUBLIC bool U64toBCD(U64 *bcd, U64 n);
 
 PUBLIC bool BCD2_LE(U8 *out, U8 n );
 PUBLIC bool BCD4_LE(U8 *out, U16 n);

@@ -765,8 +765,16 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/bcd/bcd_bin.mak">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../unit_test/bcd/bcd_le.mak">
 			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bcd/test-bcd_bin.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="../unit_test/bcd/test-bcd_le.c">
 			<Option compilerVar="CC" />
