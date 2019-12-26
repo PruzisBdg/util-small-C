@@ -19,23 +19,23 @@
 */
 
 // True if neither 'a' or 'b' s a wildcard AND 'a' < 'b'.
-static BOOLEAN dtLTu8(U8 a, U8 b) {
-   return a != _YMD_AnyMDHMS && b != _YMD_AnyMDHMS && a < b;}
+static BOOLEAN dtNEu8(U8 a, U8 b) {
+   return a != _YMD_AnyMDHMS && b != _YMD_AnyMDHMS && a != b;}
 
 PUBLIC BOOLEAN YMDHMS_aGTEb(S_DateTime const *a, S_DateTime const *b) {
    return
-      (a->ymd.yr != _YMD_AnyYear && b->ymd.yr != _YMD_AnyYear && a->ymd.yr < b->ymd.yr)   // Year 'a' < year 'b'?
-         ? false                                                                          // then 'a' cannot be GTE 'b'
-         : (dtLTu8(a->ymd.mnth, b->ymd.mnth) == true                                      // else month 'a' < month 'b'?
-            ? false                                                                       // then 'a' cannot be GTE 'b'.
-            : (dtLTu8(a->ymd.day, b->ymd.day) == true                                     // etc...
-               ? false
-               :(dtLTu8(a->hr, b->hr) == true
-                 ? false
-                 : (dtLTu8(a->min, b->min) == true
-                    ? false
-                    : (dtLTu8(a->sec, b->sec) == true
-                       ? false
-                       : true))))); }
+      (a->ymd.yr != _YMD_AnyYear && b->ymd.yr != _YMD_AnyYear && a->ymd.yr != b->ymd.yr)
+         ? (a->ymd.yr > b->ymd.yr ? true : false)
+         : (dtNEu8(a->ymd.mnth, b->ymd.mnth) == true                                      // else month 'a' < month 'b'?
+            ? (a->ymd.mnth > b->ymd.mnth ? true : false)
+            : (dtNEu8(a->ymd.day, b->ymd.day) == true                                     // etc...
+               ? (a->ymd.day > b->ymd.day ? true : false)
+               :(dtNEu8(a->hr, b->hr) == true
+                 ? (a->hr > b->hr ? true : false)
+                 : (dtNEu8(a->min, b->min) == true
+                    ? (a->min > b->min ? true : false)
+                    : ((a->sec != _YMD_AnyMDHMS && b->sec != _YMD_AnyMDHMS)
+                       ? (a->sec >= b->sec ? true : false)
+                       : false))))); }
 
 // ------------------------------------- eof ---------------------------------------------------

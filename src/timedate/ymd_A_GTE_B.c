@@ -17,18 +17,14 @@
       ****-2-3 NOT >= 2001-2-3      "        "     "
 */
 
-// True if neither 'a' or 'b' s a wildcard AND 'a' >= 'b'.
-static BOOLEAN dtGTEu8(U8 a, U8 b) {
-   return a != _YMD_AnyMDHMS && b != _YMD_AnyMDHMS && a >= b;}
-
 PUBLIC BOOLEAN YMD_aGTEb(S_YMD const *a, S_YMD const *b) {
    return
-      (a->yr != _YMD_AnyYear && b->yr != _YMD_AnyYear && a->yr >= b->yr)   // Year 'a' < year 'b'?
-         ? true                                                            // then 'a' cannot be GTE 'b'
-         : (dtGTEu8(a->mnth, b->mnth) == true                              // else month 'a' < month 'b'?
-            ? true                                                         // then 'a' cannot be GTE 'b'.
-            : (dtGTEu8(a->day, b->day) == true                             // etc...
-               ? true
+      a->yr != _YMD_AnyYear && b->yr != _YMD_AnyYear && a->yr != b->yr
+         ? (a->yr > b->yr ? true : false)
+         : (a->mnth != _YMD_AnyMDHMS && b->mnth != _YMD_AnyMDHMS && a->mnth != b->mnth
+            ? (a->mnth > b->mnth ? true : false)
+            : (a->day != _YMD_AnyMDHMS && b->day != _YMD_AnyMDHMS
+               ? (a->day >= b->day ? true : false)
                : false )); }
 
 // ------------------------------------- eof ---------------------------------------------------

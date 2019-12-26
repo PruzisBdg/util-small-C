@@ -626,6 +626,8 @@ void test_YMDHMS_aGTEb(void)
 
    S_Tst const tsts[] = {
       { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,44),    .rtn = true },        // Equal
+      { .a = _dt(2014,11,23,5,17,42),           .b = _dt(2013,11,23,5,17,44),    .rtn = true },        // GT
+      { .a = _dt(2012,11,23,5,17,42),           .b = _dt(2013,11,23,5,17,44),    .rtn = false },       // LT
 
       { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2014,14,23,5,17,44),    .rtn = false },       // a.yr < b.yr -> false
       { .a = _dt(2013,3,23,5,17,44),            .b = _dt(2013,4,23,5,17,44),     .rtn = false },       // a.mnth < b.mnth -> false
@@ -645,8 +647,10 @@ void test_YMDHMS_aGTEb(void)
       { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,_YMD_AnyHr,17,44),    .rtn = true },
       { .a = _dt(2013,11,23,5,_YMD_AnyMinute,44), .b = _dt(2013,11,23,5,17,44),           .rtn = true },
       { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,_YMD_AnyMinute,44), .rtn = true },
-      { .a = _dt(2013,11,23,5,17,_YMD_AnySec),  .b = _dt(2013,11,23,5,17,44),             .rtn = true },
-      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,_YMD_AnySec),    .rtn = true },
+
+      // Wildcard days; there's nothing else to compare, so result is 'false'.
+      { .a = _dt(2013,11,23,5,17,_YMD_AnySec),  .b = _dt(2013,11,23,5,17,44),             .rtn = false },
+      { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,_YMD_AnySec),    .rtn = false },
 
       // Other field are still compared, largest units to smallest.
       { .a = _dt(_YMD_AnyYear,2,23,5,17,44),    .b = _dt(2013,11,23,5,17,44),             .rtn = false },
@@ -670,7 +674,7 @@ void test_YMDHMS_aGTEb(void)
       bool rtn = YMDHMS_aGTEb(t->a, t->b);
 
       if(rtn != t->rtn) {
-         printf("tst #%d: Bad return; expected %u, got %u", i, t->rtn, rtn);
+         printf("tst #%d: Bad return; expected %u, got %u\r\n", i, t->rtn, rtn);
          TEST_FAIL();
       }
    }
@@ -831,6 +835,55 @@ void test_Full_YMDHMS_AddSecs(void)
          YMDHMS_ToStr(&out, b2);
 
          printf("YMDHMS_AddSecs() tst #%d: %s + %ld secs -> expected %s, got %s\r\n", i, b0, t->secs, b1, b2);
+         TEST_FAIL();
+      }
+   }
+}
+
+/* --------------------------------- test_YMD_aGTEb ----------------------------------------- */
+
+void test_YMD_aGTEb(void)
+{
+   typedef struct {S_YMD const * a; S_YMD const * b; bool rtn;} S_Tst;
+
+   #define _ymd(_yr, _mnth, _day) \
+      &(S_YMD){.yr =_yr, .mnth = _mnth, .day = _day}
+
+   S_Tst const tsts[] = {
+      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,23),    .rtn = true },        // Equal
+      { .a = _ymd(2014,11,23),           .b = _ymd(2013,11,23),    .rtn = true },        // GT
+      { .a = _ymd(2012,11,23),           .b = _ymd(2013,11,23),    .rtn = false },       // LT
+
+      { .a = _ymd(2013,11,23),           .b = _ymd(2014,14,23),    .rtn = false },       // a.yr < b.yr -> false
+      { .a = _ymd(2013,3,23),            .b = _ymd(2013,4,23),     .rtn = false },       // a.mnth < b.mnth -> false
+      { .a = _ymd(2013,11,7),            .b = _ymd(2013,11,8),     .rtn = false },       // a.day < b.day -> false
+
+      // Wildcards for any field give true for comparison of that field.
+      { .a = _ymd(_YMD_AnyYear,11,23),   .b = _ymd(2013,2,23),              .rtn = true },
+      { .a = _ymd(2013,11,23),           .b = _ymd(_YMD_AnyYear,11,9),      .rtn = true },
+      { .a = _ymd(2013,_YMD_AnyMnth,23), .b = _ymd(2013,11,23),             .rtn = true },
+      { .a = _ymd(2013,11,23),           .b = _ymd(2013,_YMD_AnyMnth,23),   .rtn = true },
+
+      { .a = _ymd(2013,11,_YMD_AnyDay),  .b = _ymd(2013,11,23),             .rtn = false },
+      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_AnyDay),    .rtn = false },
+
+      // Other field are still compared, largest units to smallest.
+      { .a = _ymd(_YMD_AnyYear,2,23),    .b = _ymd(2013,11,23),             .rtn = false },
+      { .a = _ymd(2013,2,9),             .b = _ymd(_YMD_AnyYear,11,9),      .rtn = false },
+      { .a = _ymd(2013,_YMD_AnyMnth,1),  .b = _ymd(2013,11,23),             .rtn = false },
+      { .a = _ymd(2013,11,1),            .b = _ymd(2013,_YMD_AnyMnth,23),   .rtn = false },
+      { .a = _ymd(2013,11,_YMD_AnyDay),  .b = _ymd(2013,11,23),             .rtn = false },
+      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_AnyDay),    .rtn = false },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = YMD_aGTEb(t->a, t->b);
+
+      if(rtn != t->rtn) {
+         printf("tst #%d: Bad return; expected %u, got %u\r\n", i, t->rtn, rtn);
          TEST_FAIL();
       }
    }
