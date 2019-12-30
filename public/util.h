@@ -199,6 +199,7 @@ PUBLIC U8   byteBuf_Count ( S_byteBuf *b);
 PUBLIC U8   byteBuf_Size  ( S_byteBuf *b);
 PUBLIC U8   byteBuf_Free  (S_byteBuf *b);
 PUBLIC void byteBuf_Unlock(S_byteBuf *b);
+PUBLIC BIT  byteBuf_ForcePut(S_byteBuf *b, U8 newPut);
 
 // Direct acces to buffer.
 PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b);
@@ -237,6 +238,11 @@ PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
 /* ---------------------------------- BCD ------------------------------------------- */
+
+PUBLIC bool U8isBCD(U8 n);
+PUBLIC bool U16isBCD(U16 n);
+PUBLIC bool U32isBCD(U32 n);
+
 PUBLIC U8 U8toBCD(U8 n);                  // unprotected.
 PUBLIC bool U16toBCD(U16 *bcd, U16 n);
 PUBLIC bool U32toBCD(U32 *bcd, U32 n);

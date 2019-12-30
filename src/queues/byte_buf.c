@@ -173,6 +173,8 @@ PUBLIC BIT byteBuf_Locked(S_byteBuf *b)
 |
 |  byteBuf_PutAt()
 |
+|  Return the current 'put'.
+|
 ------------------------------------------------------------------------------------------*/
 
 PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b)
@@ -259,6 +261,26 @@ PUBLIC U8 byteBuf_Count(S_byteBuf *b)
 {
    return b->cnt;
 }
+
+/*-----------------------------------------------------------------------------------------
+|
+|  byteBuf_ForcePut()
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC BIT byteBuf_ForcePut(S_byteBuf *b, U8 newPut)
+{
+   if(b->locked || newPut >= b->size)     // locked? OR 'p' is beyond buffer.
+   {
+      return 0;                           // then fail.
+   }
+   else
+   {
+      b->cnt = newPut;                    // else apply 'newPut'
+      return 1;                           // and success.
+   }
+}
+
 
 /*-----------------------------------------------------------------------------------------
 |
