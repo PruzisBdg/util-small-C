@@ -28,8 +28,8 @@ PUBLIC void CopyConstBytesU8( U8 CONST *src, U8 RAM_IS *dest, U8 cnt );
 #define CopyRConstBytesU8(s,d,c)  CopyConstBytesU8((s),(d),(c))
 PUBLIC void CopyLConstBytesU8(U8 RAM_IS *dest, U8 CONST *src, U8 cnt );
 
-PUBLIC void CopyBytesU8_Reversed( U8 RAM_IS *dest, U8 RAM_IS *src, U8 cnt );
-PUBLIC void CopyConstBytesU8_Reversed( U8 RAM_IS *dest, U8 CONST *src, U8 cnt );
+PUBLIC  U8 RAM_IS * CopyBytesU8_Reversed( U8 RAM_IS *dest, U8 RAM_IS *src, U8 cnt );
+PUBLIC  U8 RAM_IS * CopyConstBytesU8_Reversed( U8 RAM_IS *dest, U8 CONST *src, U8 cnt );
 
 PUBLIC void FillBytesU8( U8  RAM_IS *a, U8 n, U8 cnt );
 PUBLIC void ZeroBytesU8(void RAM_IS *p, U8 cnt);
