@@ -22,8 +22,11 @@ PUBLIC BOOLEAN Legal_YMD(S_YMD const *t) {
       ) &&
       (
          t->mnth == _YMD_AnyMDHMS ||
-         (t->mnth >= 1 &&
-          t->mnth <= (t->yr < _2136AD ? 12 : 2))         // Jan -> Dec? (in 2136 just Jan,Feb)
+         (t->mnth >= 1 &&                                // Jan? -> ...
+          t->mnth <= (                                   // ... Dec?
+                     t->yr < _2136AD ||                  // excepting 2136...
+                     t->yr == _YMD_AnyYear               // (_YMD_AnyYear = 0xFEFE, read this as any year NOT 2136)
+                        ? 12 : 2))                       // ...which is just Jan, Feb.
       ) &&
       (
          t->day == _YMD_AnyMDHMS ||

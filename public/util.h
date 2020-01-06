@@ -367,6 +367,8 @@ typedef struct {
 #define _YMD_AnyMinute     _YMD_AnyMDHMS
 #define _YMD_AnySec        _YMD_AnyMDHMS
 
+#define _YMD_LastDay       0xFD        // Last day of the month, whatever that is.
+
 #define _DateTime_AnyMDHMS _YMD_AnyMDHMS     // Hours, minutes, secs too.
 
 // If you want to call 'S_DateTime' this to be consistent with below.

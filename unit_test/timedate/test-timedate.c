@@ -326,6 +326,8 @@ void test_LegalYMD(void)
       { .ymd = {.yr =2099, .mnth = 1,    .day = 0xFE}, .res = true },
       // Matches anything -> always true.
       { .ymd = {.yr =0xFEFE, .mnth = 0xFE, .day = 0xFE}, .res = true },
+
+      { .ymd = {.yr =0xFEFE, .mnth = 4,    .day = 13}, .res = true },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -864,16 +866,14 @@ void test_YMD_aGTEb(void)
       { .a = _ymd(2013,_YMD_AnyMnth,23), .b = _ymd(2013,11,23),             .rtn = true },
       { .a = _ymd(2013,11,23),           .b = _ymd(2013,_YMD_AnyMnth,23),   .rtn = true },
 
-      { .a = _ymd(2013,11,_YMD_AnyDay),  .b = _ymd(2013,11,23),             .rtn = false },
-      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_AnyDay),    .rtn = false },
+      { .a = _ymd(2013,11,_YMD_AnyDay),  .b = _ymd(2013,11,23),             .rtn = true },
+      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_AnyDay),    .rtn = true },
 
       // Other field are still compared, largest units to smallest.
       { .a = _ymd(_YMD_AnyYear,2,23),    .b = _ymd(2013,11,23),             .rtn = false },
       { .a = _ymd(2013,2,9),             .b = _ymd(_YMD_AnyYear,11,9),      .rtn = false },
       { .a = _ymd(2013,_YMD_AnyMnth,1),  .b = _ymd(2013,11,23),             .rtn = false },
       { .a = _ymd(2013,11,1),            .b = _ymd(2013,_YMD_AnyMnth,23),   .rtn = false },
-      { .a = _ymd(2013,11,_YMD_AnyDay),  .b = _ymd(2013,11,23),             .rtn = false },
-      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_AnyDay),    .rtn = false },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
