@@ -400,6 +400,12 @@ PUBLIC T_Seconds32   AD2000toEpoch(T_Seconds32 secsSince2000AD);
 PUBLIC U8            DaysInMonth(U16 yr, U8 month);
 PUBLIC BOOLEAN       IsaLeapYear(U16 yr);
 
+static inline U8 DayOfYMD(S_YMD const *d) {
+   return
+      d->day == _YMD_LastDay
+         ? DaysInMonth(d->yr, d->mnth)
+         : d->day; }
+
 // Hours, minutes, sec.
 PUBLIC void          SecsToHMS(T_Seconds32 secs, S_TimeHMS *hms);
 PUBLIC U8            SecsToHMSStr(   T_Seconds32 secsCnt, C8 *strOut);

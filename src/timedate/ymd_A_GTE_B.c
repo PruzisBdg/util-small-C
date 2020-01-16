@@ -22,10 +22,10 @@ PUBLIC BOOLEAN YMD_aGTEb(S_YMD const *a, S_YMD const *b) {
    return
       a->yr != _YMD_AnyYear && b->yr != _YMD_AnyYear && a->yr != b->yr
          ? (a->yr > b->yr ? true : false)
-         : (a->mnth != _YMD_AnyMDHMS && b->mnth != _YMD_AnyMDHMS && a->mnth != b->mnth
+         : (a->mnth != _YMD_AnyMnth && b->mnth != _YMD_AnyMnth && a->mnth != b->mnth
             ? (a->mnth > b->mnth ? true : false)
-            : (a->day != _YMD_AnyMDHMS && b->day != _YMD_AnyMDHMS
-               ? (a->day >= b->day ? true : false)
+            : ( a->day != _YMD_AnyDay && b->day != _YMD_AnyDay
+               ? (DayOfYMD(a) >= DayOfYMD(b) ? true : false)
                : true )); }
 
 // ------------------------------------- eof ---------------------------------------------------

@@ -18,7 +18,7 @@ PUBLIC BOOLEAN YMD_Equal(S_YMD const *a, S_YMD const *b)
    return
       (a->yr == _YMD_AnyYear     || b->yr == _YMD_AnyYear     || a->yr == b->yr) &&
       (a->mnth == _DateTime_AnyMDHMS || b->mnth == _DateTime_AnyMDHMS || a->mnth == b->mnth) &&
-      (a->day == _DateTime_AnyMDHMS  || b->day == _DateTime_AnyMDHMS  || a->day == b->day)
+      (a->day == _DateTime_AnyMDHMS  || b->day == _DateTime_AnyMDHMS  || DayOfYMD(a) == DayOfYMD(b) )
             ? TRUE : FALSE;
 }
 

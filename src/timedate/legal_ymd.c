@@ -21,7 +21,7 @@ PUBLIC BOOLEAN Legal_YMD(S_YMD const *t) {
          (t->yr >= _2000AD && t->yr <= _2136AD)          // Between 2000AD and 2130AD ? AND
       ) &&
       (
-         t->mnth == _YMD_AnyMDHMS ||
+         t->mnth == _YMD_AnyMnth ||
          (t->mnth >= 1 &&                                // Jan? -> ...
           t->mnth <= (                                   // ... Dec?
                      t->yr < _2136AD ||                  // excepting 2136...
@@ -29,13 +29,14 @@ PUBLIC BOOLEAN Legal_YMD(S_YMD const *t) {
                         ? 12 : 2))                       // ...which is just Jan, Feb.
       ) &&
       (
-         t->day == _YMD_AnyMDHMS ||
+         t->day == _YMD_AnyDay ||
+         t->day == _YMD_LastDay ||
          (
             t->day >= 1 &&                               // > 1st...
             t->day <= (                                  // and LTE then
                t->yr == _2136AD && t->mnth == 2
                   ? 7                                    // Feb 7th 2136, else...
-                  : (t->mnth == _YMD_AnyMDHMS            // ...If wildcard month...
+                  : (t->mnth == _YMD_AnyMnth            // ...If wildcard month...
                      ? 31                                // the 31st
                      : DaysInMonth(t->yr, t->mnth)))     // else 28(29)30,31st?
          )

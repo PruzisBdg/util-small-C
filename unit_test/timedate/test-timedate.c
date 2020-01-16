@@ -317,7 +317,7 @@ void test_LegalYMD(void)
       { .ymd = {.yr =2020, .mnth = 12, .day = 31 }, .res = true },
       { .ymd = {.yr =2020, .mnth = 12, .day = 32 }, .res = false },
 
-      // Wildcards
+      // Wildcards. _YMD_AnyYear = 0xFEFE; _YMD_AnyMnth/Day... = 0xFE.
       { .ymd = {.yr =0xFEFE, .mnth = 1,    .day = 1  }, .res = true },
       { .ymd = {.yr =2001, .mnth = 0xFE, .day = 31  }, .res = true },     // 31st is legal for a wildcard month
       { .ymd = {.yr =2001, .mnth = 0xFE, .day = 0   }, .res = false },     // But not these...
@@ -326,6 +326,9 @@ void test_LegalYMD(void)
       { .ymd = {.yr =2099, .mnth = 1,    .day = 0xFE}, .res = true },
       // Matches anything -> always true.
       { .ymd = {.yr =0xFEFE, .mnth = 0xFE, .day = 0xFE}, .res = true },
+
+      // Wildcards. _YMD_LastDay = 0xFD
+      { .ymd = {.yr =2099, .mnth = 1,    .day = 0xFD}, .res = true },
 
       { .ymd = {.yr =0xFEFE, .mnth = 4,    .day = 13}, .res = true },
    };
@@ -563,32 +566,67 @@ void test_YMD_Equal(void)
    S_Tst const tsts[] = {
       { .a = {0}, .b = {0},                           .rtn = true  },
 
+      { .a = {.yr = 2004, .mnth = 8, .day = 20}, .b = {.yr = 2004, .mnth = 8, .day = 20},  .rtn = true },
+      { .a = {.yr = 2004, .mnth = 8, .day = 20}, .b = {.yr = 2004, .mnth = 8, .day = 9},   .rtn = false },
+      { .a = {.yr = 2004, .mnth = 3, .day = 20}, .b = {.yr = 2004, .mnth = 8, .day = 20},  .rtn = false },
+      { .a = {.yr = 2007, .mnth = 8, .day = 20}, .b = {.yr = 2004, .mnth = 8, .day = 20},  .rtn = false },
+
       { .a = {0}, .b = {.yr =1},                     .rtn = false },
       { .a = {0}, .b = {.yr =_YMD_AnyYear},          .rtn = true  },
       { .a = {.yr =_YMD_AnyYear}, .b = {0},          .rtn = true  },
 
       { .a = {0}, .b = {.mnth = 11},                  .rtn = false },
-      { .a = {0}, .b = {.mnth = _DateTime_AnyMDHMS},  .rtn = true  },
-      { .a = {.mnth = _DateTime_AnyMDHMS}, .b = {0},  .rtn = true  },
+      { .a = {0}, .b = {.mnth = _YMD_AnyMnth},        .rtn = true  },
+      { .a = {.mnth = _YMD_AnyMnth}, .b = {0},        .rtn = true  },
 
       { .a = {0}, .b = {.day = 23},                   .rtn = false },
-      { .a = {0}, .b = {.day = _DateTime_AnyMDHMS},   .rtn = true  },
-      { .a = {.day = _DateTime_AnyMDHMS}, .b = {0},   .rtn = true  },
+      { .a = {0}, .b = {.day = _YMD_AnyDay},          .rtn = true  },
+      { .a = {.day = _YMD_AnyDay}, .b = {0},          .rtn = true  },
+
+      // ---- Last day of the given month.
+      { .a = {.yr = 2004, .mnth = 1, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 1, .day = 31},            .rtn = true },
+      { .a = {.yr = 2004, .mnth = 1, .day = _YMD_LastDay},  .b = {.yr = 2004, .mnth = 1, .day = 10 },          .rtn = false },
+
+      // Check a few months.
+      { .a = {.yr = 2004, .mnth = 3, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 3, .day = 31},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 4, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 4, .day = 30},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 5, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 5, .day = 31},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 6, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 6, .day = 30},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 7, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 7, .day = 31},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 8, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 8, .day = 31},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 9, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 9, .day = 30},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 10,.day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 10,.day = 31},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 11,.day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 11,.day = 30},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 12,.day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 12,.day = 31},           .rtn = true },
+
+      // Also 28/29th Feb
+      { .a = {.yr = 2003, .mnth = 2, .day = _YMD_LastDay}, .b = {.yr = 2003, .mnth = 2, .day = 28},           .rtn = true },
+      { .a = {.yr = 2004, .mnth = 2, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 2, .day = 29},           .rtn = true },
+
+      { .a = {.yr = 2004, .mnth = 2, .day = _YMD_LastDay}, .b = {.yr = 2004, .mnth = 2, .day = 28},           .rtn = false },
+      { .a = {.yr = 2003, .mnth = 2, .day = _YMD_LastDay}, .b = {.yr = 2003, .mnth = 2, .day = 29},           .rtn = false },
    };
+
+   // ----- Test the corner/special cases above
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
    {
       S_Tst const *t = &tsts[i];
 
-      bool rtn = YMD_Equal(&t->a, &t->b);
+      // YMD_Equal() is symmetric. Check both ways.
+      bool rtnA = YMD_Equal(&t->a, &t->b);
+      bool rtnB = YMD_Equal(&t->a, &t->b);
 
-      if(rtn != t->rtn) {
-         printf("tst #%d: Bad return; expected %u, got %u", i, t->rtn, rtn);
-         TEST_FAIL();
-      }
+      if(rtnA != t->rtn ) {
+         printf("tst #%d: YMD_Equal(a,b) Bad return; expected %u, got %u\r\n", i, t->rtn, rtnA);
+         TEST_FAIL(); }
+      else if(rtnB != t->rtn ) {
+         printf("tst #%d: YMD_Equal(b,a) Bad return; expected %u, got %u\r\n", i, t->rtn, rtnB);
+         TEST_FAIL(); }
    }
 
-   // Check (100)  random Date/times.
+   // ----- Check (100) random Date/times.
+
    for(U8 i = 0; i < 100; i++)
    {
       // First check random equal YMD are seen as equal.
@@ -868,6 +906,11 @@ void test_YMD_aGTEb(void)
 
       { .a = _ymd(2013,11,_YMD_AnyDay),  .b = _ymd(2013,11,23),             .rtn = true },
       { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_AnyDay),    .rtn = true },
+
+      // '_YMD_LastDay' resolves to the actual day of the YMD.
+      { .a = _ymd(2013,11,_YMD_LastDay), .b = _ymd(2013,11,23),             .rtn = true },
+      { .a = _ymd(2013,11,23),           .b = _ymd(2013,11,_YMD_LastDay),    .rtn = false },
+      { .a = _ymd(2013,11,_YMD_LastDay), .b = _ymd(2013,11,_YMD_LastDay),    .rtn = true },
 
       // Other field are still compared, largest units to smallest.
       { .a = _ymd(_YMD_AnyYear,2,23),    .b = _ymd(2013,11,23),             .rtn = false },
