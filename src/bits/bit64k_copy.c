@@ -271,7 +271,7 @@ PUBLIC bool bit64K_Copy(bit64K_Ports const *port, T_bit64K dest, T_bit64K src, b
 #define _msb7  7
 #define _8bits 8
 
-#define _numBytesFrom(b)  (((b)+1)/8)
+#define _numBytesFrom(b)  (((b)+7)/8)
 
 PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_T_Cnt numBits, E_EndianIs srcEndian)
 {

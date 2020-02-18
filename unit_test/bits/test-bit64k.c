@@ -770,6 +770,9 @@ void test_Bit64_In_BE_multiSrc(void)
 
       { .cpy = {.to = {1,3}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
                                              .result = (U8[]){0x00, 0x05, 0xA3, 0xC9, 0x60, [5 ... _TstBufSz-1] = 0x00} },
+
+      { .cpy = {.to = {0,3}, .nBits = 28 }, .src = (U8[]){0x86, 0x5A, 0x3C, 0x96, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0x08, 0x65, 0xA3, 0xC6, [4 ... _TstBufSz-1] = 0x00} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
