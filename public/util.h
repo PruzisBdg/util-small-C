@@ -730,6 +730,13 @@ PUBLIC S16 randS16(void);
 PUBLIC S32 randS32(void);
 PUBLIC S8  randS8(void);
 
+// ------------------------------------------ CRCs --------------------------------------------
+
+typedef struct { U16 poly, seed, finalXor; } crc16_S_Cfg;
+PUBLIC U16 crc16_Block(crc16_S_Cfg* cfg, U8 const * src, U16 numBytes);
+
+typedef struct { U32 poly, initRemainder, finalXor; } crc32_S_Cfg;
+PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 
 // ================================= Macros ======================================================
 
