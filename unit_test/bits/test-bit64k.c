@@ -689,6 +689,81 @@ void test_Bit64_In_LE_multiSrc(void)
    }
 }
 
+
+
+/* ------------------------------- test_Bit64_In_LE_multiSrc_Endian ---------------------------------------------------
+
+   Same as test_Bit64_In_BE_multiSrc() but with an array of (different) source bytes that are little endian dependent.
+*/
+
+void test_Bit64_In_LE_multiSrc_Endian(void)
+{
+   typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // Straddling 3 or 4 bytes..
+      { .cpy = {.to = {0,4}, .nBits = 16 }, .src = (U8[]){0x5A, 0x3C, [2 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0xA0, 0xC5, 0x03, [3 ... _TstBufSz-1] = 0x00} },
+
+      { .cpy = {.to = {1,4}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+                                             .result = (U8[]){0x00, 0xA0, 0xC5, 0x63, 0x09, [5 ... _TstBufSz-1] = 0x00} },
+												 
+	  { .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+											 .result = (U8[]){0x00, 0x68, 0xF1, 0x58, 0x02, [5 ... _TstBufSz-1] = 0x00} },
+	
+	  { .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
+											 .result = (U8[]){0xFF, 0x6B, 0xF1, 0x58, 0xFE, [5 ... _TstBufSz-1] = 0xFF} },
+	
+	  { .cpy = {.to = {0,6}, .nBits = 11 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+											 .result = (U8[]){0x80, 0x16, 0x01, [3 ... _TstBufSz-1] = 0x00} },
+	
+	  { .cpy = {.to = {0,7}, .nBits = 17 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+											 .result = (U8[]){0x00, 0x2D, 0x1E, [3 ... _TstBufSz-1] = 0x00} },
+	
+	  { .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+											 .result = (U8[]){0x68, 0xF1, 0x58, 0x00, 0x00, [5 ... _TstBufSz-1] = 0x00} },
+	
+	  { .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
+											 .result = (U8[]){0x6B, 0xF1, 0xD8, 0xFF, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
+	
+	  { .cpy = {.to = {0,5}, .nBits = 27 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,	
+											.result = (U8[]){0x5F, 0x8B, 0xC7, 0x92, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
+												
+	  { .cpy = {.to = {0,6}, .nBits = 29 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+											.result = (U8[]){0x80, 0x16, 0x8F, 0x25, 0x05, [5 ... _TstBufSz-1] = 0x00} },
+												
+	  { .cpy = {.to = {0,6}, .nBits = 29 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
+											.result = (U8[]){0xBF, 0x16, 0x8F, 0x25, 0xFD, [5 ... _TstBufSz-1] = 0xFF} },										
+   };
+
+   for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      memcpy(srcBuf,  t->src, _TstBufSz );
+      memset(destBuf, t->destFill, _TstBufSz );
+
+      S_CpySpec const * cpy = &t->cpy;
+
+      bool rtn = bit64K_In(
+         &portNoCache,
+         bit64K_MakeLE(cpy->to._byte, cpy->to._bit),
+         srcBuf,
+         cpy->nBits,
+         eLittleEndian,
+         _SrcIsEndian);
+
+      TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_LE_multiSrc() should return true");
+
+      C8 b0[100];
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+            i,
+            srcBuf[0], srcBuf[1],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+
+      TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TstBufSz, b0);
+   }
+}
+
 /* ------------------------------- test_Bit64_In_BE --------------------------------------------------- */
 
 void test_Bit64_In_BE(void)
@@ -801,6 +876,72 @@ void test_Bit64_In_BE_multiSrc(void)
 
       TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TstBufSz, b0);
    }
+}
+
+/* ------------------------------- test_Bit64_In_BE_multiSrc_Endian ---------------------------------------------------
+
+   Same as test_Bit64_In_BE_multiSrc() but with an array of (different) source bytes that are big endian dependent.
+*/
+void test_Bit64_In_BE_multiSrc_Endian(void)
+{
+	typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
+
+	S_Tst const tsts[] = {
+		// Straddling 3 or 4 bytes..
+		{ .cpy = {.to = {0,3}, .nBits = 16 }, .src = (U8[]){0x5A, 0x3C, [2 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+		.result = (U8[]){0x03, 0xC5, 0xA0, [3 ... _TstBufSz-1] = 0x00} },
+
+		{ .cpy = {.to = {1,3}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+		.result = (U8[]){0x00, 0x09, 0x63, 0xC5, 0xA0, [5 ... _TstBufSz-1] = 0x00} },
+		
+		{ .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+		.result = (U8[]){0x00, 0x04, 0xB1, 0xE2, 0xD0, [5 ... _TstBufSz-1] = 0x00} },
+			
+		{ .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
+		.result = (U8[]){0xFF, 0xFC, 0xB1, 0xE2, 0xD7, [5 ... _TstBufSz-1] = 0xFF} },			
+			
+		{ .cpy = {.to = {0,6}, .nBits = 11 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+		.result = (U8[]){0x45, 0xA0, [2 ... _TstBufSz-1] = 0x00} },
+			
+		{ .cpy = {.to = {0,7}, .nBits = 17 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+		.result = (U8[]){0x1E, 0x2D, 0x00, [3 ... _TstBufSz-1] = 0x00} },
+			
+		{ .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+		.result = (U8[]){0x05, 0x8F, 0x16, 0x80, 0x00, [5 ... _TstBufSz-1] = 0x00} },
+		
+		{ .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
+		.result = (U8[]){0xFD, 0x8F, 0x16, 0xBF, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
+			
+		{ .cpy = {.to = {0,5}, .nBits = 27 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
+		.result = (U8[]){0xE4, 0xB1, 0xE2, 0xD7, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
+	};
+
+	for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
+	{
+		S_Tst const *t = &tsts[i];
+		memcpy(srcBuf,  t->src, _TstBufSz );
+		memset(destBuf, t->destFill, _TstBufSz );
+
+		S_CpySpec const * cpy = &t->cpy;
+
+		bool rtn = bit64K_In(
+		&portNoCache,
+		bit64K_MakeBE(cpy->to._byte, cpy->to._bit),
+		srcBuf,
+		cpy->nBits,
+		eBigEndian,
+		_SrcIsEndian );
+
+		TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_BE_multiSrc_Endian should return true");
+
+		C8 b0[100];
+		sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+		i,
+		srcBuf[0], srcBuf[1],
+		cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+
+		TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TstBufSz, b0);
+	}
 }
 
 /* ----------------------------------- test_Bit64_ParmFitsField ----------------------------------------- */

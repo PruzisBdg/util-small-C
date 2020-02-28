@@ -339,6 +339,9 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_
 
 PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
 {
+	bool final_multi = false;	// Indicates the last byte of the source
+	U8 extra_byte = 0;			// Extra byte used to add byte when 24 bit number
+	
    if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
       { return false; }                                           // then fail!
    else if(numBits == 0) {                                        // else nothing to write?
@@ -346,10 +349,48 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
    else {                                                         // else continue.
       /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
          dest if they are different endians. Otherwise 'src' just counts up (into dest).
-      */
+      */ 	 
+	 
+	 // Left justifies source based on number of bytes and position of first bit
+	 if(destEndian == eBigEndian && srcIsEndian) { 	 
+		  U8 * temp_src;			// Used as temp source pointer after left justification		    
+	  
+		  if((_numBytesFrom(numBits) == 2)) {
+			  U16 source_number16 = src[0] | (U16)src[1] << 8;			 // Change to original int to allow bit shift
+		  
+			  if(numBits % 8 != 0)
+				source_number16 = source_number16 << (8-(numBits % 8));  // Left justify based on num of bits
+		  
+			  temp_src = source_number16;
+			  src = &temp_src;
+		  }
+	  
+		  else if ((_numBytesFrom(numBits) == 3))
+		  {
+		  
+			  U32 source_number24 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16;
+			  if(numBits % 8 != 0)
+				{source_number24 = source_number24 << (16-(numBits % 8));}
+			  else
+				{source_number24 = source_number24 << 8;}
+			
+			  temp_src = source_number24;			    
+			  src = &temp_src;
+			  extra_byte++;												 // Add byte to account for extra 8 bit shift to get number left justified
+		  }
+	 
+		 else if ((_numBytesFrom(numBits) == 4)) {		 
+			 U32 source_number32 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16 | (U32)src[3] << 24;
+			 if(numBits % 8 != 0)
+				{source_number32 = source_number32 << (8-(numBits % 8));}
+					
+			 temp_src = source_number32;
+			 src = &temp_src;
+		 }	 
+	}
       T_EndianPtr si;
-      src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
-                  srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
+      src = EndianPtr_New(&si, src, _numBytesFrom(numBits) + extra_byte,
+                  srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'. 
 
       for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
       {
@@ -369,7 +410,7 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
          }
          else {
             U8 lsb = _bitLE(dest);
-            msb = MinU8(_msb7, lsb+numBits-1);
+            msb = MinU8(_msb7, lsb+rem-1);
             open = rem > _8bits-lsb ? _8bits-lsb : rem;
          }
          bit64K_atByte destAt = _byte(dest);
@@ -386,8 +427,10 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
 
          // Align the left (msbit) of the source field with left of dest.
          U8 sb;
-         if(destEndian == eBigEndian) {
-            sb = shiftLR(*src, msb+1-MinU8(_8bits, rem)); }
+         if(destEndian == eBigEndian & !final_multi) {
+            sb = shiftLR(*src, msb+1-MinU8(_8bits, rem)); }		  // This accounts for shift when one byte and not big endian dependent
+		 else if(destEndian == eBigEndian & final_multi) {
+		    sb = shiftLR(*src, msb+1-_8bits); }					  // Used when source is big endian dependent, last case should also shift by same amount as before
          else {
             sb = shiftLR(*src, msb+1-open); }                     // Align the left (msbit) of the source field with left of dest.
 
@@ -402,14 +445,12 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
          // 'destAt' + 1, left justified for big-endian; right-justified for little-endian.
          if(open < _8bits && rem > 0)                             // Used just part of 'src' byte? AND bits left to transfer?
          {
-            U8 write = destEndian == eBigEndian
-                           ? _8bits - open
-                           : open;                                // Bits remaining in the byte read from 'src'
+            U8 write =  _8bits - open;							  // Bits remaining in the byte read from 'src'                                                          
 
             if(rem < write) {                                     // Only some of those remaining bits needed to complete transfer?
                write = rem;                                       // then will transfer just what we need (to complete)
                rem = 0; }                                         // and after that the whole transfer will be done.
-            else {                                                // else will use all remaining bits from 'src'.
+			else {                                                // else will use all remaining bits from 'src'.
                rem -= write; }                                    // Zero or more bits left to complete whole transfer.
 
             // Read the destination byte and mask out to bits to be updated. However, don't bother if the
@@ -426,15 +467,20 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
                      { CLRB(db, mask(write-1, write)); }
                }}              // Clear 'open' bits from 'msb'.
 
-            if(destEndian == eBigEndian) {
+            if(destEndian == eBigEndian & !final_multi) {
                sb = shiftLR(*src, _8bits-write);                  // Shift partial field left to align with destination slot.
                db = orInto(db, sb, mask(_msb7, write)); }         // Mask to select just that field and OR into dest byte.
-            else {
-               sb = shiftLR(*src, -write);                        // Shift partial field left to align with destination slot.
-               db = orInto(db, sb, mask(write-1, write)); }       // Mask to select just that field and OR into dest byte.
+			else if(destEndian == eBigEndian & final_multi) {
+				sb = shiftLR(*src, open);						  // Shift partial field left to align with destination slot.
+				db = orInto(db, sb, mask(_msb7, write)); }        // Mask to select just that field and OR into dest byte.
+			else {
+				 sb = shiftLR(*src, -open);                        // Shift partial field left to align with destination slot.
+				 db = orInto(db, sb, mask(write-1, write)); }       // Mask to select just that field and OR into dest byte.
 
             if(false == port->dest.wr(destAt+1, &db, 1))          // Destination byte updated; put it back.
                { return false; }
+		    if(rem <= _8bits & srcIsEndian)						  // Used for tail handling when is endian
+				{final_multi = true;}
          }
       } // for(U8 rem = numBits...
       return true;
@@ -525,7 +571,9 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
          #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
       #endif // __BYTE_ORDER__
 
-      return bitsFit(msb, fieldBits % _8bits); }
+      return bitsFit(msb, fieldBits % _8bits); 
+	  //return true;
+	  }
 }
 
 // ---------------------------------- eof --------------------------------  -
