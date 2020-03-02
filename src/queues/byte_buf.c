@@ -6,6 +6,7 @@
 
 #include "libs_support.h"
 #include "util.h"
+#include "arith.h"
 
 /*-----------------------------------------------------------------------------------------
 |
@@ -20,6 +21,48 @@ PRIVATE void copyOut(S_byteBuf *b, U8 *out, U8 numBytes)
    for( c = 0; c < numBytes; c++ )     // For each byte to read
    {
       out[c] = b->buf[b->get++];       // Copy to 'out'.
+   }
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  copyIn()
+|
+------------------------------------------------------------------------------------------*/
+
+PRIVATE void copyIn(S_byteBuf *b, U8 const *src, U8 cnt)
+{
+   for(U8 c = 0; c < cnt; c++ )
+   {
+      b->buf[b->cnt++] = src[c];
+   }
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  fillUp()
+|
+------------------------------------------------------------------------------------------*/
+
+PRIVATE void fillUp(S_byteBuf *b, U8 n, U8 cnt)
+{
+   for(U8 c = 0; c < cnt; c++ )
+   {
+      b->buf[b->cnt++] = n;
+   }
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  moveUp()
+|
+------------------------------------------------------------------------------------------*/
+
+PRIVATE void moveUp(S_byteBuf *b, U8 from, U8 to, U8 cnt)
+{
+   for(U8 c = 0; c < cnt; c++)
+   {
+      b->buf[to++] = b->buf[from++];
    }
 }
 
@@ -61,8 +104,6 @@ PUBLIC BOOL byteBuf_Exists(S_byteBuf *b)
 
 PUBLIC BIT byteBuf_Write(S_byteBuf *b, U8 const *src, U8 bytesToWrite)
 {
-   U8 c;
-
    if(b->locked ||                           // Buffer locked?
       bytesToWrite > b->size - b->cnt )      // or not enough room?
    {
@@ -71,13 +112,53 @@ PUBLIC BIT byteBuf_Write(S_byteBuf *b, U8 const *src, U8 bytesToWrite)
    else                                      // else we can proceed
    {
       b->locked = 1;                         // Lock it now, for duration of write
-
-      for( c = 0; c < bytesToWrite; c++ )    // For each byte to write
-      {
-         b->buf[b->cnt++] = src[c];          // Write that byte
-      }
+      copyIn(b, src, bytesToWrite);
       b->locked = 0;                         // and we're done; unlock the queue.
       return 1;                              // Return success
+   }
+}
+
+/*-----------------------------------------------------------------------------------------
+|
+|  byteBuf_Insert()
+|
+|  Write 'bytesToWrite' from 'src' to 'b' at index 'insertAt', moving up any bytes already
+|  there. Don't write any of 'src' unless everything will fit (including any moved bytes).
+|
+|  If 'insertAt' is beyond the current 'put' then the gap between the existing data and
+|  the inserted data is zero-filled.
+|
+|  Return 0 if the insert didn't happen.
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC BIT byteBuf_Insert(S_byteBuf *b, U8 const *src, U8 insertAt, U8 numBytes)
+{
+   if(b->locked ||                              // Buffer locked?
+      (U16)numBytes + MaxU8(insertAt, b->cnt) > b->size )    // or not enough room?
+   {
+      return 0;                                 // then can't do this insertion
+   }
+   else                                         // else we can proceed
+   {
+      b->locked = 1;                            // Lock it now, for duration of write
+
+      if(insertAt < b->cnt)                     // Must insert into existing data?
+      {                                         // Move up data from the insertion point to make a gap.
+         U8 afterInsert = b->cnt - insertAt;    // These many data bytes after the insertion point.
+         moveUp(b, insertAt, insertAt + numBytes, afterInsert);
+         b->cnt = insertAt;                     // Place 'put' here.
+         copyIn(b, src, numBytes);         // Copy in bytes to be inserted.
+         b->cnt += afterInsert;                 // 'put' beyond to past the last data byte.
+      }
+      else                                      // else insertion point is past existing data
+      {
+         fillUp(b, 0, b->cnt - insertAt);       // Zero fill from last data to the insertion point
+         copyIn(b, src, numBytes);         // Append the bytes to insert.
+      }
+
+      b->locked = 0;                            // and we're done; unlock the queue.
+      return 1;                                 // Return success
    }
 }
 
