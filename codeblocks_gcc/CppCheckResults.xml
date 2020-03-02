@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<results version="2">
+    <cppcheck version="1.89" />
+    <errors>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;dest&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;dest&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\..\unity_tdd\tdd_common.c" file="..\..\unity_tdd\tdd_common.c" line="13" column="45" />
+            <symbol>dest</symbol>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;bytesGot==3&apos; is always true" verbose="Condition &apos;bytesGot==3&apos; is always true" cwe="571">
+            <location file0="..\src\Sensus\sensus_decode.c" file="..\src\Sensus\sensus_decode.c" line="498" column="61" info="Condition &apos;bytesGot==3&apos; is always true" />
+            <location file0="..\src\Sensus\sensus_decode.c" file="..\src\Sensus\sensus_decode.c" line="489" column="52" info="Assuming that condition &apos;bytesGot==3&apos; is not redundant" />
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &apos;n&apos; shadows outer variable" verbose="Local variable &apos;n&apos; shadows outer variable" cwe="398">
+            <location file0="..\src\Sensus\sensus_decode.c" file="..\src\Sensus\sensus_decode.c" line="296" column="14" info="Shadow variable" />
+            <location file0="..\src\Sensus\sensus_decode.c" file="..\src\Sensus\sensus_decode.c" line="265" column="11" info="Shadowed declaration" />
+            <symbol>n</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\ascii_num\read_binary_word.c" file="..\src\ascii_num\read_binary_word.c" line="30" column="16" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\ascii_num\read_dirty_int.c" file="..\src\ascii_num\read_dirty_int.c" line="45" column="13" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\ascii_num\read_dirty_s32.c" file="..\src\ascii_num\read_dirty_s32.c" line="45" column="13" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\ascii_num\read_dirty_s32.c" file="..\src\ascii_num\read_dirty_s32.c" line="140" column="13" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\ascii_num\read_next_float.c" file="..\src\ascii_num\read_next_float.c" line="55" column="12" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\ascii_num\read_next_number.c" file="..\src\ascii_num\read_next_number.c" line="135" column="12" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="integerOverflowCond" severity="warning" msg="Either the condition &apos;n&gt;(unsigned long)((long)(2147483647LL))+1&apos; is redundant or there is signed integer overflow for expression &apos;-(long)n&apos;." verbose="Either the condition &apos;n&gt;(unsigned long)((long)(2147483647LL))+1&apos; is redundant or there is signed integer overflow for expression &apos;-(long)n&apos;." cwe="190">
+            <location file0="..\src\ascii_num\read_next_number.c" file="..\src\ascii_num\read_next_number.c" line="52" column="26" info="Integer overflow" />
+            <location file0="..\src\ascii_num\read_next_number.c" file="..\src\ascii_num\read_next_number.c" line="46" column="12" info="Assuming that condition &apos;n&gt;(unsigned long)((long)(2147483647LL))+1&apos; is not redundant" />
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;spec-&gt;mem&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;spec-&gt;mem&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\heaps\heap_1way_u16.c" file="..\src\heaps\heap_1way_u16.c" line="46" column="25" />
+            <symbol>spec-&gt;mem</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;h-&gt;mem&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;h-&gt;mem&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\heaps\heap_1way_u16.c" file="..\src\heaps\heap_1way_u16.c" line="64" column="18" />
+            <symbol>h-&gt;mem</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;h-&gt;mem&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;h-&gt;mem&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\heaps\heap_1way_u16.c" file="..\src\heaps\heap_1way_u16.c" line="68" column="61" />
+            <symbol>h-&gt;mem</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;h-&gt;mem&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;h-&gt;mem&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\heaps\heap_1way_u16.c" file="..\src\heaps\heap_1way_u16.c" line="78" column="21" />
+            <symbol>h-&gt;mem</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;h-&gt;mem&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;h-&gt;mem&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\heaps\heap_1way_u16.c" file="..\src\heaps\heap_1way_u16.c" line="113" column="22" />
+            <symbol>h-&gt;mem</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hexStr&apos; is assigned a value that is never used." verbose="Variable &apos;hexStr&apos; is assigned a value that is never used." cwe="563">
+            <location file0="..\src\hexascii\hex_ascii_to_U16.c" file="..\src\hexascii\hex_ascii_to_U16.c" line="17" column="19" />
+            <symbol>hexStr</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hexStr&apos; is assigned a value that is never used." verbose="Variable &apos;hexStr&apos; is assigned a value that is never used." cwe="563">
+            <location file0="..\src\hexascii\hex_ascii_to_U32.c" file="..\src\hexascii\hex_ascii_to_U32.c" line="22" column="19" />
+            <symbol>hexStr</symbol>
+        </error>
+        <error id="duplicateValueTernary" severity="style" msg="Same value in both branches of ternary operator." verbose="Finding the same value in both branches of ternary operator is suspicious as the same code is executed regardless of the condition." cwe="398">
+            <location file0="..\src\misc\string_soft_match.c" file="..\src\misc\string_soft_match.c" line="20" column="38" />
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;m&apos; can be reduced." verbose="The scope of the variable &apos;m&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\string_soft_match.c" file="..\src\misc\string_soft_match.c" line="57" column="25" />
+            <symbol>m</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;step&apos; can be reduced." verbose="The scope of the variable &apos;step&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="36" column="13" />
+            <symbol>step</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;loopCnt&apos; can be reduced." verbose="The scope of the variable &apos;loopCnt&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="37" column="7" />
+            <symbol>loopCnt</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;maxLoop&apos; can be reduced." verbose="The scope of the variable &apos;maxLoop&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="37" column="16" />
+            <symbol>maxLoop</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;key&apos; can be reduced." verbose="The scope of the variable &apos;key&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="39" column="8" />
+            <symbol>key</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;p&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;p&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="43" column="40" />
+            <symbol>p</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;tbl&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;tbl&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="61" column="18" />
+            <symbol>tbl</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;p&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;p&apos; is of type &apos;const void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\misc\tbl_search_Ascending_key_u16.c" file="..\src\misc\tbl_search_Ascending_key_u16.c" line="70" column="46" />
+            <symbol>p</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\text_line_builder.c" file="..\src\misc\text_line_builder.c" line="83" column="8" />
+            <symbol>c</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ls&apos; can be reduced." verbose="The scope of the variable &apos;ls&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\text_line_builder.c" file="..\src\misc\text_line_builder.c" line="84" column="31" />
+            <symbol>ls</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;srcOfs&apos; can be reduced." verbose="The scope of the variable &apos;srcOfs&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\text_line_builder.c" file="..\src\misc\text_line_builder.c" line="418" column="21" />
+            <symbol>srcOfs</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;len&apos; can be reduced." verbose="The scope of the variable &apos;len&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\text_line_builder.c" file="..\src\misc\text_line_builder.c" line="478" column="25" />
+            <symbol>len</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;str&apos; can be reduced." verbose="The scope of the variable &apos;str&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\text_line_builder.c" file="..\src\misc\text_line_builder.c" line="479" column="26" />
+            <symbol>str</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;f&apos; can be reduced." verbose="The scope of the variable &apos;f&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\misc\text_line_builder.c" file="..\src\misc\text_line_builder.c" line="480" column="26" />
+            <symbol>f</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\network\mac_addr.c" file="..\src\network\mac_addr.c" line="12" column="8" />
+            <symbol>c</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\printfs\tiny1_printf.c" file="..\src\printfs\tiny1_printf.c" line="646" column="7" />
+            <symbol>c</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;pwr&apos; can be reduced." verbose="The scope of the variable &apos;pwr&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\printfs\tiny1_printf.c" file="..\src\printfs\tiny1_printf.c" line="646" column="10" />
+            <symbol>pwr</symbol>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &apos;ch&apos; shadows outer variable" verbose="Local variable &apos;ch&apos; shadows outer variable" cwe="398">
+            <location file0="..\src\printfs\tiny1_printf.c" file="..\src\printfs\tiny1_printf.c" line="1037" column="25" info="Shadow variable" />
+            <location file0="..\src\printfs\tiny1_printf.c" file="..\src\printfs\tiny1_printf.c" line="939" column="7" info="Shadowed declaration" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;b-&gt;locked&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;b-&gt;locked&apos; is reassigned a value before the old one has been used." cwe="563">
+            <location file0="..\src\queues\byte_buf.c" file="..\src\queues\byte_buf.c" line="79" column="17" />
+            <location file0="..\src\queues\byte_buf.c" file="..\src\queues\byte_buf.c" line="73" column="17" />
+            <symbol>b-&gt;locked</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;b-&gt;locked&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;b-&gt;locked&apos; is reassigned a value before the old one has been used." cwe="563">
+            <location file0="..\src\queues\byte_buf.c" file="..\src\queues\byte_buf.c" line="235" column="17" />
+            <location file0="..\src\queues\byte_buf.c" file="..\src\queues\byte_buf.c" line="232" column="17" />
+            <symbol>b-&gt;locked</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\queues\byte_buf.c" file="..\src\queues\byte_buf.c" line="64" column="7" />
+            <symbol>c</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;q-&gt;locked&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;q-&gt;locked&apos; is reassigned a value before the old one has been used." cwe="563">
+            <location file0="..\src\queues\byte_queue.c" file="..\src\queues\byte_queue.c" line="66" column="17" />
+            <location file0="..\src\queues\byte_queue.c" file="..\src\queues\byte_queue.c" line="57" column="17" />
+            <symbol>q-&gt;locked</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;q-&gt;locked&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;q-&gt;locked&apos; is reassigned a value before the old one has been used." cwe="563">
+            <location file0="..\src\queues\byte_queue.c" file="..\src\queues\byte_queue.c" line="101" column="17" />
+            <location file0="..\src\queues\byte_queue.c" file="..\src\queues\byte_queue.c" line="92" column="17" />
+            <symbol>q-&gt;locked</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\queues\byte_queue.c" file="..\src\queues\byte_queue.c" line="48" column="7" />
+            <symbol>c</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\queues\byte_queue.c" file="..\src\queues\byte_queue.c" line="84" column="7" />
+            <symbol>c</symbol>
+        </error>
+        <error id="arithOperationsOnVoidPointer" severity="portability" msg="&apos;dest&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined." verbose="&apos;dest&apos; is of type &apos;void *&apos;. When using void pointers in calculations, the behaviour is undefined. Arithmetic operations on &apos;void *&apos; is a GNU C extension, which defines the &apos;sizeof(void)&apos; to be 1." cwe="467">
+            <location file0="..\src\rand\rand_basic.c" file="..\src\rand\rand_basic.c" line="12" column="45" />
+            <symbol>dest</symbol>
+        </error>
+        <error id="shiftTooManyBitsSigned" severity="portability" msg="Shifting signed 32-bit value by 31 bits is implementation-defined behaviour. See condition at line 112." verbose="Shifting signed 32-bit value by 31 bits is implementation-defined behaviour. See condition at line 112." cwe="758">
+            <location file0="..\src\stores\c8_bag.c" file="..\src\stores\c8_bag.c" line="122" column="34" info="Shift" />
+            <location file0="..\src\stores\c8_bag.c" file="..\src\stores\c8_bag.c" line="121" column="15" info="Assignment &apos;lsb=n-(ln*(8*sizeof(unsigned long)))&apos;, assigned value is 31" />
+            <location file0="..\src\stores\c8_bag.c" file="..\src\stores\c8_bag.c" line="112" column="9" info="Assuming that condition &apos;n&gt;127&apos; is not redundant" />
+        </error>
+        <error id="shiftTooManyBitsSigned" severity="portability" msg="Shifting signed 32-bit value by 31 bits is implementation-defined behaviour" verbose="Shifting signed 32-bit value by 31 bits is implementation-defined behaviour" cwe="758">
+            <location file0="..\src\stores\u8_bag.c" file="..\src\stores\u8_bag.c" line="117" column="31" info="Shift" />
+            <location file0="..\src\stores\u8_bag.c" file="..\src\stores\u8_bag.c" line="116" column="12" info="Assignment &apos;lsb=n-(ln*(8*sizeof(unsigned long)))&apos;, assigned value is 31" />
+            <location file0="..\src\stores\u8_bag.c" file="..\src\stores\u8_bag.c" line="156" column="28" info="Calling function &apos;U8bag_Contains&apos;, 2nd argument &apos;c&apos; value is 255" />
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;s&apos; can be reduced." verbose="The scope of the variable &apos;s&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\swapbytesU8.c" file="..\src\swapbytesU8.c" line="12" column="14" />
+            <symbol>s</symbol>
+        </error>
+        <error id="clarifyCondition" severity="style" msg="Boolean result is used in bitwise operation. Clarify expression with parentheses." verbose="Suspicious expression. Boolean result is used in bitwise operation. The operator &apos;!&apos; and the comparison operators have higher precedence than bitwise operators. It is recommended that the expression is clarified with parentheses." cwe="398">
+            <location file0="..\src\terminal\ansi_kbd.c" file="..\src\terminal\ansi_kbd.c" line="72" column="18" />
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;c&apos; can be reduced." verbose="The scope of the variable &apos;c&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_copy_nth_word.c" file="..\src\wordlist\str_copy_nth_word.c" line="30" column="14" />
+            <symbol>c</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_copy_nth_word.c" file="..\src\wordlist\str_copy_nth_word.c" line="30" column="17" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_find_word.c" file="..\src\wordlist\str_find_word.c" line="23" column="14" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_find_word_cc.c" file="..\src\wordlist\str_find_word_cc.c" line="26" column="14" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_find_word_vc.c" file="..\src\wordlist\str_find_word_vc.c" line="25" column="14" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_get_end_word.c" file="..\src\wordlist\str_get_end_word.c" line="23" column="13" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_get_nth_word.c" file="..\src\wordlist\str_get_nth_word.c" line="22" column="14" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_tail_after_word.c" file="..\src\wordlist\str_tail_after_word.c" line="25" column="14" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_word_char_cnt.c" file="..\src\wordlist\str_word_char_cnt.c" line="21" column="7" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;ch&apos; can be reduced." verbose="The scope of the variable &apos;ch&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398">
+            <location file0="..\src\wordlist\str_word_cnt.c" file="..\src\wordlist\str_word_cnt.c" line="20" column="19" />
+            <symbol>ch</symbol>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Cppcheck cannot find all the include files (use --check-config for details)" verbose="Cppcheck cannot find all the include files. Cppcheck can check the code without the include files found. But the results will probably be more accurate if all the include files are found. Please check your project&apos;s include directories and add all of them as include directories for Cppcheck. To see what files Cppcheck cannot find use --check-config." />
+    </errors>
+</results>

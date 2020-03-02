@@ -309,6 +309,14 @@
       <SubType>compile</SubType>
       <Link>src\copys_fills\ZerobytesU8.c</Link>
     </Compile>
+    <Compile Include="..\src\crc\crc16.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\crc\crc16.c</Link>
+    </Compile>
+    <Compile Include="..\src\crc\crc32.c">
+      <SubType>compile</SubType>
+      <Link>as7_util_arm_gcc\src\crc\crc32.c</Link>
+    </Compile>
     <Compile Include="..\src\endians\endians_aligns.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\endians\endians_aligns.c</Link>
@@ -723,6 +731,7 @@
     <Folder Include="as7_util_arm_gcc\src\copys_fills\" />
     <Folder Include="as7_util_arm_gcc\src\endians\" />
     <Folder Include="as7_util_arm_gcc\src\hexascii\" />
+    <Folder Include="as7_util_arm_gcc\src\crc" />
     <Folder Include="as7_util_arm_gcc\src\rand\" />
     <Folder Include="as7_util_arm_gcc\src\safe_string\" />
     <Folder Include="as7_util_arm_gcc\src\sensus\" />
