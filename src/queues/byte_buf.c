@@ -60,9 +60,11 @@ PRIVATE void fillUp(S_byteBuf *b, U8 n, U8 cnt)
 
 PRIVATE void moveUp(S_byteBuf *b, U8 from, U8 to, U8 cnt)
 {
+   to += (cnt-1); from += (cnt-1);
+
    for(U8 c = 0; c < cnt; c++)
    {
-      b->buf[to++] = b->buf[from++];
+      b->buf[to--] = b->buf[from--];
    }
 }
 
