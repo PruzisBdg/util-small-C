@@ -336,11 +336,14 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_
 |  into 'dest'.
 |
 ------------------------------------------------------------------------------------------*/
-
+ 
 PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
 {
 	bool final_multi = false;	// Indicates the last byte of the source
 	U8 extra_byte = 0;			// Extra byte used to add byte when 24 bit number
+	U32 source_number32;
+	U32 source_number24;
+	U16  source_number16;
 	
    if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
       { return false; }                                           // then fail!
@@ -352,40 +355,35 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
       */ 	 
 	 
 	 // Left justifies source based on number of bytes and position of first bit
-	 if(destEndian == eBigEndian && srcIsEndian) { 	 
-		  U8 * temp_src;			// Used as temp source pointer after left justification		    
-	  
+	 if(destEndian == eBigEndian && srcIsEndian) { 	   
 		  if((_numBytesFrom(numBits) == 2)) {
-			  U16 source_number16 = src[0] | (U16)src[1] << 8;			 // Change to original int to allow bit shift
+			  source_number16 = src[0] | (U16)src[1] << 8;			 // Change to original int to allow bit shift
 		  
 			  if(numBits % 8 != 0)
 				source_number16 = source_number16 << (8-(numBits % 8));  // Left justify based on num of bits
 		  
-			  temp_src = source_number16;
-			  src = &temp_src;
+			  src = &source_number16;
 		  }
 	  
 		  else if ((_numBytesFrom(numBits) == 3))
 		  {
 		  
-			  U32 source_number24 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16;
+			  source_number24 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16;
 			  if(numBits % 8 != 0)
 				{source_number24 = source_number24 << (16-(numBits % 8));}
 			  else
 				{source_number24 = source_number24 << 8;}
 			
-			  temp_src = source_number24;			    
-			  src = &temp_src;
+			  src = &source_number24;
 			  extra_byte++;												 // Add byte to account for extra 8 bit shift to get number left justified
 		  }
 	 
 		 else if ((_numBytesFrom(numBits) == 4)) {		 
-			 U32 source_number32 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16 | (U32)src[3] << 24;
+			 source_number32 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16 | (U32)src[3] << 24;
 			 if(numBits % 8 != 0)
 				{source_number32 = source_number32 << (8-(numBits % 8));}
-					
-			 temp_src = source_number32;
-			 src = &temp_src;
+										
+			 src = &source_number32;
 		 }	 
 	}
       T_EndianPtr si;
