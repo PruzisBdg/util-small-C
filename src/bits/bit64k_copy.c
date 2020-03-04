@@ -425,9 +425,9 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
 
          // Align the left (msbit) of the source field with left of dest.
          U8 sb;
-         if(destEndian == eBigEndian & !final_multi) {
+         if(destEndian == eBigEndian && !final_multi) {
             sb = shiftLR(*src, msb+1-MinU8(_8bits, rem)); }		   // This accounts for shift when one byte and not big endian dependent
-		 else if(destEndian == eBigEndian & final_multi) {
+		 else if(destEndian == eBigEndian && final_multi) {
 		    sb = shiftLR(*src, msb+1-_8bits); }					      // Used when source is big endian dependent, last case should also shift by same amount as before
          else {
             sb = shiftLR(*src, msb+1-open); }                     // Align the left (msbit) of the source field with left of dest.
@@ -465,10 +465,10 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
                      { CLRB(db, mask(write-1, write)); }
                }}              // Clear 'open' bits from 'msb'.
 
-            if(destEndian == eBigEndian & !final_multi) {
+            if(destEndian == eBigEndian && !final_multi) {
                sb = shiftLR(*src, _8bits-write);                  // Shift partial field left to align with destination slot.
                db = orInto(db, sb, mask(_msb7, write)); }         // Mask to select just that field and OR into dest byte.
-			else if(destEndian == eBigEndian & final_multi) {
+			else if(destEndian == eBigEndian && final_multi) {
 				sb = shiftLR(*src, open);						  // Shift partial field left to align with destination slot.
 				db = orInto(db, sb, mask(_msb7, write)); }        // Mask to select just that field and OR into dest byte.
 			else {
@@ -477,7 +477,7 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
 
             if(false == port->dest.wr(destAt+1, &db, 1))          // Destination byte updated; put it back.
                { return false; }
-		    if(rem <= _8bits & srcIsEndian)						  // Used for tail handling when is endian
+		    if(rem <= _8bits && srcIsEndian)						  // Used for tail handling when is endian
 				{final_multi = true;}
          }
       } // for(U8 rem = numBits...
