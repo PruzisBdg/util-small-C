@@ -707,33 +707,33 @@ void test_Bit64_In_LE_multiSrc_Endian(void)
 
       { .cpy = {.to = {1,4}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
                                              .result = (U8[]){0x00, 0xA0, 0xC5, 0x63, 0x09, [5 ... _TstBufSz-1] = 0x00} },
-												 
+
 	  { .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 											 .result = (U8[]){0x00, 0x68, 0xF1, 0x58, 0x02, [5 ... _TstBufSz-1] = 0x00} },
-	
+
 	  { .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
 											 .result = (U8[]){0xFF, 0x6B, 0xF1, 0x58, 0xFE, [5 ... _TstBufSz-1] = 0xFF} },
-	
+
 	  { .cpy = {.to = {0,6}, .nBits = 11 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 											 .result = (U8[]){0x80, 0x16, 0x01, [3 ... _TstBufSz-1] = 0x00} },
-	
+
 	  { .cpy = {.to = {0,7}, .nBits = 17 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 											 .result = (U8[]){0x00, 0x2D, 0x1E, [3 ... _TstBufSz-1] = 0x00} },
-	
+
 	  { .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 											 .result = (U8[]){0x68, 0xF1, 0x58, 0x00, 0x00, [5 ... _TstBufSz-1] = 0x00} },
-	
+
 	  { .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
 											 .result = (U8[]){0x6B, 0xF1, 0xD8, 0xFF, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
-	
-	  { .cpy = {.to = {0,5}, .nBits = 27 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,	
+
+	  { .cpy = {.to = {0,5}, .nBits = 27 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
 											.result = (U8[]){0x5F, 0x8B, 0xC7, 0x92, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
-												
+
 	  { .cpy = {.to = {0,6}, .nBits = 29 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 											.result = (U8[]){0x80, 0x16, 0x8F, 0x25, 0x05, [5 ... _TstBufSz-1] = 0x00} },
-												
+
 	  { .cpy = {.to = {0,6}, .nBits = 29 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
-											.result = (U8[]){0xBF, 0x16, 0x8F, 0x25, 0xFD, [5 ... _TstBufSz-1] = 0xFF} },										
+											.result = (U8[]){0xBF, 0x16, 0x8F, 0x25, 0xFD, [5 ... _TstBufSz-1] = 0xFF} },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
@@ -893,25 +893,25 @@ void test_Bit64_In_BE_multiSrc_Endian(void)
 
 		{ .cpy = {.to = {1,3}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 		.result = (U8[]){0x00, 0x09, 0x63, 0xC5, 0xA0, [5 ... _TstBufSz-1] = 0x00} },
-		
+
 		{ .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 		.result = (U8[]){0x00, 0x04, 0xB1, 0xE2, 0xD0, [5 ... _TstBufSz-1] = 0x00} },
-			
+
 		{ .cpy = {.to = {1,2}, .nBits = 24 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
-		.result = (U8[]){0xFF, 0xFC, 0xB1, 0xE2, 0xD7, [5 ... _TstBufSz-1] = 0xFF} },			
-			
+		.result = (U8[]){0xFF, 0xFC, 0xB1, 0xE2, 0xD7, [5 ... _TstBufSz-1] = 0xFF} },
+
 		{ .cpy = {.to = {0,6}, .nBits = 11 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 		.result = (U8[]){0x45, 0xA0, [2 ... _TstBufSz-1] = 0x00} },
-			
+
 		{ .cpy = {.to = {0,7}, .nBits = 17 }, .src = (U8[]){0x5A, 0x3C, 0x96, [3 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 		.result = (U8[]){0x1E, 0x2D, 0x00, [3 ... _TstBufSz-1] = 0x00} },
-			
+
 		{ .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 		.result = (U8[]){0x05, 0x8F, 0x16, 0x80, 0x00, [5 ... _TstBufSz-1] = 0x00} },
-		
+
 		{ .cpy = {.to = {0,2}, .nBits = 21 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
 		.result = (U8[]){0xFD, 0x8F, 0x16, 0xBF, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
-			
+
 		{ .cpy = {.to = {0,5}, .nBits = 27 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
 		.result = (U8[]){0xE4, 0xB1, 0xE2, 0xD7, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
 	};
@@ -1031,6 +1031,8 @@ void test_Bit64_ParmFitsField(void)
       { .in = (U8*)(U32[]){0x0FFFFFFF},    .inBytes = 4, .fieldBits = 28, .isEndian = true, .rtn = true },
 
       { .in = (U8*)(U32[]){0x01FFFFFF},    .inBytes = 4, .fieldBits = 25, .isEndian = true, .rtn = true },
+
+      { .in = (U8*)(U32[]){0x0013},    .inBytes = 2, .fieldBits = 10, .isEndian = false, .rtn = false },
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)

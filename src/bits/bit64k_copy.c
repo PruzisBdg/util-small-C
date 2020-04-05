@@ -546,7 +546,7 @@ static bool bitsFit(U8 n, U8 nbits) {
 PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian)
 {
    if(fieldBits == 0 || parmBytes == 0  ||               // No destination field? OR no source bytes? OR
-      _8bits * fieldBits == parmBytes ||                 // field is exactly 'parmBytes'? OR
+      (fieldBits == _8bits * parmBytes) ||               // field is exactly 'parmBytes'? OR
       _numBytesFrom(fieldBits) > parmBytes ) {           // More field bytes than parm bytes?
       return true; }                                     // then succeed.
    else if(parmBytes > (fieldBits+7)/_8bits) {           // Too many 'parmBytes' for destination field?
@@ -569,9 +569,7 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
          #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
       #endif // __BYTE_ORDER__
 
-      return bitsFit(msb, fieldBits % _8bits);
-	  //return true;
-	  }
+      return bitsFit(msb, fieldBits % _8bits); }
 }
 
 // ---------------------------------- eof --------------------------------  -
