@@ -6,12 +6,7 @@
 
 int main (void)
 {
-   #define _dt(_yr, _mnth, _day, _hr, _min, _sec) \
-      &(S_DateTime){.ymd.yr = _yr, .ymd.mnth = _mnth, .ymd.day = _day, .hr = _hr, .min = _min, .sec = _sec}
-
-   S_DateTime out;
-
-   Full_YMDHMS_AddSecs(&out, _dt(2000,1,1,0,0,0), -(365+365+365+366)*24*3600L);
+   test_Bit64_In_BE_multiSrc_Endian();
 }
 
 // ------------------------------------- eof ---------------------------------------------

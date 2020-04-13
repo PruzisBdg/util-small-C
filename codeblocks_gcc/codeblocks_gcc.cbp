@@ -55,6 +55,7 @@
 					<Add option="-std=c99" />
 					<Add option="-g" />
 					<Add option="-DTPRINT_IS_FLOAT" />
+					<Add option="-D__TARGET_IS_CONSOLE" />
 					<Add directory="../unit_test/printfs" />
 				</Compiler>
 				<Linker>
@@ -802,6 +803,7 @@
 		<Unit filename="../unit_test/bits/test-bit64k.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/bits/test-bit_addr_64k.c">
 			<Option compilerVar="CC" />

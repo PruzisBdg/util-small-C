@@ -1,10 +1,20 @@
+#include "libs_support.h"
+   #if _TARGET_IS == _TARGET_UNITY_TDD
 #include "unity.h"
+   #endif
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include "tdd_common.h"
+#include <time.h>
 #include "util.h"
 #include <string.h>
+
+   #if _TARGET_IS != _TARGET_UNITY_TDD
+#define TEST_FAIL()
+#define TEST_ASSERT_EQUAL_UINT8_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(...)
+#define TEST_FAIL_MESSAGE(...)
+   #endif // _TARGET_IS
 
 // =============================== Tests start here ==================================
 
@@ -701,6 +711,7 @@ void test_Bit64_In_LE_multiSrc_Endian(void)
    typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
 
    S_Tst const tsts[] = {
+
       // Straddling 3 or 4 bytes..
       { .cpy = {.to = {0,4}, .nBits = 16 }, .src = (U8[]){0x5A, 0x3C, [2 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
                                              .result = (U8[]){0xA0, 0xC5, 0x03, [3 ... _TstBufSz-1] = 0x00} },
@@ -755,10 +766,10 @@ void test_Bit64_In_LE_multiSrc_Endian(void)
       TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_LE_multiSrc() should return true");
 
       C8 b0[100];
-      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x 0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x 0x%x 0x%x 0x%x]]",
             i,
-            srcBuf[0], srcBuf[1],
-            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+            srcBuf[0], srcBuf[1],srcBuf[2],srcBuf[3],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1], destBuf[2], destBuf[3],destBuf[4]);
 
       TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TstBufSz, b0);
    }
@@ -847,7 +858,8 @@ void test_Bit64_In_BE_multiSrc(void)
                                              .result = (U8[]){0x00, 0x05, 0xA3, 0xC9, 0x60, [5 ... _TstBufSz-1] = 0x00} },
 
       { .cpy = {.to = {0,3}, .nBits = 28 }, .src = (U8[]){0x86, 0x5A, 0x3C, 0x96, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
-                                             .result = (U8[]){0x08, 0x65, 0xA3, 0xC6, [4 ... _TstBufSz-1] = 0x00} },
+                                             .result = (U8[]){0x06, 0x5A, 0x3C, 0x96, [4 ... _TstBufSz-1] = 0x00} },
+
    };
 
    for(U8 i = 0; i <  RECORDS_IN(tsts); i++)
@@ -887,6 +899,7 @@ void test_Bit64_In_BE_multiSrc_Endian(void)
 	typedef struct { S_CpySpec cpy; U8 const *src, destFill; U8 const *result; bool srcIsEndian; } S_Tst;
 
 	S_Tst const tsts[] = {
+
 		// Straddling 3 or 4 bytes..
 		{ .cpy = {.to = {0,3}, .nBits = 16 }, .src = (U8[]){0x5A, 0x3C, [2 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
 		.result = (U8[]){0x03, 0xC5, 0xA0, [3 ... _TstBufSz-1] = 0x00} },
@@ -914,6 +927,9 @@ void test_Bit64_In_BE_multiSrc_Endian(void)
 
 		{ .cpy = {.to = {0,5}, .nBits = 27 }, .src = (U8[]){0x5A, 0x3C, 0x96, 0xF4, [4 ... _TstBufSz-1] = 0x00}, .destFill = 0xFF,
 		.result = (U8[]){0xE4, 0xB1, 0xE2, 0xD7, 0xFF, [5 ... _TstBufSz-1] = 0xFF} },
+
+      { .cpy = {.to = {0,1}, .nBits = 10 }, .src = (U8[]){0xFF, 0x03, [2 ... _TstBufSz-1] = 0x00}, .destFill = 0x00,
+      .result = (U8[]){0x03, 0xFF, [2 ... _TstBufSz-1] = 0x00} },
 	};
 
 	for(U8 i = 0; i <  RECORDS_IN(tsts); i++)

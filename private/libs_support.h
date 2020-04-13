@@ -86,6 +86,15 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
     #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
 #endif
 
+#define _TARGET_X86_CONSOLE   1
+#define _TARGET_UNITY_TDD     2
+
+#ifdef __TARGET_IS_CONSOLE
+   #define _TARGET_IS _TARGET_X86_CONSOLE
+#else
+   #define _TARGET_IS _TARGET_UNITY_TDD
+#endif
+
 #endif // LIBS_SUPPORT_H
 
 // --------------------------------- eof ---------------------------------------
