@@ -57,6 +57,7 @@
 					<Add option="-DTPRINT_IS_FLOAT" />
 					<Add option="-D__TARGET_IS_CONSOLE" />
 					<Add directory="../unit_test/printfs" />
+					<Add directory="../../unity_tdd" />
 				</Compiler>
 				<Linker>
 					<Add library="bin/Debug/libutil_x86_gcc.a" />

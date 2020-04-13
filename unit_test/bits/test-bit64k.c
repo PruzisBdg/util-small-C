@@ -881,10 +881,10 @@ void test_Bit64_In_BE_multiSrc(void)
       TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_BE_multiSrc() should return true");
 
       C8 b0[100];
-      sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+      sprintf(b0, "tst #%d:  src[0x%x 0x%x 0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x 0x%x 0x%x]",
             i,
-            srcBuf[0], srcBuf[1],
-            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+            srcBuf[0], srcBuf[1],srcBuf[2], srcBuf[3],
+            cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1], destBuf[2], destBuf[3]);
 
       TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TstBufSz, b0);
    }
@@ -951,10 +951,10 @@ void test_Bit64_In_BE_multiSrc_Endian(void)
 		TEST_ASSERT_EQUAL_UINT8_MESSAGE(true, rtn, "All test_Bit64_In_BE_multiSrc_Endian should return true");
 
 		C8 b0[100];
-		sprintf(b0, "tst #%d:  src[0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x]",
+		sprintf(b0, "tst #%d:  src[0x%x 0x%x 0x%x 0x%x] map {src[0] -> (%d,%d){%d}}.  dest[0x%x 0x%x 0x%x 0x%x]",
 		i,
-		srcBuf[0], srcBuf[1],
-		cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1]);
+		srcBuf[0], srcBuf[1], srcBuf[2], srcBuf[3],
+		cpy->to._byte ,cpy->to._bit, cpy->nBits, destBuf[0], destBuf[1], destBuf[2], destBuf[3]);
 
 		TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(t->result, destBuf, _TstBufSz, b0);
 	}

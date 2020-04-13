@@ -336,156 +336,6 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_
 |  into 'dest'.
 |
 ------------------------------------------------------------------------------------------*/
-#if 0
-PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
-{
-	bool final_multi = false;	// Indicates the last byte of the source
-	U8 extra_byte = 0;			// Extra byte used to add byte when 24 bit number
-	U32 source_number32;
-	U32 source_number24;
-	U16  source_number16;
-
-   if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
-      { return false; }                                           // then fail!
-   else if(numBits == 0) {                                        // else nothing to write?
-      return true; }                                              // then succeed in doing nothing
-   else {                                                         // else continue.
-      /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
-         dest if they are different endians. Otherwise 'src' just counts up (into dest).
-      */
-
-	 // Left justifies source based on number of bytes and position of first bit
-	 if(destEndian == eBigEndian && srcIsEndian) {
-		  if((_numBytesFrom(numBits) == 2)) {
-			  source_number16 = src[0] | (U16)src[1] << 8;			 // Change to original int to allow bit shift
-
-			  if(numBits % 8 != 0)
-				source_number16 = source_number16 << (8-(numBits % 8));  // Left justify based on num of bits
-
-			  src = (U8 const *)&source_number16;
-		  }
-
-		  else if ((_numBytesFrom(numBits) == 3))
-		  {
-
-			  source_number24 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16;
-			  if(numBits % 8 != 0)
-				{source_number24 = source_number24 << (16-(numBits % 8));}
-			  else
-				{source_number24 = source_number24 << 8;}
-
-			  src = (U8 const *)&source_number24;
-			  extra_byte++;												 // Add byte to account for extra 8 bit shift to get number left justified
-		  }
-
-		 else if ((_numBytesFrom(numBits) == 4)) {
-			 source_number32 = src[0] | (U32)src[1] << 8 | (U32)src[2] << 16 | (U32)src[3] << 24;
-			 if(numBits % 8 != 0)
-				{source_number32 = source_number32 << (8-(numBits % 8));}
-
-			 src = (U8 const *)&source_number32;
-		 }
-	}
-      T_EndianPtr si;
-      src = EndianPtr_New(&si, src, _numBytesFrom(numBits) + extra_byte,
-                  srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
-
-      for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
-      {
-         /* If there's a port.rdDest() then will read current destination byte (into 'db'). Then clear
-            and fill 'open' bits in 'db' from 'msb' rightward. If 'rem' > 'msb' this will be fully
-            'msb' to b0.
-               If no port.rdDest() then just zero 'db'.
-         */
-
-         /* 'dest' is a bit-address in the endianess of the target. Extract the absolute
-            bit position (in a byte) of the 'dest'.
-         */
-         U8 msb, open;
-         if(destEndian == eBigEndian) {
-            msb = _bitBE(dest);
-            open = rem > msb+1 ? msb+1 : rem;
-         }
-         else {
-            U8 lsb = _bitLE(dest);
-            msb = MinU8(_msb7, lsb+rem-1);
-            open = rem > _8bits-lsb ? _8bits-lsb : rem;
-         }
-         bit64K_atByte destAt = _byte(dest);
-
-         U8 db;
-         // Read the destination byte and mask out to bits to be updated. However, don't bother if the
-         // whole byte will be overwritten.
-         if(port->dest.rd == NULL || open == _8bits) {            // No rdDest()? OR will write the whole byte?
-            db = 0; }                                             // then start with dest byte clear.
-         else {
-            if( false == port->dest.rd(&db, destAt, 1))           // Get 'dest' into 'db'.
-               { return false; }
-            CLRB(db, mask(msb, open)); }                          // Clear 'open' bits from 'msb' downward.
-
-         // Align the left (msbit) of the source field with left of dest.
-         U8 sb;
-         if(destEndian == eBigEndian && !final_multi) {
-            sb = shiftLR(*src, msb+1-MinU8(_8bits, rem)); }		   // This accounts for shift when one byte and not big endian dependent
-		 else if(destEndian == eBigEndian && final_multi) {
-		    sb = shiftLR(*src, msb+1-_8bits); }					      // Used when source is big endian dependent, last case should also shift by same amount as before
-         else {
-            sb = shiftLR(*src, msb+1-open); }                     // Align the left (msbit) of the source field with left of dest.
-
-          db = orInto(db, sb, mask(msb, open));                   // Mask to select just that field and OR into dest byte.
-
-         if(false == port->dest.wr(destAt, &db, 1))               // Destination byte updated; put it back.
-            { return false; }
-
-         rem -= open;                                             // These many bits remaining.
-
-         // If copied to 'destAt' just part of the byte read from 'src' then must copy the remainder to
-         // 'destAt' + 1, left justified for big-endian; right-justified for little-endian.
-         if(open < _8bits && rem > 0)                             // Used just part of 'src' byte? AND bits left to transfer?
-         {
-            U8 write =  _8bits - open;							  // Bits remaining in the byte read from 'src'
-
-            if(rem < write) {                                     // Only some of those remaining bits needed to complete transfer?
-               write = rem;                                       // then will transfer just what we need (to complete)
-               rem = 0; }                                         // and after that the whole transfer will be done.
-			   else {                                                // else will use all remaining bits from 'src'.
-               rem -= write; }                                    // Zero or more bits left to complete whole transfer.
-
-            // Read the destination byte and mask out to bits to be updated. However, don't bother if the
-            // whole byte will be overwritten.
-            if(port->dest.rd == NULL || write == _8bits) {        // No rdDest()? OR will write the whole byte?
-               db = 0; }                                          // then start with dest byte all-cleared.
-            else {
-               if( false == port->dest.rd(&db, destAt+1, 1))      // else get destination
-                  { return false; }
-               else {
-                  if(destEndian == eBigEndian)
-                     { CLRB(db, mask(_msb7, write)); }
-                  else
-                     { CLRB(db, mask(write-1, write)); }
-               }}              // Clear 'open' bits from 'msb'.
-
-            if(destEndian == eBigEndian && !final_multi) {
-               sb = shiftLR(*src, _8bits-write);                  // Shift partial field left to align with destination slot.
-               db = orInto(db, sb, mask(_msb7, write)); }         // Mask to select just that field and OR into dest byte.
-			else if(destEndian == eBigEndian && final_multi) {
-				sb = shiftLR(*src, open);						  // Shift partial field left to align with destination slot.
-				db = orInto(db, sb, mask(_msb7, write)); }        // Mask to select just that field and OR into dest byte.
-			else {
-				 sb = shiftLR(*src, -open);                        // Shift partial field left to align with destination slot.
-				 db = orInto(db, sb, mask(write-1, write)); }       // Mask to select just that field and OR into dest byte.
-
-            if(false == port->dest.wr(destAt+1, &db, 1))          // Destination byte updated; put it back.
-               { return false; }
-		    if(rem <= _8bits && srcIsEndian)						  // Used for tail handling when is endian
-				{final_multi = true;}
-         }
-      } // for(U8 rem = numBits...
-      return true;
-   }
-}
-#endif
-
 #if 1
 PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
 {
@@ -500,6 +350,185 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
       T_EndianPtr si;
       src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
                   srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
+
+      bool carry = false; U8 cyByte;
+
+      for(bit64K_T_Cnt rem = numBits; rem > 0; src = si.next(&si))
+	   {
+         /* Separate tracks for little-endian and big-endian bitfield destinations. But they both work
+            the same.
+
+            If there's a port.rdDest() then will read current destination byte (into 'db'). Then clear
+            and fill 'open' bits in 'db' from 'msb' rightward. If 'rem' > 'msb' this will be fully
+            'msb' to b0.
+               If no port.rdDest() then just zero 'db'.
+         */
+         if(destEndian == eBigEndian)
+         {
+            /* 'dest' is a bit-address in the endianess of the target. Extract the ABSOLUTE bit position
+               (in a byte) of the 'dest'.
+            */
+            U8 msb, open;
+            msb = _bitBE(dest);                                      // ms(bit) of 'dest'
+            open = rem > msb+1 ? msb+1 : rem;                        // Number of bits in byte containing 'dest' to be updated from 'src'.
+
+            bit64K_atByte destAt = _byte(dest);                      // Byte-address of 'dest'
+
+            U8 db;
+            /* Read the destination byte and mask out to bits to be updated. However, don't bother if the
+               whole byte will be overwritten.
+            */
+            if(port->dest.rd == NULL || open == _8bits) {            // No rdDest()? OR will write the whole byte?
+               db = 0; }                                             // then start with dest byte clear.
+            else {
+               if( false == port->dest.rd(&db, destAt, 1))           // Get 'dest' into 'db'.
+                  { return false; }
+               CLRB(db, mask(msb, open)); }                          // Clear 'open' bits from 'msb' downward.
+
+            U8 bite = (rem % _8bits) == 0 ? _8bits : (rem % _8bits); // From a right-justified (number), bite the 1-8 bits in the leftmost byte.
+            U8 sb = shiftLR(*src, msb+1 - bite);                     // Align the left of 'bite' with msbit of dest.
+
+            /* If we carried the remainder of the previous 'src' byte to be combined with part
+               of this next 'src' byte then merge the 2 pieces now. Both the current 'sb' and
+               the carried 'cyByte' are already aligned to be glued together and written to
+               the current 'dest' byte.
+            */
+            if(carry == true) {                                      // Carried part of previous 'src' byte?
+               carry = false;
+               CLRB(db, mask(_msb7, _msb7-msb));                     // Clear the whole of 'dest' which will be updated
+               db = orInto(db,                                       // OR into 'dest'
+                           sb | cyByte,                              // 'src' field and carried field, merged.
+                           mask(_msb7, open+(_msb7-msb))); }         // Combined field is from b7 (msbit) to 'open' bits past original 'src' 'msb'
+            else {                                                   // else no-carried
+               db = orInto(db, sb, mask(msb, open)); }               // OR into 'dest' just the current 'src' field.
+
+            if(false == port->dest.wr(destAt, &db, 1))               // Destination byte updated; put it back.
+               { return false; }
+
+            // If copied to 'destAt' just part of the byte read from 'src' then must copy the remainder to
+            // 'destAt' + 1, left justified for big-endian.
+            if(bite > open)                                          // Used just part of 'src' byte?
+            {
+               U8 write = bite - open;                               // these many of 'src' to write yet.
+
+               if(rem < bite) {                                      // Only some of those remaining bits needed to complete transfer?
+                  write = rem - open;                                // then will transfer just what we need (to complete)
+                  rem = 0; }                                         // and after that the whole transfer will be done.
+               else {                                                // else will use all remaining bits from 'src'.
+                  rem -= bite; }                                     // Zero or more bits left to complete whole transfer.
+
+               if(rem > 0)
+               {
+                  cyByte = shiftLR(*src, _8bits-write);
+                  carry = true;
+               }
+               else
+               {
+                  // Read the destination byte and mask out to bits to be updated. However, don't bother if the
+                  // whole byte will be overwritten.
+                  if(port->dest.rd == NULL || write == _8bits) {     // No rdDest()? OR will write the whole byte?
+                     db = 0; }                                       // then start with dest byte all-cleared.
+                  else {
+                     if( false == port->dest.rd(&db, destAt+1, 1))   // else get destination
+                        { return false; }
+                     else {
+                        CLRB(db, mask(_msb7, write)); }}             // Clear 'open' bits from 'msb'.
+
+                  sb = shiftLR(*src, _8bits-write);                  // Shift partial field left to align with destination slot.
+                  db = orInto(db, sb, mask(_msb7, write));           // Mask to select just that field and OR into dest byte.
+
+                  if(false == port->dest.wr(destAt+1, &db, 1))       // Destination byte updated; put it back.
+                     { return false; }
+               }
+
+            }
+            else
+            {
+               rem -= bite;
+            }
+            dest += bite;
+         }  // destEndian == eBigEndian
+         else                                                        // else no endian or little endian
+         {
+            /* 'dest' is a bit-address in the endianess of the target. Extract the absolute
+               bit position (in a byte) of the 'dest'.
+            */
+            U8 msb, open;
+            U8 lsb = _bitLE(dest);
+            msb = MinU8(_msb7, lsb+rem-1);
+            open = rem > _8bits-lsb ? _8bits-lsb : rem;
+
+            bit64K_atByte destAt = _byte(dest);
+
+            U8 db;
+            // Read the destination byte and mask out to bits to be updated. However, don't bother if the
+            // whole byte will be overwritten.
+            if(port->dest.rd == NULL || open == _8bits) {            // No rdDest()? OR will write the whole byte?
+               db = 0; }                                             // then start with dest byte clear.
+            else {
+               if( false == port->dest.rd(&db, destAt, 1))           // Get 'dest' into 'db'.
+                  { return false; }
+               CLRB(db, mask(msb, open)); }                          // Clear 'open' bits from 'msb' downward.
+
+            // Align the left (msbit) of the source field with left of dest.
+            U8 sb = shiftLR(*src, msb+1-open);                          // Align the left (msbit) of the source field with left of dest.
+            db = orInto(db, sb, mask(msb, open));                    // Mask to select just that field and OR into dest byte.
+
+            if(false == port->dest.wr(destAt, &db, 1))               // Destination byte updated; put it back.
+               { return false; }
+
+            rem -= open;                                             // These many bits remaining.
+
+            // If copied to 'destAt' just part of the byte read from 'src' then must copy the remainder to
+            // right-justified for little-endian.
+            if(open < _8bits && rem > 0)                             // Used just part of 'src' byte? AND bits left to transfer?
+            {
+               U8 write = _8bits - open;                             // Bits remaining in the byte read from 'src'
+
+               if(rem < write) {                                     // Only some of those remaining bits needed to complete transfer?
+                  write = rem;                                       // then will transfer just what we need (to complete)
+                  rem = 0; }                                         // and after that the whole transfer will be done.
+               else {                                                // else will use all remaining bits from 'src'.
+                  rem -= write; }                                    // Zero or more bits left to complete whole transfer.
+
+               // Read the destination byte and mask out to bits to be updated. However, don't bother if the
+               // whole byte will be overwritten.
+               if(port->dest.rd == NULL || write == _8bits) {        // No rdDest()? OR will write the whole byte?
+                  db = 0; }                                          // then start with dest byte all-cleared.
+               else {
+                  if( false == port->dest.rd(&db, destAt+1, 1))      // else get destination
+                     { return false; }
+                  else {
+                     CLRB(db, mask(write-1, write)); }}              // Clear 'open' bits from 'msb'.
+
+               sb = shiftLR(*src, -open);                            // Shift partial field right to align with destination slot.
+               db = orInto(db, sb, mask(write-1, write));            // Mask to select just that field and OR into dest byte.
+
+               if(false == port->dest.wr(destAt+1, &db, 1))          // Destination byte updated; put it back.
+                  { return false; }
+            }
+            dest += _8bits;
+         } // destEndian != eBigEndian
+      } // for(U8 rem = numBits...
+      return true;
+   }
+}
+#else
+PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
+{
+   if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
+      { return false; }                                           // then fail!
+   else if(numBits == 0) {                                        // else nothing to write?
+      return true; }                                              // then succeed in doing nothing
+   else {                                                         // else continue.
+      /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
+         dest if they are different endians. Otherwise 'src' just counts up (into dest).
+      */
+      T_EndianPtr si;
+      src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
+                  srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
+
+      bool carry = false; U8 cyByte;
 
       for(bit64K_T_Cnt rem = numBits; rem > 0; src = si.next(&si))
 	   {
@@ -539,16 +568,15 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
 
             // If copied to 'destAt' just part of the byte read from 'src' then must copy the remainder to
             // 'destAt' + 1, left justified for big-endian.
-            if(bite > open)                                         // Used just part of 'src' byte? AND bits left to transfer?
+            if(bite > open)                                          // Used just part of 'src' byte?
             {
-               U8 write = bite - open;
-               rem -= open;
+               U8 write = bite - open;                               // these many of 'src' to write yet.
 
-               if(rem < write) {                                     // Only some of those remaining bits needed to complete transfer?
-                  write = rem;                                       // then will transfer just what we need (to complete)
+               if(rem < bite) {                                      // Only some of those remaining bits needed to complete transfer?
+                  write = rem - open;                                // then will transfer just what we need (to complete)
                   rem = 0; }                                         // and after that the whole transfer will be done.
                else {                                                // else will use all remaining bits from 'src'.
-                  rem -= write; }                                    // Zero or more bits left to complete whole transfer.
+                  rem -= bite; }                                     // Zero or more bits left to complete whole transfer.
 
                // Read the destination byte and mask out to bits to be updated. However, don't bother if the
                // whole byte will be overwritten.
@@ -645,113 +673,6 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
 }
 
 #endif
-
-#if 0
-PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian)
-{
-   if( false == legalRange(&port->dest.range, dest, numBits))     // 'dest' range not legal?
-      { return false; }                                           // then fail!
-   else if(numBits == 0) {                                        // else nothing to write?
-      return true; }                                              // then succeed in doing nothing
-   else {                                                         // else continue.
-      /* If 'srcIsEndian' == true then make and endian aware point which reverses 'src' into
-         dest if they are different endians. Otherwise 'src' just counts up (into dest).
-      */
-      T_EndianPtr si;
-      src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
-                  srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
-
-      for(bit64K_T_Cnt rem = numBits; rem > 0; dest += _8bits, src = si.next(&si))
-      {
-         /* If there's a port.rdDest() then will read current destination byte (into 'db'). Then clear
-            and fill 'open' bits in 'db' from 'msb' rightward. If 'rem' > 'msb' this will be fully
-            'msb' to b0.
-               If no port.rdDest() then just zero 'db'.
-         */
-
-         /* 'dest' is a bit-address in the endianess of the target. Extract the absolute
-            bit position (in a byte) of the 'dest'.
-         */
-         U8 msb, open;
-         if(destEndian == eBigEndian) {
-            msb = _bitBE(dest);
-            open = rem > msb+1 ? msb+1 : rem;
-         }
-         else {
-            U8 lsb = _bitLE(dest);
-            msb = MinU8(_msb7, lsb+numBits-1);
-            open = rem > _8bits-lsb ? _8bits-lsb : rem;
-         }
-         bit64K_atByte destAt = _byte(dest);
-
-         U8 db;
-         // Read the destination byte and mask out to bits to be updated. However, don't bother if the
-         // whole byte will be overwritten.
-         if(port->dest.rd == NULL || open == _8bits) {            // No rdDest()? OR will write the whole byte?
-            db = 0; }                                             // then start with dest byte clear.
-         else {
-            if( false == port->dest.rd(&db, destAt, 1))           // Get 'dest' into 'db'.
-               { return false; }
-            CLRB(db, mask(msb, open)); }                          // Clear 'open' bits from 'msb' downward.
-
-         // Align the left (msbit) of the source field with left of dest.
-         U8 sb;
-         if(destEndian == eBigEndian) {
-            sb = shiftLR(*src, msb+1-MinU8(_8bits, rem)); }
-         else {
-            sb = shiftLR(*src, msb+1-open); }                     // Align the left (msbit) of the source field with left of dest.
-
-          db = orInto(db, sb, mask(msb, open));                   // Mask to select just that field and OR into dest byte.
-
-         if(false == port->dest.wr(destAt, &db, 1))               // Destination byte updated; put it back.
-            { return false; }
-
-         rem -= open;                                             // These many bits remaining.
-
-         // If copied to 'destAt' just part of the byte read from 'src' then must copy the remainder to
-         // 'destAt' + 1, left justified for big-endian; right-justified for little-endian.
-         if(open < _8bits && rem > 0)                             // Used just part of 'src' byte? AND bits left to transfer?
-         {
-            U8 write = destEndian == eBigEndian
-                           ? _8bits - open
-                           : open;                                // Bits remaining in the byte read from 'src'
-
-            if(rem < write) {                                     // Only some of those remaining bits needed to complete transfer?
-               write = rem;                                       // then will transfer just what we need (to complete)
-               rem = 0; }                                         // and after that the whole transfer will be done.
-            else {                                                // else will use all remaining bits from 'src'.
-               rem -= write; }                                    // Zero or more bits left to complete whole transfer.
-
-            // Read the destination byte and mask out to bits to be updated. However, don't bother if the
-            // whole byte will be overwritten.
-            if(port->dest.rd == NULL || write == _8bits) {        // No rdDest()? OR will write the whole byte?
-               db = 0; }                                          // then start with dest byte all-cleared.
-            else {
-               if( false == port->dest.rd(&db, destAt+1, 1))      // else get destination
-                  { return false; }
-               else {
-                  if(destEndian == eBigEndian)
-                     { CLRB(db, mask(_msb7, write)); }
-                  else
-                     { CLRB(db, mask(write-1, write)); }
-               }}              // Clear 'open' bits from 'msb'.
-
-            if(destEndian == eBigEndian) {
-               sb = shiftLR(*src, _8bits-write);                  // Shift partial field left to align with destination slot.
-               db = orInto(db, sb, mask(_msb7, write)); }         // Mask to select just that field and OR into dest byte.
-            else {
-               sb = shiftLR(*src, -write);                        // Shift partial field left to align with destination slot.
-               db = orInto(db, sb, mask(write-1, write)); }       // Mask to select just that field and OR into dest byte.
-
-            if(false == port->dest.wr(destAt+1, &db, 1))          // Destination byte updated; put it back.
-               { return false; }
-         }
-      } // for(U8 rem = numBits...
-      return true;
-   }
-}
-
-#endif // 0
 /*-----------------------------------------------------------------------------------------
 |
 |  bit64K_NewPort()

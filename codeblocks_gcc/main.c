@@ -6,7 +6,7 @@
 
 int main (void)
 {
-   test_Bit64_In_BE_multiSrc_Endian();
+   test_Bit64_In_BE_multiSrc();
 }
 
 // ------------------------------------- eof ---------------------------------------------
