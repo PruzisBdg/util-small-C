@@ -53,4 +53,26 @@ PUBLIC bool U16isBCD(U16 n) {
 PUBLIC bool U32isBCD(U32 n) {
    return U16isBCD(HIGH_WORD(n)) && U16isBCD(LOW_WORD(n)); }
 
+// ---------------------------------------------------------------------------
+PUBLIC bool BCDtoU16(U16 *out, U16 n) {
+   U8 a;
+   if(true == BCDtoU8(&a, HIGH_BYTE(n))) {
+      U8 b;
+      if(true == BCDtoU8(&b, LOW_BYTE(n))) {
+         *out = (100 * (U16)a) + b;
+         return true; }}
+   return false; }
+
+
+// ---------------------------------------------------------------------------
+PUBLIC bool BCDtoU32(U32 *out, U32 n) {
+   U16 a;
+   if(true == BCDtoU16(&a, HIGH_WORD(n))) {
+      U16 b;
+      if(true == BCDtoU16(&b, LOW_WORD(n))) {
+         *out = (10000 * (U32)a) + b;
+         return true; }}
+   return false; }
+
+
 // ------------------------------------------- eof ------------------------------------------------

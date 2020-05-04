@@ -257,6 +257,9 @@ PUBLIC bool BCD12_LE(U8 *out, U64 n);
 PUBLIC bool BCD16_LE(U8 *out, U64 n);
 
 PUBLIC bool BCDtoU8      ( U8  *out, U8 n);
+PUBLIC bool BCDtoU16(U16 *out, U16 n);
+PUBLIC bool BCDtoU32(U32 *out, U32 n);
+
 PUBLIC bool BCD4le_toU16 ( U16 *out, U8 const *in);
 PUBLIC bool BCD6le_toU32 ( U32 *out, U8 const *in);
 PUBLIC bool BCD8le_toU32 ( U32 *out, U8 const *in);
