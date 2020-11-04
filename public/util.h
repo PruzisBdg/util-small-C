@@ -93,6 +93,7 @@ PUBLIC C8 const * ReadDirtyASCII_S32(C8 const *inTxt, S32 *out);
 PUBLIC C8 const * ReadAsciiS32(C8 const *inTxt, S32 *out);
 PUBLIC U8 const * ReadDirtyBinaryWord(U8 const *inTxt, U16 *out);
 PUBLIC C8 const * ReadTaggedASCIIInt(C8 const *in, C8 const *tag, S32 *out, C8 const *delimiters);
+PUBLIC C8 const * ReadThruToASCIIInt(C8 const *inTxt, S16 *out, BIT(*stripThis)(C8 ch));
 
 
 // Is fed one char at a time.
