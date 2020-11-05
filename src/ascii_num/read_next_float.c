@@ -194,7 +194,7 @@ PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
             {                                   // so scale 'out' by exponent
                *out = *out * GetPwr10Float( isNeg ? -exponent : exponent);
 
-               if( (fpclassify(*out) & (FP_INFINITE | FP_NAN)) != 0) {    // Final 'float' is overrange?
+               if( fpclassify(*out) == FP_INFINITE || fpclassify(*out) == FP_NAN ) {    // Final 'float' is overrange?
                   return NULL;                  // then fail
                }
                else

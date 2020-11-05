@@ -186,6 +186,11 @@
 			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
+		<Unit filename="../src/ascii_num/read_thruto_int.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/ascii_num/stream_read_dirty_ascii_int.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -776,6 +781,7 @@
 		<Unit filename="../unit_test/ascii_num/test-ascii_num.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/bcd/bcd_bin.mak">
 			<Option target="Debug" />
@@ -804,7 +810,6 @@
 		<Unit filename="../unit_test/bits/test-bit64k.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
-			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/bits/test-bit_addr_64k.c">
 			<Option compilerVar="CC" />

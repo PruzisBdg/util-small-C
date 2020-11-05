@@ -1,4 +1,7 @@
+#include "libs_support.h"
+   #if _TARGET_IS == _TARGET_UNITY_TDD
 #include "unity.h"
+   #endif
 #include "arith.h"
 #include <stdlib.h>
 #include <time.h>
@@ -6,6 +9,20 @@
 #include "util.h"
 #include <string.h>
 #include "wordlist.h"
+
+   #if _TARGET_IS != _TARGET_UNITY_TDD
+#define TEST_FAIL()
+#define TEST_ASSERT_TRUE_MESSAGE(...)
+#define TEST_ASSERT_FALSE_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_UINT8_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_INT16_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_INT32_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_UINT32_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_FLOAT_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_STRING_MESSAGE(...)
+#define TEST_ASSERT_EQUAL_HEX8_ARRAY_MESSAGE(...)
+#define TEST_FAIL_MESSAGE(...)
+   #endif // _TARGET_IS
 
 // =============================== Tests start here ==================================
 
@@ -96,6 +113,98 @@ void test_ReadDirtyASCIIInt(void)
             { TEST_FAIL_MESSAGE(_msg("NULL return (wrong)",t)); }
         else
             { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
+}
+
+/* ---------------------------- test_ReadThruToASCIIInt ------------------------------------------- */
+
+void test_ReadThruToASCIIInt(void)
+{
+    BIT strip_abcs(C8 ch) { return ch == 'a' || ch == 'b' || ch == 'c'; }
+
+    BIT strip_abcs_minusToo(C8 ch) { return ch == 'a' || ch == 'b' || ch == 'c' || ch == '-'; }
+
+    typedef struct { C8 const *inStr; BIT(*stripWith)(C8 ch); S16 result; C8 const *tail; bool outModified; } S_Tst;
+
+    S_Tst const tsts[] = {
+        // ---- No custom stripper. Eat just whitespace, like atoi()
+
+        { .inStr = "",              .result = 0,    .tail = NULL,       .outModified = false },     // Empty string -> return NULL, output unchanged.
+        { .inStr = "abc dr()",      .result = 0,    .tail = NULL,       .outModified = false },     // No number -> return NULL, output unchanged.
+        { .inStr = "-abc",          .result = 0,    .tail = NULL,       .outModified = false },    // A lone '-' is not a number.
+
+        { .inStr = "0",             .result = 0,    .tail = "",         .outModified = true },      // "0" -> 0, output at end of string.
+        { .inStr = "23",            .result = 23,   .tail = "",         .outModified = true },
+        { .inStr = "234",           .result = 234,  .tail = "",         .outModified = true },
+        { .inStr = "0xyz",          .result = 0,    .tail = "xyz",      .outModified = true },
+
+        { .inStr = "\r\n\t 123pq",  .result = 123,  .tail = "pq",       .outModified = true },      // Boof thru leading whitespace
+
+        { .inStr = "-0xyz",         .result = 0,    .tail = "xyz",      .outModified = true },
+
+        { .inStr = " -123xyz",      .result = -123, .tail = "xyz",      .outModified = true },
+        { .inStr = "123 456xyz",    .result = 123,  .tail = " 456xyz",  .outModified = true },
+
+        { .inStr = "32767xyz",      .result = 32767, .tail = "xyz",     .outModified = true },      // Min and max S16.
+        { .inStr = "-32768xyz",     .result = -32768, .tail = "xyz",    .outModified = true },
+
+        { .inStr = "0450xyz",       .result = 450,  .tail = "xyz",      .outModified = true },
+        { .inStr = "000000450xyz",  .result = 450,  .tail = "xyz",      .outModified = true },      // Bazillion leading zeros are OK.
+        { .inStr = "-000000450xyz", .result = -450, .tail = "xyz",      .outModified = true },      // ...and with leading '-'.
+
+        // If 5 or more digits puts the number over/under S16, then returns with the 4 digit number
+        // and with tail at the remaining digits.
+        { .inStr = "000456789xyz",  .result = 4567, .tail = "89xyz",    .outModified = true },
+        { .inStr = "-000456789xyz", .result = -4567,.tail = "89xyz",    .outModified = true },
+
+        { .inStr = "- 123pqr",      .result = 0,    .tail = NULL,       .outModified = false },     // '-' must be next to leading digit.
+        { .inStr = "+123pqr",       .result = 123,  .tail = "pqr",      .outModified = true },      // "+" is ignored.
+
+        { .inStr = "123.456",       .result = 123,  .tail = ".456",     .outModified = true },      // DP is ignored. The number is what precedes the DP.
+        { .inStr = "123 456",       .result = 123,  .tail = " 456",     .outModified = true },      // Space breaks a number; like any other non-digit.
+        { .inStr = "000 456",       .result = 0,    .tail = " 456",     .outModified = true },      // Leading zero is read as just that.
+        { .inStr = "-+456xyz",      .result = -456, .tail = "xyz",      .outModified = true },      // '-+' prepended is a legal number, yes.
+
+        // ---- Add strippers.
+
+        { .inStr = "abc123 xyz",    .result = 123,  .tail = " xyz",     .outModified = true,    .stripWith = strip_abcs },
+        // Accept '-' and '+'
+        { .inStr = "abc-123 xyz",   .result = -123, .tail = " xyz",     .outModified = true,    .stripWith = strip_abcs },
+        { .inStr = "abc+123 xyz",   .result = 123,  .tail = " xyz",     .outModified = true,    .stripWith = strip_abcs },
+        // '+', '-' must be adjacent to digits.
+        { .inStr = "ab-c123 xyz",   .result = 0,    .tail = NULL,       .outModified = false,   .stripWith = strip_abcs },
+        { .inStr = "ab+c123 xyz",   .result = 0,    .tail = NULL,       .outModified = false,   .stripWith = strip_abcs },
+
+        // Stripper also takes '-', even if in front of the number.
+        { .inStr = "ab-c123 xyz",   .result = 123,  .tail = " xyz",     .outModified = true,    .stripWith = strip_abcs_minusToo },
+        { .inStr = "abc-123 xyz",   .result = 123,  .tail = " xyz",     .outModified = true,    .stripWith = strip_abcs_minusToo },
+    };
+
+    U8 i; for(i = 0; i < RECORDS_IN(tsts); i++) {
+        S_Tst const *t = &tsts[i];
+
+        // Prime 'out' with some value other than the correct result. So can tell if was modified or no.
+        S16 was = t->result + 1;
+        S16 out = was;
+        C8 const * ret = ReadThruToASCIIInt(t->inStr, &out, t->stripWith );
+
+        C8 b0[100];
+        #define _msg(msg, tst)  catRtn(b0, i, (msg), (tst)->inStr, ret)
+
+        if(t->outModified == false)
+            { TEST_ASSERT_EQUAL_INT16_MESSAGE(was, out, _msg("Output should not have been modified", t)); }
+        else {
+            if(out == was) {
+               TEST_FAIL_MESSAGE(_msg("Expected result (in 'out') but 'out' was not modified", t)); }
+            else {
+               TEST_ASSERT_EQUAL_FLOAT_MESSAGE(t->result, out,  _msg("Incorrect output", t)); }}
+
+        if(t->tail == NULL && ret != NULL)
+            { TEST_FAIL_MESSAGE( _msg("Return should been NULL but wasn't",t)); }
+        else if(t->tail != NULL && ret == NULL)
+            { TEST_FAIL_MESSAGE(_msg("NULL return (wrong)",t)); }
+        else
+            { TEST_ASSERT_EQUAL_STRING_MESSAGE(t->tail, ret, _msg("Wrong tail", t)); }}
+
 }
 
 /* ---------------------------- test_ReadDirtyASCII_S32 ------------------------------------------- */

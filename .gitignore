@@ -29,4 +29,4 @@ as7_util_arm_gcc/Debug/
 
 ccs_msp430/.settings/org.eclipse.cdt.codan.core.prefs
 /ccs_msp430/Debug/ccsObjs.opt
-/ccs_msp430/Debug/ccsObjs.opt
+/ccs_msp430/Debug/*

@@ -213,6 +213,10 @@
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\ascii_num\read_tagged_int.c</Link>
     </Compile>
+    <Compile Include="..\src\ascii_num\read_thruto_int.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_thruto_int.c</Link>
+    </Compile>
     <Compile Include="..\src\ascii_num\stream_read_dirty_ascii_int.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\ascii_num\stream_read_dirty_ascii_int.c</Link>

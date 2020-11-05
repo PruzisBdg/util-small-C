@@ -13,6 +13,7 @@ include ../util_common_pre.mak
 
 SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 							$(SRCDIR)read_dirty_int.c \
+							$(SRCDIR)read_thruto_int.c \
 							$(SRCDIR)read_dirty_s32.c \
 							$(SRCDIR)read_dirty_int_pass_char.c \
 							$(SRCDIR)read_next_float.c \
