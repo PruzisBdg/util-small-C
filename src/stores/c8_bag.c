@@ -24,8 +24,6 @@
 #include "util.h"
 #include "arith.h"
 
-typedef U32 C8bag_T_Line;
-
 #define _LineAllOnes    (MAX_U32)
 #define _LineAllZeros   (0)
 #define _BitsPerLine    (8*sizeof(C8bag_T_Line))

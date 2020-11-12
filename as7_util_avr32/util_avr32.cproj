@@ -1,0 +1,711 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>7.0</ProjectVersion>
+    <ToolchainName>com.Atmel.AVRGCC32.C</ToolchainName>
+    <ProjectGuid>dce6c7e3-ee26-4d79-826b-08594b9ad897</ProjectGuid>
+    <avrdevice>AT32UC3A0512</avrdevice>
+    <avrdeviceseries>none</avrdeviceseries>
+    <OutputType>StaticLibrary</OutputType>
+    <Language>C</Language>
+    <OutputFileName>lib$(MSBuildProjectName)</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
+    <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
+    <AvrGccProjectExtensions>
+    </AvrGccProjectExtensions>
+    <AssemblyName>util_avr32</AssemblyName>
+    <Name>util_avr32</Name>
+    <RootNamespace>util_avr32</RootNamespace>
+    <ToolchainFlavour>Native</ToolchainFlavour>
+    <KeepTimersRunning>true</KeepTimersRunning>
+    <OverrideVtor>false</OverrideVtor>
+    <CacheFlash>true</CacheFlash>
+    <ProgFlashFromRam>true</ProgFlashFromRam>
+    <RamSnippetAddress />
+    <UncachedRange />
+    <preserveEEPROM>true</preserveEEPROM>
+    <OverrideVtorValue />
+    <BootSegment>2</BootSegment>
+    <ResetRule>0</ResetRule>
+    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <EraseKey />
+    <AsfFrameworkConfig>
+      <framework-data xmlns="">
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.47.0" />
+        </dependencies>
+      </framework-data>
+    </AsfFrameworkConfig>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <ToolchainSettings>
+      <Avr32Gcc>
+        <avr32gcc.common.outputfiles.hex>True</avr32gcc.common.outputfiles.hex>
+        <avr32gcc.common.outputfiles.lss>True</avr32gcc.common.outputfiles.lss>
+        <avr32gcc.common.outputfiles.eep>True</avr32gcc.common.outputfiles.eep>
+        <avr32gcc.common.outputfiles.srec>True</avr32gcc.common.outputfiles.srec>
+        <avr32gcc.compiler.symbols.DefSymbols>
+          <ListValues>
+            <Value>NDEBUG</Value>
+          </ListValues>
+        </avr32gcc.compiler.symbols.DefSymbols>
+        <avr32gcc.compiler.directories.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\UC3A_DFP\1.0.53\include\AT32UC3A0512</Value>
+          </ListValues>
+        </avr32gcc.compiler.directories.IncludePaths>
+        <avr32gcc.compiler.optimization.level>Optimize for size (-Os)</avr32gcc.compiler.optimization.level>
+        <avr32gcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</avr32gcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+        <avr32gcc.compiler.optimization.UseAssemblerForPseudoInstructions>True</avr32gcc.compiler.optimization.UseAssemblerForPseudoInstructions>
+        <avr32gcc.compiler.warnings.AllWarnings>True</avr32gcc.compiler.warnings.AllWarnings>
+        <avr32gcc.linker.libraries.Libraries>
+          <ListValues>
+            <Value>libm</Value>
+          </ListValues>
+        </avr32gcc.linker.libraries.Libraries>
+        <avr32gcc.linker.optimization.GarbageCollectUnusedSections>True</avr32gcc.linker.optimization.GarbageCollectUnusedSections>
+        <avr32gcc.linker.optimization.PutReadOnlyDataInWritableDataSection>True</avr32gcc.linker.optimization.PutReadOnlyDataInWritableDataSection>
+        <avr32gcc.linker.optimization.AllowDirectReferencesToDataSection>True</avr32gcc.linker.optimization.AllowDirectReferencesToDataSection>
+        <avr32gcc.assembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\UC3A_DFP\1.0.53\include\AT32UC3A0512</Value>
+          </ListValues>
+        </avr32gcc.assembler.general.IncludePaths>
+        <avr32gcc.preprocessingassembler.general.IncludePaths>
+          <ListValues>
+            <Value>%24(PackRepoDir)\atmel\UC3A_DFP\1.0.53\include\AT32UC3A0512</Value>
+          </ListValues>
+        </avr32gcc.preprocessingassembler.general.IncludePaths>
+      </Avr32Gcc>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <ToolchainSettings>
+      <Avr32Gcc>
+  <avr32gcc.common.outputfiles.hex>True</avr32gcc.common.outputfiles.hex>
+  <avr32gcc.common.outputfiles.lss>True</avr32gcc.common.outputfiles.lss>
+  <avr32gcc.common.outputfiles.eep>True</avr32gcc.common.outputfiles.eep>
+  <avr32gcc.common.outputfiles.srec>True</avr32gcc.common.outputfiles.srec>
+  <avr32gcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+      <Value>TPRINT_IS_FLOAT</Value>
+    </ListValues>
+  </avr32gcc.compiler.symbols.DefSymbols>
+  <avr32gcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\atmel\UC3A_DFP\1.0.53\include\AT32UC3A0512</Value>
+      <Value>../../GenericTypes</Value>
+      <Value>../../private</Value>
+      <Value>../../public</Value>
+      <Value>../../src</Value>
+      <Value>../../../arith/public</Value>
+      <Value>../../../tiny2/public</Value>
+    </ListValues>
+  </avr32gcc.compiler.directories.IncludePaths>
+  <avr32gcc.compiler.optimization.level>Optimize (-O1)</avr32gcc.compiler.optimization.level>
+  <avr32gcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</avr32gcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <avr32gcc.compiler.optimization.UseAssemblerForPseudoInstructions>True</avr32gcc.compiler.optimization.UseAssemblerForPseudoInstructions>
+  <avr32gcc.compiler.optimization.DebugLevel>Maximum (-g3)</avr32gcc.compiler.optimization.DebugLevel>
+  <avr32gcc.compiler.warnings.AllWarnings>True</avr32gcc.compiler.warnings.AllWarnings>
+  <avr32gcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </avr32gcc.linker.libraries.Libraries>
+  <avr32gcc.linker.optimization.GarbageCollectUnusedSections>True</avr32gcc.linker.optimization.GarbageCollectUnusedSections>
+  <avr32gcc.linker.optimization.PutReadOnlyDataInWritableDataSection>True</avr32gcc.linker.optimization.PutReadOnlyDataInWritableDataSection>
+  <avr32gcc.linker.optimization.AllowDirectReferencesToDataSection>True</avr32gcc.linker.optimization.AllowDirectReferencesToDataSection>
+  <avr32gcc.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\atmel\UC3A_DFP\1.0.53\include\AT32UC3A0512</Value>
+    </ListValues>
+  </avr32gcc.assembler.general.IncludePaths>
+  <avr32gcc.assembler.debugging.DebugLevel>Default (-g)</avr32gcc.assembler.debugging.DebugLevel>
+  <avr32gcc.preprocessingassembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\atmel\UC3A_DFP\1.0.53\include\AT32UC3A0512</Value>
+    </ListValues>
+  </avr32gcc.preprocessingassembler.general.IncludePaths>
+  <avr32gcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</avr32gcc.preprocessingassembler.debugging.DebugLevel>
+</Avr32Gcc>
+    </ToolchainSettings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\src\ascii_num\got_float_from_ascii.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\got_float_from_ascii.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_binary_word.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_binary_word.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_dirty_int.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_dirty_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_dirty_int_pass_char.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_dirty_int_pass_char.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_dirty_s32.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_dirty_s32.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_next_float.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_next_float.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_next_number.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_next_number.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_tagged_int.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_tagged_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\read_thruto_int.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\read_thruto_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\ascii_num\stream_read_dirty_ascii_int.c">
+      <SubType>compile</SubType>
+      <Link>src\ascii_num\stream_read_dirty_ascii_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\bcd\bcd_bin.c">
+      <SubType>compile</SubType>
+      <Link>src\bcd\bcd_bin.c</Link>
+    </Compile>
+    <Compile Include="..\src\bcd\bcd_le.c">
+      <SubType>compile</SubType>
+      <Link>src\bcd\bcd_le.c</Link>
+    </Compile>
+    <Compile Include="..\src\bcd\mangle_to_bcd.c">
+      <SubType>compile</SubType>
+      <Link>src\bcd\mangle_to_bcd.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\bit64k_copy.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\bit64k_copy.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\bit_addr_64k.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\bit_addr_64k.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\idx_to_1st_bit_set_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\idx_to_1st_bit_set_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\idx_to_1st_bit_set_u32.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\idx_to_1st_bit_set_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\idx_to_1st_bit_set_u8.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\idx_to_1st_bit_set_u8.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\make_masks.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\make_masks.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\num_bits_set_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\num_bits_set_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\num_bits_set_u32.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\num_bits_set_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\bits\swar_32.c">
+      <SubType>compile</SubType>
+      <Link>src\bits\swar_32.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\all_bytes_equal_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\all_bytes_equal_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\all_bytes_test_true_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\all_bytes_test_true_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\CopyBytesU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\CopyBytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\CopyBytesU8_reversed.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\CopyBytesU8_reversed.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\CopyConstBytesU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\CopyConstBytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\CopyConstIntsU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\CopyConstIntsU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\CopyIntsU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\CopyIntsU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\FillBytesU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\FillBytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\FillIntsU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\FillIntsU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\fill_floats_u8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\fill_floats_u8.c</Link>
+    </Compile>
+    <Compile Include="..\src\copys_fills\ZerobytesU8.c">
+      <SubType>compile</SubType>
+      <Link>src\copys_fills\ZerobytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\crc\crc16.c">
+      <SubType>compile</SubType>
+      <Link>src\crc\crc16.c</Link>
+    </Compile>
+    <Compile Include="..\src\crc\crc32.c">
+      <SubType>compile</SubType>
+      <Link>src\crc\crc32.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\endians_aligns.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\endians_aligns.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\endian_iterator.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\endian_iterator.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\print_endian.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\print_endian.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\reverse_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\reverse_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\reverse_u32.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\reverse_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\to_sys_endian_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\to_sys_endian_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\to_sys_endian_u32.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\to_sys_endian_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\heaps\heap_1way_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\heaps\heap_1way_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\byte_to_hexascii.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\byte_to_hexascii.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\get_next_hexASCII_byte.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\get_next_hexASCII_byte.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\get_next_hexASCII_byte_lenient.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\get_next_hexASCII_byte_lenient.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\Get_next_hexASCII_int.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\Get_next_hexASCII_int.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\Get_next_hexASCII_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\Get_next_hexASCII_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\Get_next_hexASCII_u24.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\Get_next_hexASCII_u24.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\Get_next_hexASCII_u32.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\Get_next_hexASCII_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\Get_next_hexASCII_u8_to_u32.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\Get_next_hexASCII_u8_to_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\hexascii_to_byte.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\hexascii_to_byte.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\hex_ascii_to_U16.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\hex_ascii_to_U16.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\hex_ascii_to_U32.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\hex_ascii_to_U32.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\hex_to_nibble.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\hex_to_nibble.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\high_nibble_to_hexascii.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\high_nibble_to_hexascii.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\int_to_hexascii_nospace.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\int_to_hexascii_nospace.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\int_to_hexascii_space.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\int_to_hexascii_space.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\is_hexascii.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\is_hexascii.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\low_nibble_to_hexascii.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\low_nibble_to_hexascii.c</Link>
+    </Compile>
+    <Compile Include="..\src\hexascii\nibble_to_hexascii.c">
+      <SubType>compile</SubType>
+      <Link>src\hexascii\nibble_to_hexascii.c</Link>
+    </Compile>
+    <Compile Include="..\src\misc\string_soft_match.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\string_soft_match.c</Link>
+    </Compile>
+    <Compile Include="..\src\misc\tbl_search_Ascending_key_u16.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\tbl_search_Ascending_key_u16.c</Link>
+    </Compile>
+    <Compile Include="..\src\misc\text_line_builder.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\text_line_builder.c</Link>
+    </Compile>
+    <Compile Include="..\src\network\http_parse.c">
+      <SubType>compile</SubType>
+      <Link>src\network\http_parse.c</Link>
+    </Compile>
+    <Compile Include="..\src\network\ip_addr.c">
+      <SubType>compile</SubType>
+      <Link>src\network\ip_addr.c</Link>
+    </Compile>
+    <Compile Include="..\src\network\mac_addr.c">
+      <SubType>compile</SubType>
+      <Link>src\network\mac_addr.c</Link>
+    </Compile>
+    <Compile Include="..\src\parsing\find_outer_braces.c">
+      <SubType>compile</SubType>
+      <Link>src\parsing\find_outer_braces.c</Link>
+    </Compile>
+    <Compile Include="..\src\parsing\strip_whitespace.c">
+      <SubType>compile</SubType>
+      <Link>src\parsing\strip_whitespace.c</Link>
+    </Compile>
+    <Compile Include="..\src\printfs\array_pretty_print_w_header.c">
+      <SubType>compile</SubType>
+      <Link>src\printfs\array_pretty_print_w_header.c</Link>
+    </Compile>
+    <Compile Include="..\src\printfs\array_print_line.c">
+      <SubType>compile</SubType>
+      <Link>src\printfs\array_print_line.c</Link>
+    </Compile>
+    <Compile Include="..\src\printfs\tiny1_printf.c">
+      <SubType>compile</SubType>
+      <Link>src\printfs\tiny1_printf.c</Link>
+    </Compile>
+    <Compile Include="..\src\printfs\tiny1_printf_string_heap.c">
+      <SubType>compile</SubType>
+      <Link>src\printfs\tiny1_printf_string_heap.c</Link>
+    </Compile>
+    <Compile Include="..\src\queues\byte_buf.c">
+      <SubType>compile</SubType>
+      <Link>src\queues\byte_buf.c</Link>
+    </Compile>
+    <Compile Include="..\src\queues\byte_queue.c">
+      <SubType>compile</SubType>
+      <Link>src\queues\byte_queue.c</Link>
+    </Compile>
+    <Compile Include="..\src\rand\rand_basic.c">
+      <SubType>compile</SubType>
+      <Link>src\rand\rand_basic.c</Link>
+    </Compile>
+    <Compile Include="..\src\repeat_idx_func.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\repeat_idx_func.c</Link>
+    </Compile>
+    <Compile Include="..\src\safe_string\endstr.c">
+      <SubType>compile</SubType>
+      <Link>src\safe_string\endstr.c</Link>
+    </Compile>
+    <Compile Include="..\src\safe_string\safe_string.c">
+      <SubType>compile</SubType>
+      <Link>src\safe_string\safe_string.c</Link>
+    </Compile>
+    <Compile Include="..\src\safe_string\strlenU8.c">
+      <SubType>compile</SubType>
+      <Link>src\safe_string\strlenU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\stacks\ptr_stack.c">
+      <SubType>compile</SubType>
+      <Link>src\stacks\ptr_stack.c</Link>
+    </Compile>
+    <Compile Include="..\src\stores\c8_bag.c">
+      <SubType>compile</SubType>
+      <Link>src\stores\c8_bag.c</Link>
+    </Compile>
+    <Compile Include="..\src\stores\u8_bag.c">
+      <SubType>compile</SubType>
+      <Link>src\stores\u8_bag.c</Link>
+    </Compile>
+    <Compile Include="..\src\SumBytesU8.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\SumBytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\SumIntsU8.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\SumIntsU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\swapbytesU8.c">
+      <SubType>compile</SubType>
+      <Link>src\misc\swapbytesU8.c</Link>
+    </Compile>
+    <Compile Include="..\src\terminal\ansi_kbd.c">
+      <SubType>compile</SubType>
+      <Link>src\terminal\ansi_kbd.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\AD2000_to_epoch.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\AD2000_to_epoch.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\days_in_month.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\days_in_month.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\epoch_to_2000AD.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\epoch_to_2000AD.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\hms_equal.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\hms_equal.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\hms_to_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\hms_to_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ISO8601_Str_to_secs.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ISO8601_Str_to_secs.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\is_leap_year.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\is_leap_year.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\legal_hms.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\legal_hms.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\legal_ymd.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\legal_ymd.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\legal_YMDHMS.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\legal_YMDHMS.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\Secs_to_HMS.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\Secs_to_HMS.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\secs_to_hms32_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\secs_to_hms32_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\secs_to_hms_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\secs_to_hms_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\secs_to_hr_min_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\secs_to_hr_min_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\secs_to_YMDHMS.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\secs_to_YMDHMS.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\secs_to_ymdhms_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\secs_to_ymdhms_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_add_secs.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_add_secs.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_add_secs_full.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_add_secs_full.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_A_GTE_B.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_A_GTE_B.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_equal.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_equal.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_to_secs.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_to_secs.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_to_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_to_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymdhms_to_str_raw.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymdhms_to_str_raw.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymd_A_GTE_B.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymd_A_GTE_B.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymd_equal.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymd_equal.c</Link>
+    </Compile>
+    <Compile Include="..\src\timedate\ymd_to_str.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymd_to_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\romstring.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\romstring.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\romstring_b.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\romstring_b.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_1st_words_match.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_1st_words_match.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_1st_words_match_vc.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_1st_words_match_vc.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_1st_word_has_char.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_1st_word_has_char.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_copy_nth_word.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_copy_nth_word.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_delete.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_delete.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_end_of_word_list.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_end_of_word_list.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_find_word.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_find_word.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_find_word_cc.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_find_word_cc.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_find_word_vc.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_find_word_vc.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_get_end_word.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_get_end_word.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_get_nth_word.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_get_nth_word.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_insert.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_insert.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_replace.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_replace.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_tail_after_word.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_tail_after_word.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_words_in_str.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_words_in_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_word_char_cnt.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_word_char_cnt.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_word_cnt.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_word_cnt.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_word_delimiter.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_word_delimiter.c</Link>
+    </Compile>
+    <Compile Include="..\src\wordlist\str_word_in_str.c">
+      <SubType>compile</SubType>
+      <Link>src\wordlist\str_word_in_str.c</Link>
+    </Compile>
+    <Compile Include="..\src\words\word_convert_1st.c">
+      <SubType>compile</SubType>
+      <Link>src\words\word_convert_1st.c</Link>
+    </Compile>
+    <Compile Include="library.c">
+      <SubType>compile</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src" />
+    <Folder Include="src\ascii_num" />
+    <Folder Include="src\bcd" />
+    <Folder Include="src\bits" />
+    <Folder Include="src\copys_fills" />
+    <Folder Include="src\crc" />
+    <Folder Include="src\endians" />
+    <Folder Include="src\heaps" />
+    <Folder Include="src\hexascii" />
+    <Folder Include="src\misc" />
+    <Folder Include="src\network" />
+    <Folder Include="src\words" />
+    <Folder Include="src\wordlist" />
+    <Folder Include="src\timedate" />
+    <Folder Include="src\terminal" />
+    <Folder Include="src\stores" />
+    <Folder Include="src\stacks" />
+    <Folder Include="src\safe_string" />
+    <Folder Include="src\regex" />
+    <Folder Include="src\rand" />
+    <Folder Include="src\queues" />
+    <Folder Include="src\printfs" />
+    <Folder Include="src\parsing" />
+  </ItemGroup>
+  <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
+</Project>

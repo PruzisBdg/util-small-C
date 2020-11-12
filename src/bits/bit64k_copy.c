@@ -352,7 +352,7 @@ PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const *src, bi
       src = EndianPtr_New(&si, src, _numBytesFrom(numBits),
                   srcIsEndian == true ? destEndian : eNoEndian);  // Endian-aware 'src'.
 
-      bool carry = false; U8 cyByte;
+      bool carry = false; U8 cyByte = 0;
 
       /* Separate tracks for little-endian and big-endian bitfield destinations. But both have the
          same sequence. which is to read in succession the bytes containing the destination bitfield,

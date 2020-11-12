@@ -6,7 +6,7 @@
 | Endian-aware iterator for buffer ptrs.
 |
 | Provides an iterator to reverse a multi-byte variable (from external to the host system) when
-| when the endianness of the variable is opposite to that of the system.
+| when the endian-ness of the variable is opposite to that of the system.
 |
 ------------------------------------------------------------------------------------------*/
 
@@ -41,6 +41,7 @@ PUBLIC U8* EndianPtr_New(T_EndianPtr *ep, U8 const *bufStart, U16 nbytes, E_Endi
          { ep->_at += nbytes-1; }
    #else
       #warning "bit64K_Out() Endian undefined - bytes will always be copied no-reverse."
+	  bool up = true;
    #endif // __BYTE_ORDER__
 
    ep->next = up == true ? epIncr : epDecr;        // 'next' will be 'up' or 'down', depending.

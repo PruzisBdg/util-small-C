@@ -24,8 +24,6 @@
 #include "util.h"
 #include "arith.h"
 
-typedef U32 U8bag_T_Line;
-
 #define _U8bag_NumLines (((U16)MAX_U8+1)/(8 *sizeof(U8bag_T_Line)))
 
 #define _LineAllOnes    (MAX_U32)
