@@ -978,6 +978,10 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
             gotLong = 1;
             pastWidth = 1;
          }
+         else if( !gotLong && ch == 'h' )                   // 'h' for 'short' for fixed point
+         {
+            pastWidth = 1;
+         }
          else if(!pastWidth && isdigit(ch))                 //  digit of a width modifier?
          {
             if( width == 0 && ch == '0' )                   // Is 1st digit (of the width modifier)? AND is '0'
@@ -1115,6 +1119,10 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
                      { wrHex32((U32)va_arg(arg, U32)); }       // then print 32bit unsigned as hex
                   else                                         // else no 'l' modifier
                      { wrHex16((U16)va_arg(arg, VA_ARG_U16)); }// so print 16 unsigned as hex.
+                  break;
+
+               case 'p':                                       // Pointer
+                  wrHex32((U32)va_arg(arg, U32));              // 32-bit Hex.
                   break;
 
                      // ------- Floating point support
