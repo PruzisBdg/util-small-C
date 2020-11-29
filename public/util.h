@@ -385,8 +385,12 @@ typedef struct {
    U8 min, sec;      // 0 - 59
    } S_TimeHMS;
 
-#define _HMS_WildHr _YMD_AnyYear   // i.e for U16.
-#define _HMS_Wilds  _YMD_AnyMDHMS
+#define _HMS_WildHr     _YMD_AnyYear   // i.e for U16.
+#define _HMS_Wilds      _YMD_AnyMDHMS
+// Names that are more obvious sometimes.
+#define _HMS_AnySec     _YMD_AnyMDHMS
+#define _HMS_AnyMinute  _YMD_AnyMDHMS
+#define _HMS_AnyHour    _HMS_WildHr
 
 /* Used when exporting this struct (to another device). Then the contents are packed, regardless
    of the format internal to the code.
