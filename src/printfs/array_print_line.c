@@ -1,5 +1,6 @@
 #include "libs_support.h"
 #include "util.h"
+#include "arith.h"
 #include <string.h>
 
 
@@ -23,7 +24,10 @@ PUBLIC C8 const * PrintU8s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, U8 const
          U16 i; for(i = 0; i < numBytes; i++, src++) {
             if(p - out + 10 > outBufLen)					// Look ahead. is there room to add another digit digit?
                { break; }										// No! then add no more
-            p += sprintf(p, fmt, *src); }	   		   // else print just number.
+            p += sprintf(p, fmt, *src); 	   		   // else print just number.
+
+            if( ((i+1) % 8) == 0 ) {                  // For long lists, add a gap every 8
+               p += sprintf(p, " "); }}
 
          // Bytes printed; back over any trailing separators.
          while( isSeperator(*(--p)) ) { *p = '\0'; }}
@@ -76,4 +80,58 @@ PUBLIC C8 const * PrintS16s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, S16 con
 	return out;
 }
 
+/* ---------------------------------- PrintU8s_MarkDiffs ----------------------------------------------
+
+   Print 2 lines under/over. Mark any differences with '^'
+*/
+PRIVATE C8 const * markDiffs(C8 *out, U16 outBufLen, U8 ofs, U8 stride, U8 const *srcA, U8 const *srcB, size_t numBytes)
+{
+	// Print something if 'src' and 'out' exist and there's room for at least 'prefix'.
+	if(srcA != NULL && srcB != NULL && out != NULL)
+   {
+      if(numBytes == 0 ||
+         numBytes * stride > outBufLen) {
+         *out = '\0'; }
+
+      else {
+         memset(out, ' ', numBytes * stride);
+
+         U16 i; for(i = 0; i < numBytes; i++) {
+            if(srcA[i] != srcB[i]) {
+               out[ ofs + (i * stride) + (i/8)] = '^'; }}   // 'i/8' adds a gap every 8 to match PrintU8s_1Line().
+
+         out[numBytes * stride] = '\0'; }
+	}
+	return out;
+}
+
+PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 const *fmt, U8 const *srcA, size_t aBytes, U8 const *srcB, size_t bBytes)
+{
+   /* Find the length of the printout of one number. They should all print the same size to
+      line up and be compared.
+   */
+   U8 stride = sprintf( (C8[20]){}, fmt, srcA[0]);
+
+   // Find size of leading printout of the array size.
+   #define _LenFmt "[%d] "
+   U8 ofs = sprintf( (C8[20]){}, _LenFmt, MaxU16(aBytes, bBytes));
+
+   if( (3 * stride * MaxU16(aBytes, bBytes)) + (2 * sizeof("\r\n")) > outBufLen) {
+      *out = '\0'; }
+   else {
+      U16 perLine = outBufLen/3;
+
+      C8 *b0 = malloc( perLine + 2 );
+      C8 *b1 = malloc( perLine + 2 );
+      C8 *b2 = malloc( perLine + 2 );
+
+      sprintf(out, "%sexpected " _LenFmt "{%s},\r\n%s          %s\r\n%sgot      " _LenFmt "{%s}",
+               hdr,  aBytes,  PrintU8s_1Line(b0, perLine, fmt, srcA, aBytes),
+               hdr,  markDiffs(b1, perLine, ofs, stride, srcA, srcB,  MinU16(aBytes, bBytes)),
+               hdr,  bBytes,  PrintU8s_1Line(b2, perLine, fmt, srcB, bBytes) );
+
+      free(b0); free(b1); free(b2); }
+
+   return out;
+}
 // ===================================== eof ==========================================================
