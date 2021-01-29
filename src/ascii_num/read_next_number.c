@@ -134,7 +134,7 @@ PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out)
 {
    U8 DATA ch;                   // the current char
    U8 IDATA digitCnt = 0;        // digits so ofr in mantissa or exponent
-   S16 exponent;
+   S16 exponent = 0;
 
    BIT   gotSign = 0;            // Mantissa or exponent was prefixed by '+' or '-'
    BIT   readExp = 0;            // am reading the exponent
@@ -147,7 +147,7 @@ PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out)
    isNeg = 0;
 
    float fl;
-   U32 _u32;
+   U32 _u32 = 0;
 
    while(1)                               // Process 1 char each loop....
    {                                      // until parsed the largest number or until definitely can't complete any number
