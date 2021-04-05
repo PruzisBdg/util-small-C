@@ -698,6 +698,57 @@ PUBLIC void		Heap1w_Untake(Heap1w_S *h, Heap1w_T_Size n);
 PUBLIC Heap1w_T_Size Heap1w_Used(Heap1w_S const *h);
 PUBLIC Heap1w_T_Size Heap1w_Unused(Heap1w_S const *h);
 
+/* --------------------------------- Safe malloc() / free() --------------------------------------- */
+
+typedef struct {void *ref; U16 size, used, tag; } S_SafeRef;
+
+PUBLIC S_SafeRef * safeRef_New(U16 nBytes);
+PUBLIC S_SafeRef * safeRef_Renew(S_SafeRef **h, U16 nBytes);
+PUBLIC bool        safeRef_Delete(S_SafeRef **h);
+PUBLIC bool        safeRef_Write(S_SafeRef *sf, U8 const *src, U16 srcbytes);
+PUBLIC bool        safeRef_WriteAt(S_SafeRef *sf, U16 ofs, U8 const *src, U16 srcbytes);
+PUBLIC bool        safeRef_Append(S_SafeRef *sf, U8 const *src, U16 srcbytes);
+PUBLIC bool        safeRef_Read(S_SafeRef *sf, U8 *dest, U16 nBytes);
+PUBLIC U16         safeRef_Size(S_SafeRef *sf);
+PUBLIC U16         safeRef_Used(S_SafeRef *sf);
+PUBLIC U16         safeRef_Free(S_SafeRef *sf);
+
+/* --------------------- Safe malloc() / free() for Strings --------------------------------------- */
+
+// A heap string is just a SafeRef used as a string.
+typedef S_SafeRef S_HeapStr;
+
+PUBLIC S_HeapStr * heapStr_New(U16 len);
+PUBLIC S_HeapStr * heapStr_Renew(S_HeapStr **h, U16 len);
+PUBLIC bool        heapStr_Delete(S_HeapStr **h);
+PUBLIC bool        heapStr_Write(S_HeapStr *s, C8 const *src);
+PUBLIC C8 const *  heapStr_Read( S_HeapStr *s, C8 *out, U16 charsReq);
+PUBLIC C8 const *  heapStr_Take( S_HeapStr **h, C8 *out, U16 charsReq);
+PUBLIC C8 const *  heapStr_Ref(S_HeapStr *s);
+PUBLIC bool        heapStr_Append(S_HeapStr *s, C8 const *src);
+
+/* --------------------------------- Heap Log -------------------------------------------- */
+
+typedef struct {void *at; size_t size;} heapLog_Item;
+typedef struct {heapLog_Item *bs; U16 put;} heapLog_Items;
+
+typedef struct {
+   heapLog_Items mallocs, frees;
+   U32 bytesMalloced;
+} heapLog_S;
+
+typedef struct {
+   U16 mallocs, frees;
+} heapLog_S_Stats;
+
+PUBLIC void heapLog_Make(heapLog_S *l);
+PUBLIC void heapLog_Delete(heapLog_S *l);
+PUBLIC void *heapLog_Malloc(heapLog_S *l, size_t n);
+PUBLIC void heapLog_Free(heapLog_S *l, void *p);
+PUBLIC bool heapLog_Match(heapLog_S *l);
+PUBLIC C8 const * heapLog_Report(C8 *out, heapLog_S_Stats* stats, heapLog_S *l);
+
+
 /* ---------------------------- Bounded (Safe) Strings ----------------------------------------------- */
 
 typedef struct {

@@ -98,6 +98,7 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>TPRINT_IS_FLOAT</Value>
+      <Value>__TARGET_IS_LIB_GCC_ARM</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -353,6 +354,10 @@
       <SubType>compile</SubType>
       <Link>src\heaps\heap_1way_u16.c</Link>
     </Compile>
+    <Compile Include="..\src\heaps\safe_heap_reference.c">
+      <SubType>compile</SubType>
+      <Link>src\heaps\safe_heap_reference.c</Link>
+    </Compile>
     <Compile Include="..\src\hexascii\byte_to_hexascii.c">
       <SubType>compile</SubType>
       <Link>src\hexascii\byte_to_hexascii.c</Link>
@@ -488,6 +493,11 @@
     <Compile Include="..\src\safe_string\endstr.c">
       <SubType>compile</SubType>
       <Link>src\safe_string\endstr.c</Link>
+    </Compile>
+    <Compile Include="..\src\safe_string\heap_string.c">
+      <SubType>compile</SubType>
+      <Link>src\safe_string\heap_string.c</Link>
+      <CustomCompilationSetting Condition="'$(Configuration)' == 'Debug'">-Wno-pointer-sign</CustomCompilationSetting>
     </Compile>
     <Compile Include="..\src\safe_string\safe_string.c">
       <SubType>compile</SubType>

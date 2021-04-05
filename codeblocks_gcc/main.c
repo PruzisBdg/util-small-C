@@ -3,11 +3,11 @@
 #include "util.h"
 #include "arith.h"
 
+extern test_Renew(void);
 
 int main (void)
 {
-   S16 n;
-   ReadThruToASCIIInt("abc dr()", &n, NULL);
+   test_Read();
 }
 
 // ------------------------------------- eof ---------------------------------------------

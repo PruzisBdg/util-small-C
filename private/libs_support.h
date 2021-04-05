@@ -88,11 +88,25 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 
 #define _TARGET_X86_CONSOLE   1
 #define _TARGET_UNITY_TDD     2
+#define _TARGET_X86_LIB       3
+#define _TARGET_LIB_ARM_GCC   4
 
-#ifdef __TARGET_IS_CONSOLE
-   #define _TARGET_IS _TARGET_X86_CONSOLE
+#ifdef __TARGET_IS_X86_LIB
+   #define _TARGET_IS _TARGET_X86_LIB
 #else
-   #define _TARGET_IS _TARGET_UNITY_TDD
+   #ifdef __TARGET_IS_CONSOLE
+      #define _TARGET_IS _TARGET_X86_CONSOLE
+   #else
+      #ifdef __TARGET_IS_UNITY_TDD
+         #define _TARGET_IS _TARGET_UNITY_TDD
+      #else
+         #ifdef __TARGET_IS_LIB_GCC_ARM
+            #define _TARGET_IS _TARGET_LIB_ARM_GCC
+         #else
+            #error "_TARGET_IS must be defined"
+         #endif
+      #endif
+   #endif
 #endif
 
 #endif // LIBS_SUPPORT_H

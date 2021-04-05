@@ -8,7 +8,7 @@
 include ../../../unity_tdd/tdd_common_pre_build.mak
 
 # (Additional) compiler flags
-CFLAGS := $(CFLAGS) -DGNRC_UNIT_TEST -D__COMPILER_IS_GENERIC__ -D__SYSTEM_IS_ANY__
+CFLAGS := $(CFLAGS) -DGNRC_UNIT_TEST -D__COMPILER_IS_GENERIC__ -D__SYSTEM_IS_ANY__ -D__TARGET_IS_UNITY_TDD
 
 # File of tests is here.
 SRCDIR = ../../src/$(TARGET_BASE_DIR)/

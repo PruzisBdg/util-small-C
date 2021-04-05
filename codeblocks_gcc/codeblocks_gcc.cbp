@@ -18,6 +18,7 @@
 					<Add option="-g" />
 					<Add option="-Wno-pointer-sign" />
 					<Add option="-DTPRINT_IS_FLOAT" />
+					<Add option="-D__TARGET_IS_X86_LIB" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -359,6 +360,16 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/heaps/heap_log.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/heaps/safe_heap_reference.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/hexascii/Get_next_hexASCII_int.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -532,6 +543,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/safe_string/endstr.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/safe_string/heap_string.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -781,7 +797,6 @@
 		<Unit filename="../unit_test/ascii_num/test-ascii_num.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
-			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/bcd/bcd_bin.mak">
 			<Option target="Debug" />
@@ -861,6 +876,13 @@
 		</Unit>
 		<Unit filename="../unit_test/printfs/tiny1_sprintf.mak">
 			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/safe_string/heap_string.mak">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../unit_test/safe_string/test-heap_string.c">
+			<Option compilerVar="CC" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/sensus/sensus_decode.mak">
 			<Option target="Unity TDD" />
