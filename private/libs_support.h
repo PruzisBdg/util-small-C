@@ -32,7 +32,7 @@
 #define CLIP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
 
 
-// ================== Add/remap pre-Generac stuff ============================
+// ================== Add/remap 8051 memory regions ============================
 
 #define RAM_IS
 #define rIDATA
@@ -86,10 +86,11 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
     #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
 #endif
 
-#define _TARGET_X86_CONSOLE   1
-#define _TARGET_UNITY_TDD     2
-#define _TARGET_X86_LIB       3
-#define _TARGET_LIB_ARM_GCC   4
+#define _TARGET_X86_CONSOLE        1
+#define _TARGET_UNITY_TDD          2
+#define _TARGET_X86_LIB            3
+#define _TARGET_LIB_ARM_GCC        4
+#define _TARGET_LIB_430_CCS_SMALL  5
 
 #ifdef __TARGET_IS_X86_LIB
    #define _TARGET_IS _TARGET_X86_LIB
@@ -103,7 +104,11 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
          #ifdef __TARGET_IS_LIB_GCC_ARM
             #define _TARGET_IS _TARGET_LIB_ARM_GCC
          #else
-            #error "_TARGET_IS must be defined"
+            #ifdef _TARGET_IS_LIB_430_CCS_SMALL_SMALL
+               #define _TARGET_IS _TARGET_LIB_430_CCS_SMALL
+            #else
+               #error "_TARGET_IS must be defined"
+            #endif
          #endif
       #endif
    #endif

@@ -35,9 +35,9 @@ PUBLIC void C8bag_Clear(S_C8bag *m)
 
 /* --------------------------------- C8bag_Add/RemoveRange ------------------------------- */
 
-PRIVATE void addRemove(S_C8bag *m, C8 from, C8 to, BOOL add)
+PRIVATE BOOL addRemove(S_C8bag *m, C8 from, C8 to, BOOL add)
 {
-   if(from <= MAX_C8 && to <= MAX_C8)
+   if(from >= 0 && to >= 0 && to >= from)  // C8 is signed; 'from' and 'to' are 0..7F?
    {
       U8 ln, lsb;
       ln = from / _BitsPerLine;
@@ -63,20 +63,22 @@ PRIVATE void addRemove(S_C8bag *m, C8 from, C8 to, BOOL add)
          else
             from = _BitsPerLine * (U16)ln;
       }
+      return TRUE;
    }
+   return FALSE;
 }
 
-PUBLIC void C8bag_AddRange(S_C8bag *m, C8 from, C8 to)
-   { addRemove(m, from, to, TRUE); }
+PUBLIC BOOL C8bag_AddRange(S_C8bag *m, C8 from, C8 to)
+   { return addRemove(m, from, to, TRUE); }
 
-PUBLIC void C8bag_RemoveRange(S_C8bag *m, C8 from, C8 to)
-   { addRemove(m, from, to, FALSE); }
+PUBLIC BOOL C8bag_RemoveRange(S_C8bag *m, C8 from, C8 to)
+   { return addRemove(m, from, to, FALSE); }
 
 /* --------------------------------- C8bag_Add/RemoveCh ------------------------------- */
 
 PRIVATE void addRemoveOne(S_C8bag *m, C8 n, BOOL add)
 {
-   if(n <= MAX_C8)
+   if(n >= 0)          // C8 is signed; 'n' is 0..7F?
    {
       U8 ln = n / _BitsPerLine;
       U8 bt = n - (ln * _BitsPerLine);
@@ -107,7 +109,7 @@ PUBLIC void C8bag_Invert(S_C8bag *m)
 
 PUBLIC BOOL C8bag_Contains(S_C8bag const *m, C8 n)
 {
-   if(n > MAX_C8)
+   if(n < 0)          // C8 is signed; 'n' is 0..7F?
    {
       return FALSE;
    }
@@ -128,8 +130,38 @@ PUBLIC void C8bag_Print(S_C8bag const *m)
    if(sizeof(m->lines[0]) == sizeof(U32)) {
       U8 i;
       for(i = 0; i < _C8bag_NumLines; i++) {
-         printf("  %d: 0x%lx\r\n", i, m->lines[i]); }}
+         printf("  %d: 0x08%lX\r\n", i, m->lines[i]); }}
 
+}
+
+/* ------------------------------ C8bag_PrintLine -------------------------------
+
+   Prints '[0x12345678 087654321 ...]'
+*/
+PUBLIC C8 const * C8bag_PrintLine(C8 *out, S_C8bag const *m)
+{
+   if(sizeof(m->lines[0]) == sizeof(U32)) {
+      U8 i; C8 *prntAt;
+      for(i = 0, prntAt = out; i < _C8bag_NumLines; i++) {
+         prntAt += sprintf(prntAt,
+            i == 0
+               ? "[0x%08lX"                  // Start with left-bracket
+               : (i == _C8bag_NumLines-1
+                  ? " %08lX]"                 // End with right-bracket.
+                  : " %08lX"),
+            m->lines[i]); }
+      return out; }
+   return strcpy(out, "[C8Bag print error]");
+}
+
+/* ------------------------------ C8bag_Count ------------------------------- */
+
+PUBLIC U16 C8bag_Count(S_C8bag const *m)
+{
+   U8 i; U16 cnt;
+   for(i = 0, cnt = 0; i < _C8bag_NumLines; i++) {
+      cnt += NumBitsSet_U32(m->lines[i]); }
+   return cnt;
 }
 
 #define TAB 0x09
@@ -144,6 +176,35 @@ PUBLIC C8 * C8bag_List(C8 *buf, S_C8bag const *m)
    for(c = 0, i = 0; c <= MAX_C8; c++)
    {
       if(C8bag_Contains(m, c))
+      {
+         switch(c)
+         {
+            case CR:  buf[i++] = '\\'; buf[i++] = 'r'; break;
+            case LF:  buf[i++] = '\\'; buf[i++] = 'n'; break;
+            case TAB: buf[i++] = '\\'; buf[i++] = 't'; break;
+            default: buf[i++] = c;
+         }
+      }
+   }
+   buf[i] = '\0';
+   return buf;
+}
+
+/* ---------------------------------- C8bag_Equal ----------------------------- */
+
+PUBLIC BOOL C8bag_Equal(S_C8bag const *a, S_C8bag const *b)
+{
+   return memcmp(a, b, sizeof(S_C8bag)) == 0 ? TRUE : FALSE;
+}
+
+/* ---------------------------------- C8bag_ListInv ----------------------------- */
+
+PUBLIC C8 * C8bag_ListInv(C8 *buf, S_C8bag const *m)
+{
+   U16 i, c;
+   for(c = 0, i = 0; c <= MAX_C8; c++)
+   {
+      if(C8bag_Contains(m, c) == FALSE)
       {
          switch(c)
          {

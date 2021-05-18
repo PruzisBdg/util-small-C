@@ -529,14 +529,19 @@ typedef struct {
 } S_C8bag;
 
 PUBLIC void C8bag_Clear       (S_C8bag *m);
-PUBLIC void C8bag_AddRange    (S_C8bag *m, C8 from, C8 to);
-PUBLIC void C8bag_RemoveRange (S_C8bag *m, C8 from, C8 to);
+PUBLIC BOOL C8bag_AddRange    (S_C8bag *m, C8 from, C8 to);
+PUBLIC BOOL C8bag_RemoveRange (S_C8bag *m, C8 from, C8 to);
 PUBLIC void C8bag_AddOne      (S_C8bag *m, C8 n);
 PUBLIC void C8bag_RemoveOne   (S_C8bag *m, C8 n);
 PUBLIC void C8bag_Invert      (S_C8bag *m);
 PUBLIC BOOL C8bag_Contains    (S_C8bag const *m, C8 n);
+PUBLIC U16  C8bag_Count       (S_C8bag const *m);
+PUBLIC BOOL C8bag_Equal       (S_C8bag const *a, S_C8bag const *b);
 PUBLIC void C8bag_Print       (S_C8bag const *m);
-PUBLIC C8 * C8bag_List(C8 *buf, S_C8bag const *m);
+#define _C8bag_PrintLine_Size sizeof("[0x12345678 12345678 12345678 12345678 12345678 12345678 12345678 12345678] ")
+PUBLIC C8 const * C8bag_PrintLine(C8 *out, S_C8bag const *m);
+PUBLIC C8 * C8bag_List   (C8 *buf, S_C8bag const *m);
+PUBLIC C8 * C8bag_ListInv(C8 *buf, S_C8bag const *m);
 
 /* ------------------------------------- Parsing - General --------------------------------------*/
 
