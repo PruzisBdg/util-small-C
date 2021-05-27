@@ -91,6 +91,7 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 #define _TARGET_X86_LIB            3
 #define _TARGET_LIB_ARM_GCC        4
 #define _TARGET_LIB_430_CCS_SMALL  5
+#define _TARGET_LIB_AVR32          6
 
 #ifdef __TARGET_IS_X86_LIB
    #define _TARGET_IS _TARGET_X86_LIB
@@ -107,10 +108,21 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
             #ifdef _TARGET_IS_LIB_430_CCS_SMALL_SMALL
                #define _TARGET_IS _TARGET_LIB_430_CCS_SMALL
             #else
-               #error "_TARGET_IS must be defined"
+               #ifdef _TARGET_IS_LIB_AVR32
+                  #define _TARGET_IS _TARGET_LIB_AVR32
+               #else
+                  #error "_TARGET_IS must be defined"
+               #endif
             #endif
          #endif
       #endif
+   #endif
+#endif
+
+#if _TARGET_IS == _TARGET_LIB_AVR32
+   #ifndef __BYTE_ORDER__
+      #define __ORDER_BIG_ENDIAN__ 1
+      #define __BYTE_ORDER__ __ORDER_BIG_ENDIAN__
    #endif
 #endif
 

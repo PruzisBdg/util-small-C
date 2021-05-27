@@ -69,7 +69,7 @@ typedef U16 T_KeyU16;
 PRIVATE bool aNaturalKey(U8 ch) {
    return
       ch == ESC || ch == BKSPC || ch == TAB || ch == CtlBKSPC ||
-      (ch >= ' ' & ch <= '~'); }
+      (ch >= ' ' && ch <= '~'); }
 
 // 2-byte key-codes are prefixed with 0 or 224.
 PRIVATE bool aPrefix(U8 ch) {
@@ -104,6 +104,7 @@ PRIVATE T_KeyU16 mapFKeys(U8 ch) {
       T_KeyU8 ek;
       if( (ek = foundIn(ch, &fkeys[i])) != NoKey ) {
          return ek; }}
+   return NoKey;
 }
 
 // Map key-codes one-by-one
