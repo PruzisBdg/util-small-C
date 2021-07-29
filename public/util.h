@@ -638,7 +638,22 @@ typedef struct {
 
 typedef U16 RegexLT_T_Flags;
 #define _RegexLT_Flags_None         0
+
+/* Find the longest maximal match in the whole source string e.g
+      34+ <- 12344_34444  finds '34444', bypassing the earlier '344'.
+
+   Otherwise RegexLT finds the '344' which is the 'first maximal' match, meaning '34' would
+   also match but '344' is longer.
+
+   If 2 maximal matches are the same size then RegextLT picks the 1st i.e
+      34+ <- 123444_3444  finds the 1st '3444' at (3,3)
+*/
 #define _RegexLT_Flags_MatchLongest _BitM(0)
+
+/* Find the last maximal matxh in a string, even if it's shorter than earlier ones i.e
+
+      34+ <- 1234444_344  finds '344', the last 3 chars.
+*/
 #define _RegexLT_Flags_MatchLast    _BitM(1)
 
 PUBLIC void       RegexLT_Init        (RegexLT_S_Cfg const *cfg);
