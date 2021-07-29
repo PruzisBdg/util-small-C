@@ -96,6 +96,7 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>TPRINT_IS_FLOAT</Value>
+      <Value>_TARGET_IS_LIB_AVR32</Value>
     </ListValues>
   </avr32gcc.compiler.symbols.DefSymbols>
   <avr32gcc.compiler.directories.IncludePaths>
@@ -138,6 +139,42 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\private\bit64k_copy_tests_inline.h">
+      <SubType>compile</SubType>
+      <Link>private\bit64k_copy_tests_inline.h</Link>
+    </Compile>
+    <Compile Include="..\private\libs_support.h">
+      <SubType>compile</SubType>
+      <Link>private\libs_support.h</Link>
+    </Compile>
+    <Compile Include="..\public\bit_field.h">
+      <SubType>compile</SubType>
+      <Link>public\bit_field.h</Link>
+    </Compile>
+    <Compile Include="..\public\map_macros.h">
+      <SubType>compile</SubType>
+      <Link>public\map_macros.h</Link>
+    </Compile>
+    <Compile Include="..\public\sensus_codec.h">
+      <SubType>compile</SubType>
+      <Link>public\sensus_codec.h</Link>
+    </Compile>
+    <Compile Include="..\public\text_line_builder.h">
+      <SubType>compile</SubType>
+      <Link>public\text_line_builder.h</Link>
+    </Compile>
+    <Compile Include="..\public\tiny1_stdio.h">
+      <SubType>compile</SubType>
+      <Link>public\tiny1_stdio.h</Link>
+    </Compile>
+    <Compile Include="..\public\util.h">
+      <SubType>compile</SubType>
+      <Link>public\util.h</Link>
+    </Compile>
+    <Compile Include="..\public\wordlist.h">
+      <SubType>compile</SubType>
+      <Link>public\wordlist.h</Link>
+    </Compile>
     <Compile Include="..\src\ascii_num\got_float_from_ascii.c">
       <SubType>compile</SubType>
       <Link>src\ascii_num\got_float_from_ascii.c</Link>
@@ -678,11 +715,10 @@
       <SubType>compile</SubType>
       <Link>src\words\word_convert_1st.c</Link>
     </Compile>
-    <Compile Include="library.c">
-      <SubType>compile</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="public" />
+    <Folder Include="private" />
     <Folder Include="src" />
     <Folder Include="src\ascii_num" />
     <Folder Include="src\bcd" />

@@ -121,7 +121,7 @@ PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 c
       U8 stride = sprintf( (C8[20]){}, fmt, srcA[0]);
 
       // Find size of leading printout of the array size.
-      #define _LenFmt "[%d] "
+      #define _LenFmt "[%u] "
       U8 ofs = sprintf( (C8[20]){}, _LenFmt, MaxU16(aBytes, bBytes));
 
       if( (3 * stride * MaxU16(aBytes, bBytes)) + (2 * sizeof("\r\n")) > outBufLen) {
@@ -134,9 +134,9 @@ PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 c
          C8 *b2 = malloc( perLine + 2 );
 
          sprintf(out, "%sexpected " _LenFmt "{%s},\r\n%s          %s\r\n%sgot      " _LenFmt "{%s}",
-                  hdr,  aBytes,  PrintU8s_1Line(b0, perLine, fmt, srcA, MinU16(aBytes, _BytesPerLine)),
+                  hdr,  (U16)aBytes,  PrintU8s_1Line(b0, perLine, fmt, srcA, MinU16(aBytes, _BytesPerLine)),
                   hdr,  markDiffs(b1, perLine, ofs, stride, srcA, srcB, MinU16(MinU16(aBytes, bBytes),_BytesPerLine)  ),
-                  hdr,  bBytes,  PrintU8s_1Line(b2, perLine, fmt, srcB, MinU16(bBytes, _BytesPerLine)));
+                  hdr,  (U16)bBytes,  PrintU8s_1Line(b2, perLine, fmt, srcB, MinU16(bBytes, _BytesPerLine)));
 
          free(b0); free(b1); free(b2); }
 
