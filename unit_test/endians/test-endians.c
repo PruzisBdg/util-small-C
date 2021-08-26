@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "util.h"
+#include <string.h>
 
 // =============================== Tests start here ==================================
 
@@ -267,6 +268,58 @@ void test_s64ToBE(void)
    TEST_ASSERT_EQUAL_PTR(rtn, out);
    U8 chk[9] = {0x12,0x34,0x56,0x78,0xAB,0xCD,0xEF,0x01,0x55};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(chk, out, 9);
+}
+
+
+/* ---------------------------- test_ReverseBytesInPlace ------------------------------------------- */
+
+void test_ReverseBytesInPlace(void)
+{
+   typedef struct { U8 const *in; U8 const *out; U16 numBytes; } S_Tst;
+
+   S_Tst const tsts[] = {
+      // No bytes or 1 bytes to swap. No swap to do; does not touch io[], which may be NULL
+      {.in = NULL, .out = (U8[2]){0x5A, 0x5A}, .numBytes = 0},
+      {.in = NULL, .out = (U8[2]){0x5A, 0x5A}, .numBytes = 1},
+
+
+      {.in = (U8[2]){3,4},       .out = (U8[4]){4,3, 0x5A,0x5A},        .numBytes = 2},
+      {.in = (U8[3]){3,4,5},     .out = (U8[5]){5,4,3, 0x5A,0x5A},        .numBytes = 3},
+      {.in = (U8[4]){3,4,5,6},   .out = (U8[6]){6,5,4,3, 0x5A,0x5A},        .numBytes = 4},
+      {.in = (U8[5]){3,4,5,6,7}, .out = (U8[7]){7,6,5,4,3, 0x5A,0x5A},        .numBytes = 5},
+      };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      #define _BufSize 50
+      U8 io[_BufSize];
+      memset(io, 0x5A, _BufSize);
+
+      if(t->in == NULL)
+      {
+         // Check NULL cases for 0 and 1 bytes. Should not crash.
+         ReverseBytesInPlace(NULL, t->numBytes);
+      }
+      else
+      {
+         memcpy(io, t->in, t->numBytes);
+      }
+
+      ReverseBytesInPlace(io, t->numBytes);
+
+      if(memcmp(io, t->out, t->numBytes) != 0)
+      {
+         printf("test #%u bad swap\r\n", i);
+         TEST_FAIL();
+      }
+      if(io[t->numBytes] != 0x5A)
+      {
+         printf("test #%u Wrote outside io[]\r\n", i);
+         TEST_FAIL();
+      }
+   }
 }
 
 // ----------------------------------------- eof --------------------------------------------

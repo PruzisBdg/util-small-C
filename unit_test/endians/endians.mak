@@ -19,6 +19,7 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)to_sys_endian_u16.c \
 								$(SRCDIR)to_sys_endian_u32.c \
 								$(SRCDIR)endians_aligns.c \
+								$(SRCDIR)reverse_in_place.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build

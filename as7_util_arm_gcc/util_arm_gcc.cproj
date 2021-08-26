@@ -334,6 +334,10 @@
       <SubType>compile</SubType>
       <Link>src\endians\print_endian.c</Link>
     </Compile>
+    <Compile Include="..\src\endians\reverse_in_place.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\reverse_in_place.c</Link>
+    </Compile>
     <Compile Include="..\src\endians\reverse_u16.c">
       <SubType>compile</SubType>
       <Link>src\endians\reverse_u16.c</Link>
@@ -341,6 +345,10 @@
     <Compile Include="..\src\endians\reverse_u32.c">
       <SubType>compile</SubType>
       <Link>src\endians\reverse_u32.c</Link>
+    </Compile>
+    <Compile Include="..\src\endians\to_sys_endian_in_place.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\to_sys_endian_in_place.c</Link>
     </Compile>
     <Compile Include="..\src\endians\to_sys_endian_u16.c">
       <SubType>compile</SubType>

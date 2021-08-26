@@ -72,7 +72,7 @@ static U8 orInto(U8 dest, U8 src, U8 srcMask) {
 */
 #define _NoCacheAddr 0xFFFF      // This will not match any reasonable cache address.
 
-static bool reloadCache(bit64K_Ports const *port, T_bit64K src, bit64K_T_Cnt bitsRem)
+static bool reloadCache(bit64K_Ports const *port, U16 srcByteAddr, bit64K_T_Cnt bitsRem)
 {
    if(port->cache == NULL) {                 // This port has no cache, actually?
       return true; }                         // then succeed in doing nothing.
@@ -84,13 +84,13 @@ static bool reloadCache(bit64K_Ports const *port, T_bit64K src, bit64K_T_Cnt bit
          returned by byteBuf_ToFill(). Normally this is unsafe way of filling byteBuf_. But we prechecked
          above that 'reqBytes' will not overfill the buffer.
       */
-      if( port->src.get(byteBuf_ToFill(bb, reqBytes), _byte(src), reqBytes) == false) {  // Failed get() from 'port'?
+      if( port->src.get(byteBuf_ToFill(bb, reqBytes), srcByteAddr, reqBytes) == false) {  // Failed get() from 'port'?
          port->cache->atByte = _NoCacheAddr;                      // then cache state is unknown; Mark that we have nothing...
          byteBuf_Unlock(bb);                                      // Cache was locked before fill attempt. Unlock it.
          byteBuf_Flush(bb);                                       // Cache state is unknown - flush it!
          return false; }
       else {                                                      // else cache buffer was filled from 'port'
-         port->cache->atByte = _byte(src);                        // Mark that cache start from the byte containing 'src'.
+         port->cache->atByte = srcByteAddr;                        // Mark that cache start from the byte containing 'src'.
          byteBuf_Unlock(bb);                                      // Was locked before fill. Unlock it.
          return true; }
    }
@@ -99,19 +99,19 @@ static bool reloadCache(bit64K_Ports const *port, T_bit64K src, bit64K_T_Cnt bit
 // ----------------------------------------------------------------------------------------
 static bool reloadCache_RdByte(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64K_T_Cnt bitsRem)
 {
-   if( true == reloadCache(port, src, bitsRem) ) {
+   if( true == reloadCache(port, _byte(src), bitsRem) ) {
       byteBuf_Read(&port->cache->q, out, 1);                // Now return 1st byte from the (re)filled cache.
       return true; }
    return false;
 }
 
 // ----------------------------------------------------------------------------------------
-static bool readFromCache(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64K_T_Cnt bitsRem)
+static bool readFromCache(bit64K_Ports const *port, U8 *out, U16 srcByteAddr)
 {
-   if(_byte(src) >= port->cache->atByte) {                  // 'src' may be in this cache; address is high than cache start?
+   if(srcByteAddr >= port->cache->atByte) {                 // 'src' may be in this cache; address is high than cache start?
       S_byteBuf *bb = &port->cache->q;
 
-      U16 ofs = _byte(src) - port->cache->atByte;           // Offset relative to cache start would be...
+      U16 ofs = srcByteAddr - port->cache->atByte;          // Offset relative to cache start would be...
 
       if(ofs < byteBuf_Count(bb)) {                         // That offset is within the cache? so data is in there
          if( 1 == byteBuf_ReadAt(bb, out, ofs, 1)) {        // then (attempt to) read 1 byte from that cache?
@@ -122,6 +122,21 @@ static bool readFromCache(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64
 
 // ============================ ends: read cache =================================================
 
+/* ------------------------------ getWholeSrcBytes ----------------------------------------------
+
+   Get 'numBytes' from 'port[srcByteAddr]' into 'out', converting endian if requested by 'endianIs'
+
+   'src' is a byte address i.e this fetches aligned to bytes in 'port'.
+*/
+PRIVATE bool getWholeSrcBytes(bit64K_Ports const *port, U8 *out, U16 srcByteAddr, bit64K_T_Cnt numBytes, E_EndianIs endianIs)
+{
+   bool rtn = port->src.get(out, srcByteAddr, numBytes);
+
+   // Do endian conversion if necessary.
+   if(rtn == true && (endianIs == eLittleEndian || endianIs == eBigEndian)) {    // Read success? AND treat as endian.
+      ToSysEndian_InPlace(out, numBytes, endianIs); }                            // then switch endian, in place, if necessary.
+   return rtn;
+}
 
 /* ----------------------------- first/nextSrcByte --------------------------------------------------
 
@@ -140,7 +155,7 @@ PRIVATE bool nextSrcByte(bit64K_Ports const *port, U8 *out, T_bit64K src, bit64K
 
       if(byteBuf_Exists(bb) == TRUE ) {                                 // That cache is made? i.e it has a buffer?
          if(firstRead == true) {                                        // Is the 1st byte requested from 'src'?
-            if( true == readFromCache(port, out, src, bitsRem)) {       // See if 'src' is already cached. Got it from there?
+            if( true == readFromCache(port, out, _byte(src))) {         // See if 'src' is already cached. Got it from there?
                return true; }}                                          // Yep! Done!
          else {                                                         // else is 2nd,3rd... byte-read of this read
             if( byteBuf_Read(bb, out, 1) == 1) {                        // If cache is large enough then all bytes should be cached. Read should succeed.
@@ -278,49 +293,70 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_
    if( false == legalRange(&port->src.range, src, numBits))    // 'src' (bit address) outside stated range?
       { return false; }                                        // then fail!
    else if(dest == NULL) {                                     // else no destination specified? ...
-         return reloadCache(port, src, numBits); }             // ... is an instruction to (re)load the cache at 'src'.
+         return reloadCache(port, _byte(src), numBits); }      // ... is an instruction to (re)load the cache at 'src'.
    else if(numBits == 0) {                                     // else zero data requested?
       return true; }                                           // then, maybe reloaded cache, but do nothing else. Always true.
    else if(port->src.maxOutBytes > 0 &&                        // Test if 'numBits' will fit in 'dest'? AND...
            bit64K_Byte(numBits) > port->src.maxOutBytes)       // ...too many 'numBits' to fit in dest?
       { return false; }                                        // then fail!
    else {                                                      // else do a read.
-      T_EndianPtr di;
-      dest = EndianPtr_New(&di, dest, _numBytesFrom(numBits), srcEndian);     // Endian-aware 'src'.
 
-      /* Fill each dest byte from a bytes-worth of source bit-field. Depending on alignment, this will
-         be from a single source byte or 2 consecutive source bytes.
+      /* If reading a whole number of bytes AND/OR 'src' is on a byte-boundary in 'port'
+         then, for speed, read all bytes in one transaction. If necessary switch endian
+         in-place in 'dest'.
+
+         Many reads, even from a bit field, are whole bytes on byte-boundaries and reading
+         as a block is much more efficient than reading a byte at a time which we must do
+         (below) for non-aligned reads.
+
+         If Host supplies a cache then, for now, do NOT use getWholeSrcBytes() even for whole
+         byte reads. This because getWholeSrcBytes() does not use the cache for now and so
+         TDD tests for cache reload fail (try it). Fixup TBD.
       */
-      U8 ask; bool is1st = true;
-      for(bit64K_T_Cnt rem = numBits; rem > 0; rem -= ask, src += ask, dest = di.next(&di))
-      {
-         /* Copy 'open' bits from 'src' into the 'dest' byte. This needs either 1 or 2
-            byte-reads from 'src', depending on whether the field to be copied crosses a byte
-            boundary.
+      if(_bitLE(src) == 0 && _bitLE(numBits) == 0 && port->cache == NULL) {
+         return getWholeSrcBytes(port, dest, _byte(src), bit64K_Byte(numBits), srcEndian); }
+
+      /* else reading some fractional number of bytes and/or not from a byte-boundary. Read
+         a byte at a time, reversed if endian must be switched, and shift to align into 'dest'.
+      */
+      else {
+         T_EndianPtr di;
+         dest = EndianPtr_New(&di, dest, _numBytesFrom(numBits), srcEndian);     // Endian-aware 'src'.
+
+         /* Fill each dest byte from a bytes-worth of source bit-field. Depending on alignment, this will
+            be from a single source byte or 2 consecutive source bytes.
          */
-         // First, get 1st byte into 'sb', while maybe refilling any cache.
-         U8 sb;
-         if(false == nextSrcByte(port, &sb, src, rem, is1st))  // Read 1st byte from 'port'? ..either directly or via cache
-            { return false; }
-         is1st = false;
-
-         ask = rem > _8bits ? _8bits : rem;                    // This pass, from 1 or2 bytes, take (maybe all of) 'rem' but no more than 8 bits.
-         U8 got = MinU8(ask, _bitBE(src)+1);                   // From the 1st byte take b[src:0], but no more than 'ask'.
-
-         sb = shiftLR(sb, (S8)ask-_bitBE(src)-1);              // (Maybe) left-justify or right-justify the 'got' bits (from 1st byte) to their position determined by 'ask'.
-                                                               // ...any space to the right of these to b0 will be filled from 2nd byte.
-         U8 db = sb & mask(ask-1, got);                        // Mask to select just that field and OR into dest byte.
-
-         if(ask > got)                                         // Got a partial destination field from 1st byte?
-         {                                                     // then get 2nd byte into 'sb', while maybe refilling any cache.
-            if(false == nextSrcByte(port, &sb, src+_8bits, rem-got, false)) // Read 2nd byte from 'port'? ..either directly or via cache
+         U8 ask; bool is1st = true;
+         for(bit64K_T_Cnt rem = numBits; rem > 0; rem -= ask, src += ask, dest = di.next(&di))
+         {
+            /* Copy 'open' bits from 'src' into the 'dest' byte. This needs either 1 or 2
+               byte-reads from 'src', depending on whether the field to be copied crosses a byte
+               boundary.
+            */
+            // First, get 1st byte into 'sb', while maybe refilling any cache.
+            U8 sb;
+            if(false == nextSrcByte(port, &sb, src, rem, is1st))  // Read 1st byte from 'port'? ..either directly or via cache
                { return false; }
+            is1st = false;
 
-            sb = rotL(sb, ask-got);                            // Rotate 2nd byte to fit in
-            db = orInto(db, sb, maskAtoB(ask-got-1,0));        // Mask to select just that field and OR into dest byte.
-         }
-         *dest = db;                                           // Write out dest byte.
-      } // for(U8 rem = numBits...
+            ask = rem > _8bits ? _8bits : rem;                    // This pass, from 1 or2 bytes, take (maybe all of) 'rem' but no more than 8 bits.
+            U8 got = MinU8(ask, _bitBE(src)+1);                   // From the 1st byte take b[src:0], but no more than 'ask'.
+
+            sb = shiftLR(sb, (S8)ask-_bitBE(src)-1);              // (Maybe) left-justify or right-justify the 'got' bits (from 1st byte) to their position determined by 'ask'.
+                                                                  // ...any space to the right of these to b0 will be filled from 2nd byte.
+            U8 db = sb & mask(ask-1, got);                        // Mask to select just that field and OR into dest byte.
+
+            if(ask > got)                                         // Got a partial destination field from 1st byte?
+            {                                                     // then get 2nd byte into 'sb', while maybe refilling any cache.
+               if(false == nextSrcByte(port, &sb, src+_8bits, rem-got, false)) // Read 2nd byte from 'port'? ..either directly or via cache
+                  { return false; }
+
+               sb = rotL(sb, ask-got);                            // Rotate 2nd byte to fit in
+               db = orInto(db, sb, maskAtoB(ask-got-1,0));        // Mask to select just that field and OR into dest byte.
+            }
+            *dest = db;                                           // Write out dest byte.
+         } // for(U8 rem = numBits...
+      }
       return true;
    }
 }
