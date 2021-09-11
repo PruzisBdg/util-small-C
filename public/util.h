@@ -118,6 +118,7 @@ PUBLIC U8 * u32ToLE(U8 *out, U32 n);
 PUBLIC U8 * s32ToLE(U8 *out, S32 n);
 PUBLIC U8 * u64ToLE(U8 *out, U64 n);
 PUBLIC U8 * s64ToLE(U8 *out, S64 n);
+PUBLIC S16 leToS16(U8 const * src);
 PUBLIC U16 leToU16(U8 const * src);
 PUBLIC U32 leToU24(U8 const *src);
 PUBLIC U32 leToU32(U8 const *src);

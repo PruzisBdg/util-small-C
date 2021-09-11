@@ -22,6 +22,9 @@ PUBLIC U8 * s64ToLE(U8 *out, S64 n)
 
 
 
+PUBLIC S16 leToS16(U8 const * src)
+	{ return ((S16)src[1] << 8) + src[0]; }
+
 PUBLIC U16 leToU16(U8 const * src)
 	{ return ((U16)src[1] << 8) + src[0]; }
 
