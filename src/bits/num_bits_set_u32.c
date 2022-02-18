@@ -23,4 +23,28 @@ PUBLIC U8 NumBitsSet_U32(U32 n)
 }
 
 
+#if 0
+// To be TDDed.
+
+/*-----------------------------------------------------------------------------------------
+|
+|  NumBitsSet_U32(), by Kernighan’s method - See SWAR32() for faster.
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 NumBitsSet_U32(U32 n)
+{
+    // `cnt` stores the total bits set in `n`
+    U8 cnt = 0;
+
+    while (n)
+    {
+        n = n & (n - 1);    // clear the least significant bit set
+        cnt++;              // and count it.
+    }
+
+    return cnt;
+}
+#endif
+
 // --------------------- eof --------------------------------  -

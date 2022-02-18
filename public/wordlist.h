@@ -46,7 +46,7 @@ extern BIT Str_DiceComposites;
      " \\t\\r\\n"
    Str_Delimiters is initialised to NULL. If it's left/set NULL then SPC is the only delimiter.
 */
-PUBLIC C8 const * Str_Delimiters;
+extern C8 const * Str_Delimiters;
 PUBLIC U8 Str_1stDelimiter(void);
 PUBLIC U8 GENERIC * Str_LTrim(U8 GENERIC const *w);
 

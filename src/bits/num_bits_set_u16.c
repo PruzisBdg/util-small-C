@@ -22,5 +22,30 @@ PUBLIC U8 NumBitsSet_U16(U16 n)
    return cnt;
 }
 
+#if 0
+// To be TDDed.
+
+
+/*-----------------------------------------------------------------------------------------
+|
+|  NumBitsSet_U16(), by Kernighan’s method
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC U8 NumBitsSet_U16(U16 n)
+{
+    // `cnt` stores the total bits set in `n`
+    U8 cnt = 0;
+
+    while (n)
+    {
+        n = n & (n - 1);    // clear the least significant bit set
+        cnt++;              // and count it.
+    }
+
+    return cnt;
+}
+#endif
+
 
 // --------------------- eof --------------------------------  -
