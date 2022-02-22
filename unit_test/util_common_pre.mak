@@ -10,6 +10,9 @@ include ../../../unity_tdd/tdd_common_pre_build.mak
 # (Additional) compiler flags
 CFLAGS := $(CFLAGS) -DGNRC_UNIT_TEST -D__COMPILER_IS_GENERIC__ -D__SYSTEM_IS_ANY__ -D__TARGET_IS_UNITY_TDD
 
+# From the the individual test makefiles to Util project root. For Util, unit tests are in root/unit_test/subfolder, so up 2.
+TO_PROJ_ROOT ?= ../..
+
 # File of tests is here.
 SRCDIR = ../../src/$(TARGET_BASE_DIR)/
 
