@@ -1,4 +1,1 @@
 [hook "postcommit"]
-	cmdline = http://localhost:8080/git/notifyCommit?url=file://C:/SPJ10/swr/util
-	wait = false
-	show = true
