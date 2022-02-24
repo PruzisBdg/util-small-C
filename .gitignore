@@ -7,6 +7,7 @@ run-*.c
 *.gcov
 # gcovr results (for now)
 gcovr*.html
+gcovr.css
 # in projects
 *.o
 *.exe
