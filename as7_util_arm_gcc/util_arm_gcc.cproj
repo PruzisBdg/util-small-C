@@ -659,6 +659,10 @@
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\timedate\ymd_to_str.c</Link>
     </Compile>
+    <Compile Include="..\src\timedate\ymd_to_weekdate.c">
+      <SubType>compile</SubType>
+      <Link>src\timedate\ymd_to_weekdate.c</Link>
+    </Compile>
     <Compile Include="..\src\wordlist\romstring.c">
       <SubType>compile</SubType>
       <Link>src\wordlist\romstring.c</Link>
