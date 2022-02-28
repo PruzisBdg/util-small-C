@@ -356,11 +356,22 @@ typedef struct {
       day;        // 1-28,29,30,31, depending.
    } S_YMD;
 
+// ISO8601 Week-numbering year, exactly 52 or 53 weeks long.
+typedef struct {
+   U16 yr;
+   U8  week,   // 1-53
+       day;    // 1-7 -> Mon->Sun per ISO8601
+   } S_YWD;
+
 typedef struct {
    S_YMD ymd;
    U8  hr,           // 0 - 23
        min,sec;      // 0 - 59
    } S_DateTime;
+
+// Helper to populate S_DateTime.
+#define _S_DateTime_Make(_yr, _mnth, _day, _hr, _min, _sec) \
+   (S_DateTime){.ymd.yr =_yr, .ymd.mnth = _mnth, .ymd.day = _day, .hr = _hr, .min = _min, .sec = _sec}
 
 /* ------------------------------ Wildcards ----------------------------------------
 
@@ -435,6 +446,7 @@ PUBLIC BOOLEAN       Legal_YMD(S_YMD const *t);
 PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
 PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
 PUBLIC BOOLEAN       YMD_aGTEb(S_YMD const *a, S_YMD const *b);
+PUBLIC S_YMD         YearWeekDay_to_YMD(U16 yr, U8 week, U8 weekday);
 
 // Full Time/Date to the second.
 PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);
@@ -801,17 +813,6 @@ PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh);
 
 PUBLIC C8 * EndStr(C8 const* str);  // Spot the end of a non-const string.
 PUBLIC U8 strlenU8(C8 const* str);
-
-/* ------------------------------- (crude) Random ----------------------------------------------
-
-   Mainly for tests & harnesses.
-*/
-PUBLIC U8  randU8(void);
-PUBLIC U16 randU16(void);
-PUBLIC U16 randU32(void);
-PUBLIC S16 randS16(void);
-PUBLIC S32 randS32(void);
-PUBLIC S8  randS8(void);
 
 // ------------------------------------------ CRCs --------------------------------------------
 

@@ -131,13 +131,15 @@ void test_SecsToYMDHMS(void)
    typedef enum { eEq=0, eGTE, eLTE } E_Compare;
    typedef struct {  T_Seconds32 utc; S_DateTime dt; E_Compare compare; } S_Tst;
 
+   // When we get epoch seconds
+   #define _to2000AD(epoch) ((epoch) - _12am_Jan_1st_2000_Epoch_secs)
+
    S_Tst const tsts[] = {
       // Zero -> midnite of millennium; Max time must be > 2135.
+
       { .utc = 0,          .dt = {._yr =2000, ._mnth = 1,  ._day = 1,  .hr = 0,  .min = 0,  .sec = 0 } },
       { .utc = MAX_U32,    .dt = {._yr =2135, ._mnth = 1,  ._day = 1,  .hr = 0,  .min = 0,  .sec = 0 }, .compare = eGTE },
       { .utc = MAX_U32,    .dt = {._yr =2136, ._mnth = 2,  ._day = 7,  .hr = 6,  .min = 28,  .sec = 15 }},
-
-//      { .utc = MAX_U32-(365*24*3600),    .dt = {._yr =2135, ._mnth = 2,  ._day = 7,  .hr = 6,  .min = 28,  .sec = 15 }},
 
       // Random times from UTC calculator. Enough span to capture all the internal arithmetic, leap years etc.
       // Some allowance for leap-seconds
@@ -146,10 +148,19 @@ void test_SecsToYMDHMS(void)
       { .utc = 0xABCD1234, .dt = {._yr =2091, ._mnth = 5,  ._day = 3,   .hr = 10, .min = 57,  .sec = 56 } },
       { .utc = 0xFE9623B1, .dt = {._yr =2135, ._mnth = 5,  ._day = 8,   .hr = 19, .min = 00,  .sec = 01 } },
 
+      { .utc = _to2000AD(1709172241), .dt = {._yr =2024, ._mnth = 2,  ._day = 29,  .hr = 2, .min = 04,  .sec = 01 } },
       // SecsToYMDHMS(0x376ADD7E) -> 23:59:58  UTC -> 23:59:59
       // SecsToYMDHMS() does not do leap-seconds; so allow a window.
       { .utc = 0x376ADD7E, .dt = {._yr =2029, ._mnth = 6,  ._day = 17,  .hr = 23, .min = 59,  .sec = 58 }, .compare = eGTE },
       { .utc = 0x376ADD7E, .dt = {._yr =2029, ._mnth = 6,  ._day = 18,  .hr = 0,  .min = 0,   .sec = 1  }, .compare = eLTE },
+
+      { .utc = _to2000AD(4891367041), .dt = {._yr =2125, ._mnth = 1,   ._day = 1,   .hr = 1, .min = 04,  .sec = 01 } },
+
+      // Tests adjustment for no Feb 29th 2100.
+      { .utc = _to2000AD(4985975041), .dt = {._yr =2128, ._mnth = 1,  ._day = 1,  .hr = 1, .min = 04,  .sec = 01 } },
+
+      // After Feb 29th on a leap year.
+      { .utc = _to2000AD(4738735079), .dt = {._yr =2120, ._mnth = 3,  ._day = 1,  .hr = 11, .min = 17,  .sec = 59 } },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -169,7 +180,7 @@ void test_SecsToYMDHMS(void)
          YMDHMS_ToStr(&out, got);
 
          C8 b0[100];
-         sprintf(b0, "expected %lu -> %s, got %s", t->utc, expected, got);
+         sprintf(b0, "SecsToYMDHMS() fail #%d: expected %lu -> %s, got %s", i, t->utc, expected, got);
          TEST_FAIL_MESSAGE(b0);
       }
    }
@@ -657,12 +668,13 @@ void test_YMD_Equal(void)
 
 /* --------------------------------- test_YMDHMS_aGTEb ----------------------------------------- */
 
+#define _dt(_yr, _mnth, _day, _hr, _min, _sec) \
+   &(S_DateTime){.ymd.yr =_yr, .ymd.mnth = _mnth, .ymd.day = _day, .hr = _hr, .min = _min, .sec = _sec}
+
 void test_YMDHMS_aGTEb(void)
 {
    typedef struct {S_DateTime const * a; S_DateTime const * b; bool rtn;} S_Tst;
 
-   #define _dt(_yr, _mnth, _day, _hr, _min, _sec) \
-      &(S_DateTime){.ymd.yr =_yr, .ymd.mnth = _mnth, .ymd.day = _day, .hr = _hr, .min = _min, .sec = _sec}
 
    S_Tst const tsts[] = {
       { .a = _dt(2013,11,23,5,17,44),           .b = _dt(2013,11,23,5,17,44),    .rtn = true },        // Equal
@@ -932,4 +944,151 @@ void test_YMD_aGTEb(void)
    }
 }
 
+/* ------------------------------------- test_SecsToHMS --------------------------------------- */
+
+void test_SecsToHMS(void)
+{
+   typedef struct {T_Seconds32 secs; S_TimeHMS hms;} S_Tst;
+
+   S_Tst const tsts[] = {
+      {.secs = 0,    .hms = (S_TimeHMS){.hr = 0,   .min = 0,  .sec = 0} },
+      {.secs = 59,   .hms = (S_TimeHMS){.hr = 0,   .min = 0,  .sec = 59} },
+      {.secs = 60,   .hms = (S_TimeHMS){.hr = 0,   .min = 1,  .sec = 0} },
+      {.secs = 3599, .hms = (S_TimeHMS){.hr = 0,   .min = 59, .sec = 59} },
+      {.secs = 3600, .hms = (S_TimeHMS){.hr = 1,   .min = 0,  .sec = 0} },
+
+      // Is clipped at 65536:59:59
+      #define _MaxHMS_secs ((3600 * (U32)MAX_U16) + (60*59) + 59)
+      {.secs = _MaxHMS_secs,  .hms = (S_TimeHMS){.hr = MAX_U16,   .min = 59,  .sec = 59} },
+      {.secs = _MaxHMS_secs+1,.hms = (S_TimeHMS){.hr = MAX_U16,   .min = 59,  .sec = 59} },
+      {.secs = _MaxHMS_secs-1,.hms = (S_TimeHMS){.hr = MAX_U16,   .min = 59,  .sec = 58} },
+      {.secs = MAX_U32,       .hms = (S_TimeHMS){.hr = MAX_U16,   .min = 59,  .sec = 59} },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      S_TimeHMS hms;
+
+      SecsToHMS(t->secs, &hms);
+
+      if(hms.hr != t->hms.hr || hms.min != t->hms.min || hms.sec != t->hms.sec) {
+         printf("SecsToHMS() #%d: expected %02d:%02d:%02d; got %02d:%02d:%02d\r\n",
+                i, t->hms.hr, t->hms.min, t->hms.sec, hms.hr, hms.min, hms.sec);
+         TEST_FAIL();
+      }
+   }
+}
+
+/* --------------------------------- test_ISO8601StrToSecs ---------------------------------------- */
+
+//PUBLIC BOOLEAN ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut )
+
+void test_ISO8601StrToSecs(void)
+{
+   typedef struct {C8 const *str; T_Seconds32 secs; BOOLEAN rtn;} S_Tst;
+
+   #define _Prefill 0x5A5A5A5A
+
+   S_Tst const tsts[] = {
+      // ----- Basic YMDHS format; YYYY-MM-DDTHH:MM:SS -------
+
+      // S_TimeDate starts at the millenium.
+      {.str="2000-01-01T00:00:00", .secs=0,           .rtn=true},
+      {.str="2000-01-01T00:00:01", .secs=1,           .rtn=true},
+      {.str="2000-01-01T00:00:01Z", .secs=1,          .rtn=true},
+      {.str="2000-01-01T00:01:01", .secs=60+1,        .rtn=true},
+      {.str="2000-01-01T01:01:01", .secs=3661,        .rtn=true},
+      {.str="2000-01-01T02:03:04", .secs=7200+180+4,  .rtn=true},
+      // Adds a day
+      {.str="2000-01-02T02:03:04", .secs=(24*(U32)3600)+7200+180+4, .rtn=true},
+      // Adds Jan
+      {.str="2000-02-02T02:03:04", .secs=((31+1)*(24*(U32)3600)) + 7200+180+4, .rtn=true},
+      // Adds a leap year
+      {.str="2001-02-02T02:03:04", .secs=((366+31+1)*(24*(U32)3600)) + 7200+180+4, .rtn=true},
+      // Adds a non-leap year
+      {.str="2002-02-02T02:03:04", .secs=((365+366+31+1)*(24*(U32)3600)) + 7200+180+4, .rtn=true},
+
+      // 1 sec before millenium
+      {.str="1999-12-31T23:59:59", .secs=_Prefill, .rtn=false},
+
+      // Last seconds before end of T_Seconds32
+      {.str="2136-02-07T06:28:14", .secs=MAX_U32-1, .rtn=true},
+      {.str="2136-02-07T06:28:15", .secs=MAX_U32, .rtn=true},
+      // 1 sec after end of 32bit
+      {.str="2136-02-07T06:28:16", .secs=_Prefill, .rtn=false},
+
+      // Incorrect/missing/illegal format.
+      {.str="", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-01T00:00", .secs=_Prefill, .rtn=false},
+
+      {.str="200-01-01T00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-0-01T00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-0T00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-01A00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000s01-01T00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-001-01T00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-001T00:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-01T000:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-01T00:001:01", .secs=_Prefill, .rtn=false},
+      //{.str="2000-01-01T00:01:001", .secs=_Prefill, .rtn=false},
+
+      //{.str="2000-01-01T0:01:01", .secs=_Prefill, .rtn=false},
+      //{.str="2000-01-01T00:0:01", .secs=_Prefill, .rtn=false},
+      //{.str="2000-01-01T00:01:0", .secs=_Prefill, .rtn=false},
+
+      // Illegal HMS. Checked also in 'legal_YMDHMS()'
+      {.str="2000-01-01T02:03:60", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-01T02:60:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-01-01T24:00:01", .secs=_Prefill, .rtn=false},
+      // Illegal YMD.  Checked also in 'legal_YMDHMS()'
+      {.str="2000-01-32T01:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-02-30T01:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-03-32T01:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2000-13-01T01:01:01", .secs=_Prefill, .rtn=false},
+      {.str="1999-01-01T01:01:01", .secs=_Prefill, .rtn=false},
+      {.str="2137-01-01T01:01:01", .secs=_Prefill, .rtn=false},
+
+      // ------- Other YMDHMS formats ------------------------------------------
+
+      // With UTC offset
+      {.str="2000-01-01T02:03:04Z",       .secs=7200+180+4,  .rtn=true},
+      {.str="2000-01-01T02:03:04+00:00",  .secs=7200+180+4,  .rtn=true},
+      {.str="2000-01-01T02:03:04-00:00",  .secs=7200+180+4,  .rtn=true},
+
+      // Compressed (no separators)
+      {.str="20000101T020304",            .secs=7200+180+4,  .rtn=true},
+
+      // ----------- Date-only i.e YMD ---------------------------------------------
+
+      {.str="2002-02-03", .secs=((365+366+31+2)*(24*(U32)3600)), .rtn=true},
+   };
+
+   C8 const * tf(BOOL b) {return b==true ? "TRUE" : "FALSE";}
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      T_Seconds32 secs = _Prefill;
+
+      BOOL rtn = ISO8601StrToSecs(t->str, &secs);
+
+      if(secs != t->secs || rtn != t->rtn) {
+         printf("ISO8601StrToSecs() fail #%d: expected %s -> (%lu/%lXh secs %s); got (%lu/%lXh secs %s)\r\n",
+                i, t->str, t->secs, t->secs, tf(t->rtn), secs, secs, tf(rtn) );
+         TEST_FAIL();
+      }
+   }
+}
+
+/* -------------------------------- test_YearWeekDay_to_YMD ----------------------------------- */
+
+void test_YearWeekDay_to_YMD(void)
+{
+
+}
+
 // ----------------------------------------- eof --------------------------------------------
+

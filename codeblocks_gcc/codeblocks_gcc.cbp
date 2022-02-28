@@ -42,6 +42,7 @@
 				<Option compiler="gcc" />
 				<Option use_console_runner="0" />
 				<Compiler>
+					<Add option="-D__TARGET_IS_UNITY_TDD" />
 					<Add directory="C:/spj6/swr/util/codeblocks_gcc" />
 					<Add directory="C:/unity/src" />
 					<Add directory="../../unity_tdd" />
@@ -695,6 +696,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/ymd_to_weekdate.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/ymdhms_A_GTE_B.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -944,9 +950,6 @@
 			<Option target="Console" />
 		</Unit>
 		<Extensions>
-			<code_completion />
-			<envvars />
-			<debugger />
 			<lib_finder disable_auto="1" />
 		</Extensions>
 	</Project>

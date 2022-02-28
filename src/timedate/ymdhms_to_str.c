@@ -21,8 +21,6 @@
 
    Returns: the number of characters in the strings
 */
-PUBLIC C8 const ISO8601Formatter[] = "%04d-%02d-%02dT%02d:%02d:%02d";   // Make public to avoid ARM gcc linker bug.
-
 extern C8 const * ymd_Format2Digits(C8 *out, U8 n);
 extern C8 const * ymd_Format4Digits(C8 *out, U16 n);
 

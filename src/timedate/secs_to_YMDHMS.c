@@ -7,65 +7,6 @@
 #include "libs_support.h"
 #include "util.h"
 
-// Days to start/end of each month, for a non-leap year.
-PUBLIC S16 const DaysToMonthStartTbl[] = {
-   0,                               // Needs leading zero for search in splitDaysIntoMD[] below
-   31,                              // Days to end of Jan
-   31+28,                           // Days to end of Feb etc
-   31+28+31,
-   31+28+31+30,
-   31+28+31+30+31,
-   31+28+31+30+31+30,
-   31+28+31+30+31+30+31,
-   31+28+31+30+31+30+31+31,
-   31+28+31+30+31+30+31+31+30,
-   31+28+31+30+31+30+31+31+30+31,
-   31+28+31+30+31+30+31+31+30+31+30  // End of Dec is 365 days
-   };
-
-
-/* ---------------------- splitDaysIntoMD -----------------------------------
-
-   Split 'allDays' (1-366) into a 'monthOut' (1-12) and a day-of-month (1-28/29),
-   (which is returned from the function.)
-
-   Note: days and months are calender counts; 1 is the first day; January
-   is month 1.
-
-   If 'allDays' is zero (not a legal day) the return Jan 1st anyway. If 'allDays'
-   is > 356/366 then return Dec 31st anyway.
-*/
-PRIVATE U8 splitDaysIntoMD(U16 allDays, U8 *monthOut, BOOLEAN isLeapYear) {
-
-   U8 c;
-
-   // 'allDays' should never be zero, which is not a day. But if it is, bump to Jan 1st.
-   if(allDays == 0)
-      { allDays = 1; }
-
-   if( isLeapYear ) {               // Leap year?
-      if(allDays == 31+29) {        // and it's Feb 29th?
-         *monthOut = 2;             // then month = Feb
-         return 29;                 // and day is 29th
-         }
-      else if(allDays > 31+29) {    // Leap year and beyond Feb 29th?
-         allDays--;                 // then knock off a day for the non-leap-year lookup below.
-         }
-      }
-
-   for( c = 0; c < RECORDS_IN(DaysToMonthStartTbl); c++ ) {    // From the start of the day-totals table
-      if( allDays <= DaysToMonthStartTbl[c] )                  // Overshoot 'allDays'
-         { break; }                                            // then break; at one-past the month which 'allDays' is in.
-      }
-   // Month is array-index when we overran DaysToMonthStartTbl[] e.g Jan exits at 2nd
-   // table entry, index = 1.
-   *monthOut = c;
-
-   // To return the days remaining, subtract the day-total of the PREVIOUS table entry.
-   // i.e the one we overshot.
-   return allDays - DaysToMonthStartTbl[c-1];   //
-}
-
 /* ------------------------ SecsToYMDHMS ----------------------------
 
    Convert seconds since 00:00:00 Jan 1st 2000AD ('secsSince1AD') into
@@ -73,6 +14,8 @@ PRIVATE U8 splitDaysIntoMD(U16 allDays, U8 *monthOut, BOOLEAN isLeapYear) {
 
    This routine does NOT handle leap-seconds.
 */
+extern U8 splitDaysIntoMD(U16 allDays, U8 *monthOut, BOOLEAN isLeapYear);
+
 PUBLIC S_DateTime const * SecsToYMDHMS(T_Seconds32 secsSince2000AD, S_DateTime *dt) {
 
    U8    yearsRem;
