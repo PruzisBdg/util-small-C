@@ -462,7 +462,18 @@ PUBLIC T_Seconds32   YMDHMS_To_Secs(S_DateTime const *dt);
 PUBLIC U8            YMDHMS_ToStr(S_DateTime const *t, C8 *outStr);
 PUBLIC C8 const *    YMDHStoStr_Raw(C8 *out, S_DateTime const *dt);
 
-PUBLIC BOOL          ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
+PUBLIC BOOL          ISO8601_EzToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut );
+
+/* UTC offset, conventionally from an ISO8601 string e.g 2017-03-04T12:34:01+/-hr,hr:min,min.
+
+   UTC offsets are signed; 'hr' holds the sign of the offset; 'min' is the minutes field,
+   regardless of sign e.g:
+      +04:23 -> {.hr=4, .min=23}   -04:23 -> {.hr=-4, .min=23}.
+*/
+typedef struct {S8 hr; U8 min;} S_UTCofs;
+
+typedef enum {E_ISO8601_None = 0, E_ISO8601_TimeDate, E_ISO8601_TimeDate_UtcOfs, E_ISO8601_Date, E_ISO8601_WeekDate} E_ISO8601Fmts;
+PUBLIC E_ISO8601Fmts ISO8601_ToSecs(C8 const **dateStr, T_Seconds32 *absTime, S32 *utcOfsSecs, BOOL strictLen);
 
 #define _12am_Jan_1st_2000_Epoch_secs 946684800UL
 

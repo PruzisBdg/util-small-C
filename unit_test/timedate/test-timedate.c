@@ -983,7 +983,7 @@ void test_SecsToHMS(void)
 
 /* --------------------------------- test_ISO8601StrToSecs ---------------------------------------- */
 
-//PUBLIC BOOLEAN ISO8601StrToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut )
+//PUBLIC BOOLEAN ISO8601_EzToSecs( C8 const *dateStr, T_Seconds32 *absTimeOut )
 
 void test_ISO8601StrToSecs(void)
 {
@@ -1021,6 +1021,8 @@ void test_ISO8601StrToSecs(void)
 
       // Incorrect/missing/illegal format.
       {.str="", .secs=_Prefill, .rtn=false},
+
+      // Missing secs field; BUT is parse-able as a Date "2000-01-00" so succeeds.
       {.str="2000-01-01T00:00", .secs=_Prefill, .rtn=false},
 
       {.str="200-01-01T00:01:01", .secs=_Prefill, .rtn=false},
@@ -1073,11 +1075,149 @@ void test_ISO8601StrToSecs(void)
 
       T_Seconds32 secs = _Prefill;
 
-      BOOL rtn = ISO8601StrToSecs(t->str, &secs);
+      BOOL rtn = ISO8601_EzToSecs(t->str, &secs);
 
       if(secs != t->secs || rtn != t->rtn) {
-         printf("ISO8601StrToSecs() fail #%d: expected %s -> (%lu/%lXh secs %s); got (%lu/%lXh secs %s)\r\n",
+         printf("ISO8601_EzToSecs() fail #%d: expected %s -> (%lu/%lXh secs %s); got (%lu/%lXh secs %s)\r\n",
                 i, t->str, t->secs, t->secs, tf(t->rtn), secs, secs, tf(rtn) );
+         TEST_FAIL();
+      }
+   }
+}
+
+/* --------------------------------- test_ISO8601_ToSecs ---------------------------------------- */
+
+PRIVATE C8 const * ISO8601Fmt_Name(E_ISO8601Fmts fmt) {
+   switch(fmt) {
+      case E_ISO8601_None:             return "E_ISO8601_None";
+      case E_ISO8601_TimeDate:         return "E_ISO8601_TimeDate";
+      case E_ISO8601_TimeDate_UtcOfs:  return "E_ISO8601_TimeDate_UtcOfs";
+      case E_ISO8601_Date:             return "E_ISO8601_Date";
+      case E_ISO8601_WeekDate:         return "E_ISO8601_WeekDate";
+      default:                         return "Unknown E_ISO8601Fmts";
+   }
+}
+
+// ---------------------------------------------------------------------------------
+void test_ISO8601_ToSecs(void)
+{
+   typedef struct {
+      C8 const       *str;       // String to parse, presumably with an ISO8061 Date/Time.
+      T_Seconds32    secs;       // Seconds since 2000AD
+      E_ISO8601Fmts  rtn;        // Returned, the type of ISO8601 message found
+      BOOL           strict;     // If 'strict' then incoming Time-Date string must be exactly the right length.
+      S32            utcOfs;     // If string had UTC offset, this is it in seconds.
+      } S_Tst;
+
+   #define _Prefill        0x5A5A5A5A
+   #define _UtcOfsPrefill  0x5A5A5A5A
+
+   S_Tst const tsts[] = {
+      // ----- Basic YMDHS format; YYYY-MM-DDTHH:MM:SS -------
+
+      // S_TimeDate starts at the millenium.
+      {.str="2000-01-01T00:00:00",  .secs=0,                .rtn = E_ISO8601_TimeDate},
+      {.str="2000-01-01T00:00:01",  .secs=1,                .rtn = E_ISO8601_TimeDate},
+      {.str="2000-01-01T00:00:01Z", .secs=1,                .rtn = E_ISO8601_TimeDate_UtcOfs},
+      {.str="2000-01-01T00:01:01",  .secs=60+1,             .rtn = E_ISO8601_TimeDate},
+      {.str="2000-01-01T01:01:01",  .secs=3661,             .rtn=E_ISO8601_TimeDate},
+      {.str="2000-01-01T02:03:04",  .secs=7200+180+4,       .rtn=E_ISO8601_TimeDate},
+      // Adds a day
+      {.str="2000-01-02T02:03:04",  .secs=(24*(U32)3600)+7200+180+4,                   .rtn=E_ISO8601_TimeDate},
+      // Adds Jan
+      {.str="2000-02-02T02:03:04",  .secs=((31+1)*(24*(U32)3600)) + 7200+180+4,        .rtn=E_ISO8601_TimeDate},
+      // Adds a leap year
+      {.str="2001-02-02T02:03:04",  .secs=((366+31+1)*(24*(U32)3600)) + 7200+180+4,    .rtn=E_ISO8601_TimeDate},
+      // Adds a non-leap year
+      {.str="2002-02-02T02:03:04",  .secs=((365+366+31+1)*(24*(U32)3600)) + 7200+180+4, .rtn=E_ISO8601_TimeDate},
+
+      // 1 sec before millenium
+      {.str="1999-12-31T23:59:59",  .secs=_Prefill,         .rtn=E_ISO8601_None},
+
+      // Last seconds before end of T_Seconds32
+      {.str="2136-02-07T06:28:14",  .secs=MAX_U32-1,        .rtn=E_ISO8601_TimeDate},
+      {.str="2136-02-07T06:28:15",  .secs=MAX_U32,          .rtn=E_ISO8601_TimeDate},
+      // 1 sec after end of 32bit
+      {.str="2136-02-07T06:28:16",  .secs=_Prefill,         .rtn=E_ISO8601_None},
+
+      // Incorrect/missing/illegal format.
+      {.str="",                     .secs=_Prefill,   .rtn=E_ISO8601_None},
+
+      /* Missing secs field; will not parse if 'strict'. BUT if 'strict' is off then
+         it is parse-able as a Date "2000-01-00".
+      */
+      {.str="2000-01-02T00:00",     .secs=_Prefill,         .rtn=E_ISO8601_None, .strict = true},
+      {.str="2000-01-02T00:00",     .secs=24*(U32)3600,     .rtn=E_ISO8601_Date, .strict = false},
+
+      {.str="200-01-01T00:01:01",   .secs=_Prefill,      .rtn=E_ISO8601_None},
+      {.str="2000-0-01T00:01:01",   .secs=_Prefill,      .rtn=E_ISO8601_None},
+      {.str="2000-01-0T00:01:01",   .secs=_Prefill,      .rtn=E_ISO8601_None},
+      {.str="2000-01-02A00:01:01",  .secs=_Prefill,      .rtn=E_ISO8601_None, .strict = true},
+      {.str="2000-01-02A00:01:01",  .secs=24*(U32)3600,  .rtn=E_ISO8601_Date, .strict = false},
+      {.str="2000s01-01T00:01:01",  .secs=_Prefill,      .rtn=E_ISO8601_None},
+      {.str="2000-001-01T00:01:01", .secs=_Prefill,      .rtn=E_ISO8601_None},
+      {.str="2000-01-001T00:01:01", .secs=_Prefill,      .rtn=E_ISO8601_None},
+      {.str="2000-01-02T000:01:01", .secs=_Prefill,      .rtn=E_ISO8601_None, .strict = true},
+      {.str="2000-01-02T000:01:01", .secs=24*(U32)3600,  .rtn=E_ISO8601_Date, .strict = false},
+      {.str="2000-01-02T00:001:01", .secs=_Prefill,      .rtn=E_ISO8601_None, .strict = true},
+      {.str="2000-01-02T00:001:01", .secs=24*(U32)3600,  .rtn=E_ISO8601_Date, .strict = false},
+      //{.str="2000-01-01T00:01:001", .secs=_Prefill, .rtn=E_ISO8601_None},
+
+      //{.str="2000-01-01T0:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      //{.str="2000-01-01T00:0:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      //{.str="2000-01-01T00:01:0", .secs=_Prefill, .rtn=E_ISO8601_None},
+
+      // Illegal HMS. Checked also in 'legal_YMDHMS()'
+      {.str="2000-01-01T02:03:60", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="2000-01-01T02:60:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="2000-01-01T24:00:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      // Illegal YMD.  Checked also in 'legal_YMDHMS()'
+      {.str="2000-01-32T01:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="2000-02-30T01:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="2000-03-32T01:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="2000-13-01T01:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="1999-01-01T01:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+      {.str="2137-01-01T01:01:01", .secs=_Prefill, .rtn=E_ISO8601_None},
+
+      // ------- Other YMDHMS formats ------------------------------------------
+
+      // With UTC offset
+      {.str="2000-01-01T02:03:04Z",       .secs=7200+180+4,  .rtn=E_ISO8601_TimeDate_UtcOfs, .utcOfs = 0             },
+      {.str="2000-01-01T02:03:04+08:19",  .secs=7200+180+4,  .rtn=E_ISO8601_TimeDate_UtcOfs, .utcOfs = 60*(S32)((8*60)+19)     },
+      {.str="2000-01-01T02:03:04-11:37",  .secs=7200+180+4,  .rtn=E_ISO8601_TimeDate_UtcOfs, .utcOfs = -60*(S32)((11*60)+37) },
+
+      // Compressed (no separators)
+      {.str="20000101T020304",            .secs=7200+180+4,  .rtn=E_ISO8601_TimeDate},
+
+      // ----------- Date-only i.e YMD ---------------------------------------------
+
+      {.str="2002-02-03", .secs=((365+366+31+2)*(24*(U32)3600)), .rtn=E_ISO8601_Date},
+   };
+
+   C8 const * tf(BOOL b) {return b==true ? "TRUE" : "FALSE";}
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      T_Seconds32 secs = _Prefill;
+
+      C8 const *dateStr = t->str;
+
+      S32 utcOfs = _UtcOfsPrefill;
+
+      E_ISO8601Fmts rtn = ISO8601_ToSecs(&dateStr, &secs, &utcOfs, t->strict);
+
+      if(secs != t->secs ||
+         rtn != t->rtn ||
+         (t->rtn == E_ISO8601_TimeDate_UtcOfs && utcOfs != t->utcOfs) )  {
+
+         if(t->rtn == E_ISO8601_TimeDate_UtcOfs) {
+            printf("ISO8601_ToSecs() fail #%d: expected %s -> (%lu/%lXh:%+ld %s); got (%lu/%lXh:%+ld %s)\r\n",
+                   i, t->str, t->secs, t->secs, t->utcOfs, ISO8601Fmt_Name(t->rtn), secs, secs, utcOfs, ISO8601Fmt_Name(rtn) ); }
+         else {
+            printf("ISO8601_ToSecs() fail #%d: expected %s -> (%lu/%lXh %s); got (%lu/%lXh %s)\r\n",
+                   i, t->str, t->secs, t->secs, ISO8601Fmt_Name(t->rtn), secs, secs, ISO8601Fmt_Name(rtn) ); }
          TEST_FAIL();
       }
    }
