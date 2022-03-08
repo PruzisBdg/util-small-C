@@ -356,13 +356,6 @@ typedef struct {
       day;        // 1-28,29,30,31, depending.
    } S_YMD;
 
-// ISO8601 Week-numbering year, exactly 52 or 53 weeks long.
-typedef struct {
-   U16 yr;
-   U8  week,   // 1-53
-       day;    // 1-7 -> Mon->Sun per ISO8601
-   } S_YWD;
-
 typedef struct {
    S_YMD ymd;
    U8  hr,           // 0 - 23
@@ -372,6 +365,20 @@ typedef struct {
 // Helper to populate S_DateTime.
 #define _S_DateTime_Make(_yr, _mnth, _day, _hr, _min, _sec) \
    (S_DateTime){.ymd.yr =_yr, .ymd.mnth = _mnth, .ymd.day = _day, .hr = _hr, .min = _min, .sec = _sec}
+
+/* -------- ISO8601 Week-Date,
+   Week 01 of a year is the one with the 1st Thursday of the year. 52 or 53 per year
+*/
+typedef struct {
+   U16 yr;
+   U8  week,   // 1-53
+       day;    // 1-7 -> Mon->Sun per ISO8601
+   } S_WeekDate;
+
+typedef struct {
+   S_WeekDate  ywd;
+   U8          hr, min, sec;
+   } S_WeekDateTime;
 
 /* ------------------------------ Wildcards ----------------------------------------
 
@@ -447,6 +454,7 @@ PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
 PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
 PUBLIC BOOLEAN       YMD_aGTEb(S_YMD const *a, S_YMD const *b);
 PUBLIC S_YMD         YearWeekDay_to_YMD(U16 yr, U8 week, U8 weekday);
+PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd);
 
 // Full Time/Date to the second.
 PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);

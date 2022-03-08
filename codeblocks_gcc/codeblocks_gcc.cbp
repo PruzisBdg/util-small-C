@@ -681,6 +681,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/secs_to_ywd.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/ymd_A_GTE_B.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

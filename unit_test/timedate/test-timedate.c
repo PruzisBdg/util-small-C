@@ -1223,12 +1223,68 @@ void test_ISO8601_ToSecs(void)
    }
 }
 
+/* -------------------------------- test_DaysToYWD --------------------------------------------- */
+
+//the week with 4 January in it,
+//if 1 January is on a Monday, Tuesday, Wednesday or Thursday, it is in week 01
+
+void test_DaysToYWD(void)
+{
+   typedef struct {U32 days; S_WeekDate wd; } S_Tst;
+
+   S_Tst const tsts[] = {
+      {.days = 0,    .wd.week = 53, .wd.day = 6 },    // Sat Jan 1st 2000AD
+      {.days = 1,    .wd.week = 53, .wd.day = 7 },    // Sun Jan 2nd
+      {.days = 2,    .wd.week = 1,  .wd.day = 1 },    // Mon Jan 3rd, the 1st workday of 2000AD
+
+      {.days = 365-7,      .wd.week = 51, .wd.day = 7 },    // Sun Dec 24th 2000. 2000AD is leap year so elapsed days are 0-365.
+      {.days = 365,        .wd.week = 52, .wd.day = 7 },    // Sun Dec 31st 2000. 2000AD is leap year so elapsed days are 0-365.
+      {.days = 366,        .wd.week = 1,  .wd.day = 1 },    // Mon Jan 1st 2001. Jan 1st is holiday; business starts Tues Jan 2nd.
+      {.days = 367,        .wd.week = 1,  .wd.day = 2 },    // Mon Jan 2nd 2001.
+      {.days = 365+365-8,  .wd.week = 51, .wd.day = 7 },    // Sun Dec 23rd 2001.
+      {.days = 365+365-1,  .wd.week = 52, .wd.day = 7 },    // Sun Dec 30th 2001.
+      {.days = 365+365,    .wd.week = 1,  .wd.day = 1 },    // Mon Dec 31st 2001. Weds Jan 2nd is 1st business day of 2001, so Mon is in Week 01
+      {.days = 365+365+1,  .wd.week = 1,  .wd.day = 2 },    // Tues Jan 1st 2002. Weds Jan 2nd is 1st business day of 2001, so Tue is in Week 01
+      {.days = 365+365+2,  .wd.week = 1,  .wd.day = 3 },    // Weds Jan 2nd 2002. ...
+      {.days = 365+365+6,  .wd.week = 1,  .wd.day = 7 },    // Sun Jan 6th 2002. ...
+      {.days = 365+365+7,  .wd.week = 2,  .wd.day = 1 },    // Mon Jan 7th 2002. -> Week 02
+      {.days = 365+365+8,  .wd.week = 2,  .wd.day = 2 },    // Tues Jan 8th 2002. -> Week 02
+
+      {.days = 365+365+365-2-7,  .wd.week = 51, .wd.day = 7 }, // Sun Dec 22nd 2002.
+      {.days = 365+365+365-2,    .wd.week = 52, .wd.day = 7 }, // Sun Dec 29th 2002.
+      {.days = 365+365+365-1,    .wd.week = 1,  .wd.day = 1 }, // Mon Dec 30th 2002. Thurs Jan 2nd is a business day so Mon is in Week 01 of 2003
+      {.days = 365+365+365,      .wd.week = 1,  .wd.day = 2 }, // Tues Dec 31st 2002. Thurs Jan 2nd is a business day so Tues is in Week 01 of 2003
+      {.days = 365+365+365+1,    .wd.week = 1,  .wd.day = 3 }, // Wed Jan 1st 2003. Thurs Jan 2nd is a business day so Tues is in Week 01 of 2003
+
+      // Weds Jan 2nd
+      // Thurs Jan 3rd
+      // Fri Jan 4th
+
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      S_WeekDate wd;
+      S_WeekDate const *rtn = DaysToYWD(t->days, &wd);
+
+      if(wd.week != t->wd.week || wd.day != t->wd.day) {
+         printf("DaysToYWD() fail #%d:  expected %lu -> (%u,%u)  got (%u,%u)",
+               i, t->days, t->wd.week, t->wd.day, wd.week, wd.day);
+         TEST_FAIL();
+      }
+   }
+}
+
 /* -------------------------------- test_YearWeekDay_to_YMD ----------------------------------- */
 
 void test_YearWeekDay_to_YMD(void)
 {
 
 }
+
+
 
 // ----------------------------------------- eof --------------------------------------------
 
