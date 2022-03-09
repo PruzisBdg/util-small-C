@@ -62,119 +62,139 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    U16 daysThisYr = yearsRem == 0 ? 366 : 365;
    U16 remThisYr = daysThisYr - daysRem;
 
-   // Jan 1st 2000AD is Sat. So Week 01 2000AD starts on Mon 3rd. (ISO 8601 weeks are Mon-Sun).
+   /* Jan 1st 2000AD is Sat. So Week 01 2000AD starts on Mon 3rd. (ISO 8601 weeks are Mon-Sun).
+
+      After that, to get the day just count by 7's
+   */
    #define _Days_To_Week01_2000AD   2  // i.e bypass Sat 1st & Sun 2nd.
 
-   /* The days before the first business week in 2000AD are the last business week of 1999.
-      Jan 1st 1999 is a Friday but since Jan 1st is a holiday ISO week 1 starts Mon Jan 4th
-      Therefore Dec 31st 1999 is Fri of ISO week 52 (some leap years have 52 ISO weeks).
+   // ISO weekdays are 1-7 so add 1.
+   wd->day = 1+(7 + daysSince2000AD - _Days_To_Week01_2000AD)%7;
+
+   /* Calculate the number of ISO weekdays in this year which were carried over from previous
+      year (below).
+
+      At the start of 2000AD (the beginning of our 32bit time), there are 2 ISO weekdays
+      carried over from 1999 (Sat&Sun; '_Days_To_Week01_2000AD' defined above). First ISO
+      week of our reckoning starts on Mon Jan 3rd 2000AD . Count forward by weeks from there.
+
+                                                               |
+         1/1/2000 ---------------- daysSince2000AD -----------------|-----------------------> today
+                                                                    |
+         1/1/2000 +2 -> 1/3/2000                                    |------ daysRem -------->
+                             |                                      |
+                             |-------/----- ISO weeks -/-------/----|---/
+                             |                                 |    |   |
+                             |<------- (since - rem - 2) ------|--->|   |
+                             |                                 |    |   |
+                             |          (since-rem-2) mod 7 -->|    |<--|---
+                             |                                      |   |
+                                     7 - ((since-rem-2) mod 7)  --->|   |<---
+
+        Modulus arithmetic on signed types mirrors at zero (i.e it's not modular; programmers
+        are not mathematicians). So to keep it positive in week 1 of 2000A add 7 i.e
+
+              7 - ((since-rem-2) mod 7) -> 7 - ((7+since-rem-2) mod 7)
    */
-   if(daysSince2000AD < _Days_To_Week01_2000AD) {
-      wd->week = 53;
-      wd->day = 7 + daysSince2000AD - _Days_To_Week01_2000AD + 1;    // i.e (6 - daysSince2000AD)
-   }
-   // Otherwise for Monday Jan 3rd 2000AD and onward...
-   else {
-      /* Calculate the number of ISO weekdays in this year which were carried over from previous
-         year (below).
+   U16 weekdaysCarriedOver = (7 - ((7 + (S32)daysSince2000AD - _Days_To_Week01_2000AD - daysRem) % 7))%7;
 
-         At the start of 2000AD (the beginning of our 32bit time), there are 2 ISO weekdays
-         carried over from 1999 (Sat&Sun; '_Days_To_Week01_2000AD' defined above). First ISO
-         week of our reckoning starts on Mon Jan 3rd 2000AD . Count forward by weeks from there.
+   /* ISO Week 01 is
+         - the week with the 1st business day of the year (Jan 1st is a holiday) OR
+         - the week with 4 January in it,
 
-                                                                  |
-            1/1/2000 ---------------- daysSince2000AD -----------------|-----------------------> today
-                                                                       |
-            1/1/2000 +2 -> 1/3/2000                                    |------ daysRem -------->
-                                |                                      |
-                                |-------/----- ISO weeks -/-------/----|---/
-                                |                                 |    |   |
-                                |<------- (since - rem - 2) ------|--->|   |
-                                |                                 |    |   |
-                                |          (since-rem-2) mod 7 -->|    |<--|---
-                                |                                      |   |
-                                        7 - ((since-rem-2) mod 7)  --->|   |<---
+      So ISO Week 01 can start in Dec of the previous year, i.e:
 
-           Modulus arithmetic on signed types mirrors at zero (i.e it's not modular; programmers
-           are not mathematicians). So to keep it positive in week 1 of 2000A add 7 i.e
-
-                 7 - ((since-rem-2) mod 7) -> 7 - ((7+since-rem-2) mod 7)
-      */
-      U16 weekdaysCarriedOver = (7 - ((7 + (S32)daysSince2000AD - _Days_To_Week01_2000AD - daysRem) % 7))%7;
-
-      /* ISO Week 01 is
-            - the week with the 1st business day of the year (Jan 1st is a holiday) OR
-            - the week with 4 January in it,
-
-         So ISO Week 01 can start in Dec of the previous year, i.e:
-
-               Dec             Jan
-           27 28  29 30 31 1st 2  3 4th                 carried- carried-  1st whole
-                                                          over    under    ISO week
-                            M  T  W  T  F  S  S  M         0        7        2
-                            01 01 01 01 01 01 01 02
-
-                         M  T  W  T  F  S  S  M            6        1        2
-                         01 01 01 01 01 01 01 O2
-
-                      M  T  W  T  F  S  S  M               5        2        2
-                      01 01 01 01 01 01 01 02
-
-                   M  T  W  T  F  S  S  M                  4        3        2
+            Dec             Jan
+        27 28  29 30 31 1st 2  3 4th                 carried- carried-  1st whole
+                         |                             over    under    ISO week
+                         M  T  W  T  F  S  S  M         0        7        2
+                         01 01 01 01 01 01 01 02
+                         |
+                      M  T  W  T  F  S  S  M            6        1        2
+                      01 01 01 01 01 01 01 O2
+                         |
+                   M  T  W  T  F  S  S  M               5        2        2
                    01 01 01 01 01 01 01 02
-
-                M  T  W  T  F  S  S  M                     3        4        1
-                p  p  p  p  p  p  p  01
-
-             M  T  W  T  F  S  S  M                        2        5        1
+                         |
+                M  T  W  T  F  S  S  M                  4        3        2
+                01 01 01 01 01 01 01 02
+                         |
+             M  T  W  T  F  S  S  M                     3        4        1
              p  p  p  p  p  p  p  01
-
-          M  T  W  T  F  S  S  M                           1        6        1
+                         |
+          M  T  W  T  F  S  S  M                        2        5        1
           p  p  p  p  p  p  p  01
+                         |
+       M  T  W  T  F  S  S  M                           1        6        1
+       p  p  p  p  p  p  p  01
 
-          where 'p' is last ISO week of previous year, usually 52
-      */
-      U16 weekdaysToFinishYr =  (7 + ((S32)daysSince2000AD - _Days_To_Week01_2000AD - daysRem + daysThisYr)) % 7;
+       where 'p' is last ISO week of previous year, usually 52
+   */
+   U16 weekdaysToFinishYr =  (7 + ((S32)daysSince2000AD - _Days_To_Week01_2000AD - daysRem + daysThisYr)) % 7;
 
-      printf("since2000 %u daysThisYr %u remThisYr %u carried over %u finish this yr %u\r\n",
-           daysSince2000AD, daysRem, remThisYr, weekdaysCarriedOver, weekdaysToFinishYr);
+   printf("since2000 %u daysThisYr %u remThisYr %u carried over %u finish this yr %u\r\n",
+        daysSince2000AD, daysRem, remThisYr, weekdaysCarriedOver, weekdaysToFinishYr);
 
+   /* Start of a new year; the week carried does NOT enter a new business year
+
+      So we are still in last ISO week of previous year. Figure out whether previous year
+      had 52 or 53 weeks.
+
+                           For a non-leap year
+                    53 weeks if days carried E (3,4,5,6)
+         Jan                                                Dec  carried yr starts last
+         1st (is a holiday)                                 31st  over   on week#  week#
+
+         |S| _____________________ 52wks/364days ____________ |    0       p     0+52   = 52
+         | _____________________ 52/364 ____________________|M|    6       1     52+1   = 53
+         |T|W|T|F|S|S| _________ 51/357 __________________|M|T|    5       1     1+51+1 = 53
+         |W|T|F|S|S| _________ 51/357 __________________|M|T|W|    4       1     1+51+1 = 53
+         |T|F|S|S| _________ 51/357 __________________|M|T|W|T|    3       1     1+52+1 = 53
+         |F|S|S| _________ 51/357 __________________|M|T|W|T|F|    2       p     0+51+1 = 52
+         |S|S| _________ 51/357 __________________|M|T|W|T|F|S|    1       p     0+51+1 = 52
+
+
+                             For a leap year
+                  53 weeks if days-carried E (2,3,4,5,6)
+         Jan                                                Dec  carried yr starts last
+         1st (is a holiday)                                 31st  over   on week#  week#
+
+         |S| _____________________ 52wks/364days ____________ |M|    6       p   0+52+1 = 53
+         | _____________________ 52/364 ____________________|M|T|    5       1   52+1   = 53
+         |T|W|T|F|S|S| _________ 51/357 __________________|M|T|W|    4       1   1+51+1 = 53
+         |W|T|F|S|S| _________ 51/357 __________________|M|T|W|T|    3       1   1+51+1 = 53
+         |T|F|S|S| _________ 51/357 __________________|M|T|W|T|F|    2       1   1+51+1 = 53
+         |F|S|S| _________ 51/357 __________________|M|T|W|T|F|S|    1       p   0+51+1 = 52
+         |S|S| _________ 51/357 __________________|M|T|W|T|F|S|S|    0       p   0+51+1 = 52
+   */
+   if(weekdaysCarriedOver <= 3 && daysRem < weekdaysCarriedOver) {
+      bool prevYrWasLeapYr = yearsRem == 1 ? true : false;
+      wd->week =
+         weekdaysCarriedOver >= (prevYrWasLeapYr == true ? 2 : 3) &&
+         weekdaysCarriedOver <= 6
+            ? 53 : 52;
+   }
+   /* Start of new year; the week carried over DOES enter a new business year.
+
+      So we are already in Week 01 of this new year
+   */
+   else if(daysRem < weekdaysCarriedOver) {
+      wd->week = 1; }
+
+   /* End of previous year; the week will carry over into the next business year
+
+      So this is already Week 01 of the next year, even though its still December.
+   */
+   else if(weekdaysToFinishYr <= 3 && remThisYr <= weekdaysToFinishYr) {
+      wd->week = 1; }
+
+   // else somewhere in the middle of a year.
+   else {
       U16 daysRem_After1stISOWeek = daysRem - weekdaysCarriedOver;
-
       U8 firstFullIsoWeekThisYr = weekdaysCarriedOver <= 3 ? 1 : 2;
 
-      /* Start of a new year; the week carried does NOT enter a new business year
-
-         So we are still in last ISO week of previous year.
-      */
-      if(weekdaysCarriedOver <= 3 && daysRem < weekdaysCarriedOver) {
-         wd->week = 52;
-         wd->day = weekdaysCarriedOver;
-      }
-      /* Start of new year; the week carried over DOES enter a new business year.
-
-         So we are already in Week 01 of this new year
-      */
-      else if(daysRem < weekdaysCarriedOver) {
-         wd->week = 1;
-         wd->day = 1 + 7 + daysRem - weekdaysCarriedOver;
-      }
-      /* End of previous year; the week will carry over into the next business year
-
-         So this is already Week 01 of the next year, even though its still December.
-      */
-      else if(weekdaysToFinishYr <= 3 && remThisYr <= weekdaysToFinishYr) {
-         wd->week = 1;
-         wd->day = 1 + (daysRem_After1stISOWeek % 7);
-      }
-      // else somewhere in the middle of a year.
-      else {
-         // ISO weeks start at 1 so add 1.
-         wd->week = firstFullIsoWeekThisYr + (daysRem_After1stISOWeek/7);
-
-         // ISO weekdays are 1-7 so add 1.
-         wd->day = 1 + (daysRem_After1stISOWeek % 7);
-      }
+      // ISO weeks start at 1 so add 1.
+      wd->week = firstFullIsoWeekThisYr + (daysRem_After1stISOWeek/7);
    }
 
    return wd;
