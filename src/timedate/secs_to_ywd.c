@@ -19,52 +19,64 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    U8    yearsRem;
    U16   yr4, daysRem;
 
-   #define _4yr_days (365+365+365+366)
-
-   yr4     = daysSince2000AD/_4yr_days;                           // Divide total days into 4-year chunks...
-   daysRem = daysSince2000AD - ((U32)yr4 * _4yr_days);            // ... which are 0 - 1461 days left over.
-
    /* Centurial leap year correction.
 
       1600, 2000 & 2400 are leap years but 1900, 2100 & 2300 are not. S_DateTime spans 2000AD
       to 2136, so we must account for no Feb 29th 2100.
+
+      Will break days in 4-year chunks, which includes a leap year. Past 2103 add 1 day to
+      'daysSince2000AD' to correct for the missing Feb 29th 2100AD.
    */
-   #define _Midnite_Feb28_2100 (4107542399 - _12am_Jan_1st_2000_Epoch_secs)
-   #define _Feb28_2100 (_Midnite_Feb28_2100/(24*3600L))
+   #define _4yr_days (365+365+365+366)
+   #define _Century (25UL*(366+365+365+365))
+   U32 daysCorr = daysSince2000AD > _Century+_4yr_days-1
+         ? daysSince2000AD+1
+         : daysSince2000AD;
 
-   #define _Century (25UL*(366+365+365+365)
-#if 1
-   if(daysSince2000AD > _Feb28_2100) {                            // Past Feb 28th 2100?
-      daysRem += 1;                                               // there's no Feb 29th; pre-add the 1 day which will be subtracted (below).
-      if(daysRem >= _4yr_days-1) {                                // Another whole 4 years?
-            yr4 += 1;                                             // then bump 4-year count.
-            daysRem = 0; }}                                        // No days left over
-#else
-   if(daysSince2000AD > _Century+ (4*365)) {
-      daysRem += 1;                                               // there's no Feb 29th; pre-add the 1 day which will be subtracted (below).
-      if(daysRem >= _4yr_days-1) {                                // Another whole 4 years?
-            yr4 += 1;                                             // then bump 4-year count.
-            daysRem = 0; }}                                        // No days left over
+   yr4     = daysCorr/_4yr_days;                           // Divide total days into 4-year chunks...
+   daysRem = daysCorr - ((U32)yr4 * _4yr_days);            // ... which are 0 - 1461 days left over.
 
-#endif
-   yearsRem =                                                     // ... or 0 - 3 years left over
-      daysRem <= 366-1
-         ? 0
-         : (daysRem <= (366+365-1)
-            ? 1
-            : (daysRem <= (366+365+365-1) ? 2 : 3));
+   /* Split the remaining 0-1461 days into years and days in the final year. If 2100-2103
+      which contains the centurial year then there are just 0-1460 days all years are 365 days.
+   */
+   if(yr4 == 25) {
+      yearsRem =                                                     // ... or 0 - 3 years left over
+         daysRem <= 365-1
+            ? 0
+            : (daysRem <= (365+365-1)
+               ? 1
+               : (daysRem <= (365+365+365-1) ? 2 : 3));
 
+      daysRem =                                                      // Days left over after the last year is...
+         daysRem -                                                   // days remaining after 4-year chunks, minus...
+         (yearsRem == 3                                              // the number of days in the (0-3) left-over years
+            ? (365+365+365)
+            : (yearsRem == 2
+               ? (365+365)
+               : (yearsRem == 1
+                  ? 365
+                  : 0)));
+   }
+   else {
+      yearsRem =                                                     // ... or 0 - 3 years left over
+         daysRem <= 366-1
+            ? 0
+            : (daysRem <= (366+365-1)
+               ? 1
+               : (daysRem <= (366+365+365-1) ? 2 : 3));
+
+      daysRem =                                                      // Days left over after the last year is...
+         daysRem -                                                   // days remaining after 4-year chunks, minus...
+         (yearsRem == 3                                              // the number of days in the (0-3) left-over years
+            ? (366+365+365)
+            : (yearsRem == 2
+               ? (366+365)
+               : (yearsRem == 1
+                  ? 366
+                  : 0)));
+
+   }
    wd->yr = _2000AD + (4*yr4) + yearsRem;                         // Year is 2000AD + 4 x 4-year chunks + years-left-over
-
-   daysRem =                                                      // Days left over after the last year is...
-      daysRem -                                                   // days remaining after 4-year chunks, minus...
-      (yearsRem == 3                                              // the number of days in the (0-3) left-over years
-         ? (366+365+365)
-         : (yearsRem == 2
-            ? (366+365)
-            : (yearsRem == 1
-               ? 366
-               : 0)));
 
    U16 daysThisYr = yearsRem == 0 && wd->yr != 2100 ? 366 : 365;
    U16 remThisYr = daysThisYr - daysRem;
@@ -143,8 +155,8 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    */
    U16 weekdaysToFinishYr =  (7 + ((S32)daysSince2000AD - _Days_To_Week01_2000AD - daysRem + daysThisYr)) % 7;
 
-   printf("since2000 %u daysThisYr %u remThisYr %u carried over %u finish this yr %u\r\n",
-        daysSince2000AD, daysRem, remThisYr, weekdaysCarriedOver, weekdaysToFinishYr);
+   //printf("since2000 %lu yr4 %u daysThisYr %u remThisYr %u carried over %u finish this yr %u\r\n",
+   //     daysSince2000AD, yr4, daysRem, remThisYr, weekdaysCarriedOver, weekdaysToFinishYr);
 
    /* Start of a new year; and the last week of the previous year does NOT enter a new business
       year
@@ -186,7 +198,9 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    {
       wd->yr--;                                                            // then this week belongs to the previous year; back up one.
 
-      bool prevYrWasLeapYr = yearsRem == 1 ? true : false;                 // In 2nd year (of 4)? => previous was leap year
+      bool prevYrWasLeapYr =                                               // Previous yr was a leap yr if...
+         yearsRem == 1 && wd->yr != 2100                                   // it was 0 of [0..3]? AND it was NOT centurial 2100?
+            ? true : false;
 
       wd->week =                                                           // Week is? ... see above.
          weekdaysCarriedOver >= (prevYrWasLeapYr == true ? 2 : 3) &&

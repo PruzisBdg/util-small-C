@@ -1311,16 +1311,26 @@ void test_DaysToYWD(void)
       #define _CenturyE (25UL*(366+365+365+365)-1)
 
       // Last day of 21st century. Jan 1st 2100 is Friday, 2nd is Sat, not a business day. So this remains last ISO week of current year.
-      {.days = _CenturyE,           .wd = {.week = 53,  .day = 4, .yr = 2099}},
+      {.days = _CenturyE,           .wd = {.week = 53,  .day = 4, .yr = 2099}},   // Thurs Dec 31st 2099.
       {.days = _CenturyE+1,         .wd = {.week = 53,  .day = 5, .yr = 2099}},   // Fri Jan 1st 2100; 1st day of 22nd century.
       {.days = _CenturyE+4,         .wd = {.week = 1,   .day = 1, .yr = 2100}},   // Mon Jan 4th 2100.
 
-      // Centurial year correction. 2100 is NOT a leap year.
+      // ------ Centurial year correction. 2100 is NOT a leap year so next 4 yesr have just 4x365 days.
       {.days = _CenturyE+31+28-7,   .wd = {.week = 7,  .day = 7, .yr = 2100}},   // Sun Feb 21st 2100
 
       // Sun Feb 28th 2100. Week 1 starts Jan 4th (above). 31+28 = (8x7)+3 Feb 28th is in Week 8
       {.days = _CenturyE+31+28,     .wd = {.week = 8,  .day = 7, .yr = 2100}},   // Sun Feb 28th 2100.
       {.days = _CenturyE+31+28+1,   .wd = {.week = 9,  .day = 1, .yr = 2100}},   // Sun Mar 1st 2100
+
+      {.days = _CenturyE+365,       .wd = {.week = 52, .day = 5, .yr = 2100}},   // Fri Dec 31st 2100
+      {.days = _CenturyE+365+1,     .wd = {.week = 52, .day = 6, .yr = 2100}},   // Sat Jan 1st 2101
+      {.days = _CenturyE+365+3,     .wd = {.week = 1,  .day = 1, .yr = 2101}},   // Mon Jan 3rd 2101
+
+      {.days = _CenturyE+(4*365)-8, .wd = {.week = 51, .day = 7, .yr = 2103}},   // Sun Dec 23rd 2103.
+      {.days = _CenturyE+(4*365)-1, .wd = {.week = 52, .day = 7, .yr = 2103}},   // Sun Dec 30th 2103.
+      {.days = _CenturyE+(4*365),   .wd = {.week = 1,  .day = 1, .yr = 2104}},   // Mon Dec 31st 2103. Weds Jan 2nd is 1st business day of 2104 so this is already Week 01 of 2104
+      {.days = _CenturyE+(4*365)+1, .wd = {.week = 1,  .day = 2, .yr = 2104}},   // Tues Jan 1st 2104
+      {.days = _CenturyE+(4*365)+7, .wd = {.week = 2,  .day = 1, .yr = 2104}},   // Mon Jan 7th 2104
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
