@@ -21,8 +21,8 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
 
    #define _4yr_days (365+365+365+366)
 
-   yr4     = daysSince2000AD/_4yr_days;                           // Divide total secs into 4-year chunks...
-   daysRem = daysSince2000AD - ((U32)yr4 * _4yr_days);                                  // ... which are 0 - 1461 days left over.
+   yr4     = daysSince2000AD/_4yr_days;                           // Divide total days into 4-year chunks...
+   daysRem = daysSince2000AD - ((U32)yr4 * _4yr_days);            // ... which are 0 - 1461 days left over.
 
    /* Centurial leap year correction.
 
@@ -32,14 +32,21 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    #define _Midnite_Feb28_2100 (4107542399 - _12am_Jan_1st_2000_Epoch_secs)
    #define _Feb28_2100 (_Midnite_Feb28_2100/(24*3600L))
 
+   #define _Century (25UL*(366+365+365+365)
+#if 1
    if(daysSince2000AD > _Feb28_2100) {                            // Past Feb 28th 2100?
       daysRem += 1;                                               // there's no Feb 29th; pre-add the 1 day which will be subtracted (below).
       if(daysRem >= _4yr_days-1) {                                // Another whole 4 years?
             yr4 += 1;                                             // then bump 4-year count.
-            daysRem = 0; }                                        // No days left over
-      else {
-         daysRem += 1; }}                                         // else bump the day count.
+            daysRem = 0; }}                                        // No days left over
+#else
+   if(daysSince2000AD > _Century+ (4*365)) {
+      daysRem += 1;                                               // there's no Feb 29th; pre-add the 1 day which will be subtracted (below).
+      if(daysRem >= _4yr_days-1) {                                // Another whole 4 years?
+            yr4 += 1;                                             // then bump 4-year count.
+            daysRem = 0; }}                                        // No days left over
 
+#endif
    yearsRem =                                                     // ... or 0 - 3 years left over
       daysRem <= 366-1
          ? 0
@@ -59,7 +66,7 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
                ? 366
                : 0)));
 
-   U16 daysThisYr = yearsRem == 0 ? 366 : 365;
+   U16 daysThisYr = yearsRem == 0 && wd->yr != 2100 ? 366 : 365;
    U16 remThisYr = daysThisYr - daysRem;
 
    /* ---- Week-Day (easy)
@@ -187,32 +194,33 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
             ? 53 : 52;
    }
    /* Start of new year; the week carried over DOES enter a new business year.
-
-      So we are already in Week 01 of this new year... which must be labeled
-      with the PREIVIOUS year that it started in.
    */
    else if(daysRem < weekdaysCarriedOver) {
-      wd->week = 1;
-      wd->yr--; }
+      wd->week = 1; }
 
    /* End of previous year; the week will carry over into the next business year
 
       So this is already Week 01 of the next year, even though its still December.
+      It must be labeled with the NEXT year.
    */
    else if(weekdaysToFinishYr <= 3 && remThisYr <= weekdaysToFinishYr) {
+      wd->yr++;
       wd->week = 1; }
 
    // else somewhere in the middle of a year.
    else {
       U16 daysRem_After1stISOWeek = daysRem - weekdaysCarriedOver;
+      /* Jan 1st is holiday so an ISO week which straddles 2 years must have at least
+         Thurs Fri Sat Sun (4 days) in the new year. This puts Fri is on Jan 2nd which
+         is a work day and so that week becomes ISO week 01. If Week 01 straddles
+         then Week 02 is the first full one.
+      */
       U8 firstFullIsoWeekThisYr = weekdaysCarriedOver <= 3 ? 1 : 2;
 
       // ISO weeks start at 1 so add 1.
       wd->week = firstFullIsoWeekThisYr + (daysRem_After1stISOWeek/7);
    }
-
    return wd;
-
 }
 
 // -----------------------------------------------------------------------------------

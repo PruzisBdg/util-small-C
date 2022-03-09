@@ -1244,24 +1244,24 @@ void test_DaysToYWD(void)
 
       {.days = (2*365)-8,     .wd = {.week = 51, .day = 7, .yr = 2001}},    // Sun Dec 23rd 2001.
       {.days = (2*365)-1,     .wd = {.week = 52, .day = 7, .yr = 2001}},    // Sun Dec 30th 2001.
-      {.days = (2*365),       .wd = {.week = 1,  .day = 1, .yr = 2001}},    // Mon Dec 31st 2001. Weds Jan 2nd is 1st business day of 2001, so Mon is in Week 01
-      {.days = (2*365)+1,     .wd = {.week = 1,  .day = 2, .yr = 2001}},    // Tues Jan 1st 2002. Weds Jan 2nd is 1st business day of 2001, so Tue is in Week 01
-      {.days = (2*365)+2,     .wd = {.week = 1,  .day = 3, .yr = 2001}},    // Weds Jan 2nd 2002. ...
-      {.days = (2*365)+6,     .wd = {.week = 1,  .day = 7, .yr = 2001}},    // Sun Jan 6th 2002. ...
+      {.days = (2*365),       .wd = {.week = 1,  .day = 1, .yr = 2002}},    // Mon Dec 31st 2001. Weds Jan 2nd is 1st business day of 2002, so Mon is in Week 01
+      {.days = (2*365)+1,     .wd = {.week = 1,  .day = 2, .yr = 2002}},    // Tues Jan 1st 2002. Weds Jan 2nd is 1st business day of 2002, so Tue is in Week 01
+      {.days = (2*365)+2,     .wd = {.week = 1,  .day = 3, .yr = 2002}},    // Weds Jan 2nd 2002. ...
+      {.days = (2*365)+6,     .wd = {.week = 1,  .day = 7, .yr = 2002}},    // Sun Jan 6th 2002. ...
       {.days = (2*365)+7,     .wd = {.week = 2,  .day = 1, .yr = 2002}},    // Mon Jan 7th 2002. -> Week 02
       {.days = (2*365)+8,     .wd = {.week = 2,  .day = 2, .yr = 2002}},    // Tues Jan 8th 2002. -> Week 02
 
       {.days = (3*365)-2-7,   .wd = {.week = 51, .day = 7, .yr = 2002}},   // Sun Dec 22nd 2002.
       {.days = (3*365)-2,     .wd = {.week = 52, .day = 7, .yr = 2002}},   // Sun Dec 29th 2002.
-      {.days = (3*365)-1,     .wd = {.week = 1,  .day = 1, .yr = 2002}},   // Mon Dec 30th 2002. Thurs Jan 2nd is a business day so Mon is in Week 01 of 2003
-      {.days = (3*365),       .wd = {.week = 1,  .day = 2, .yr = 2002}},   // Tues Dec 31st 2002. Thurs Jan 2nd is a business day so Tues is in Week 01 of 2003
-      {.days = (3*365)+1,     .wd = {.week = 1,  .day = 3, .yr = 2002}},   // Wed Jan 1st 2003...
-      {.days = (3*365)+5,     .wd = {.week = 1,  .day = 7, .yr = 2002}},   // Sun Jan 5th 2003... Last day of Week 1
+      {.days = (3*365)-1,     .wd = {.week = 1,  .day = 1, .yr = 2003}},   // Mon Dec 30th 2002. Thurs Jan 2nd is a business day so Mon is in Week 01 of 2003
+      {.days = (3*365),       .wd = {.week = 1,  .day = 2, .yr = 2003}},   // Tues Dec 31st 2002. Thurs Jan 2nd is a business day so Tues is in Week 01 of 2003
+      {.days = (3*365)+1,     .wd = {.week = 1,  .day = 3, .yr = 2003}},   // Wed Jan 1st 2003...
+      {.days = (3*365)+5,     .wd = {.week = 1,  .day = 7, .yr = 2003}},   // Sun Jan 5th 2003... Last day of Week 1
       {.days = (3*365)+6,     .wd = {.week = 2,  .day = 1, .yr = 2003}},   // Mon Jan 6th 2003... 1st day of Week 2
 
-      {.days = (4*365),       .wd = {.week = 1,  .day = 3, .yr = 2003}},   // Wed Dec 31st 2003... Jan 2nd is Fri of same week; so already Week 1 of 2004
-      {.days = (4*365)+1,     .wd = {.week = 1,  .day = 4, .yr = 2003}},   // Thurs Jan 1st 2004...  "      "       "       "        "    "
-      {.days = (4*365)+4,     .wd = {.week = 1,  .day = 7, .yr = 2003}},   // Sun Jan 4th 2004.
+      {.days = (4*365),       .wd = {.week = 1,  .day = 3, .yr = 2004}},   // Wed Dec 31st 2003... Jan 2nd is Fri of same week; so already Week 1 of 2004
+      {.days = (4*365)+1,     .wd = {.week = 1,  .day = 4, .yr = 2004}},   // Thurs Jan 1st 2004...  "      "       "       "        "    "
+      {.days = (4*365)+4,     .wd = {.week = 1,  .day = 7, .yr = 2004}},   // Sun Jan 4th 2004.
       {.days = (4*365)+5,     .wd = {.week = 2,  .day = 1, .yr = 2004}},   // Mon Jan 5th 2004.
 
       // 2004 -> 2005 (2004 is a leap yr).
@@ -1278,6 +1278,49 @@ void test_DaysToYWD(void)
       {.days = (5*365)+366+1, .wd = {.week = 52, .day = 7, .yr = 2005}},   // Sun Jan 1st 2006
       {.days = (5*365)+366+2, .wd = {.week = 1,  .day = 1, .yr = 2006}},   // Mon Jan 2nd 2006
 
+      {.days = (6*365)+366-7, .wd = {.week = 51, .day = 7, .yr = 2006}},   // Sun Dec 24th 2006
+      {.days = (6*365)+366-6, .wd = {.week = 52, .day = 1, .yr = 2006}},   // Mon Dec 25th 2006
+      {.days = (6*365)+366,   .wd = {.week = 52, .day = 7, .yr = 2006}},   // Sun Dec 31st 2006
+      {.days = (6*365)+366+1, .wd = {.week = 1,  .day = 1, .yr = 2007}},   // Mon Jan 1st 2007
+      {.days = (6*365)+366+7, .wd = {.week = 1,  .day = 7, .yr = 2007}},   // Sun Jan 7th 2007
+      {.days = (6*365)+366+8, .wd = {.week = 2,  .day = 1, .yr = 2007}},   // Mon Jan 8th 2007
+
+      {.days = (7*365)+366-8, .wd = {.week = 51, .day = 7, .yr = 2007}},   // Sun Dec 23rd 2007.
+      {.days = (7*365)+366-1, .wd = {.week = 52, .day = 7, .yr = 2007}},   // Sun Dec 30th 2007.
+      {.days = (7*365)+366,   .wd = {.week = 1,  .day = 1, .yr = 2008}},   // Mon Dec 31st 2007. Weds Jan 2nd is 1st business day of 2008, so Mon is in Week 01
+      {.days = (7*365)+366+1, .wd = {.week = 1,  .day = 2, .yr = 2008}},   // Tues Jan 1st 2008.
+      {.days = (7*365)+366+6, .wd = {.week = 1,  .day = 7, .yr = 2008}},   // Sun Jan 6th 2008.
+      {.days = (7*365)+366+7, .wd = {.week = 2,  .day = 1, .yr = 2008}},   // Mon Jan 7th 2008.
+
+      {.days = (7*365)+(2*366)-10,  .wd = {.week = 51, .day = 7, .yr = 2008}},   // Sun Dec 21st 2008.
+      {.days = (7*365)+(2*366)-3,   .wd = {.week = 52, .day = 7, .yr = 2008}},   // Sun Dec 28th 2008.
+      {.days = (7*365)+(2*366)-2,   .wd = {.week = 1,  .day = 1, .yr = 2009}},   // Mon Dec 29th 2008. Fri Jan 2nd is 1st business day of 2009. so this day is in 2009.
+      {.days = (7*365)+(2*366),     .wd = {.week = 1,  .day = 3, .yr = 2009}},   // Weds Dec 31st 2008. Fri Jan 2nd is 1st business day of 2009. so this day is in 2009.
+      {.days = (7*365)+(2*366)+1,   .wd = {.week = 1,  .day = 4, .yr = 2009}},   // Thurs Jan 1st 2009.
+      {.days = (7*365)+(2*366)+4,   .wd = {.week = 1,  .day = 7, .yr = 2009}},   // Sun Jan 4th 2009.
+      {.days = (7*365)+(2*366)+5,   .wd = {.week = 2,  .day = 1, .yr = 2009}},   // Mon Jan 5th 2009.
+
+      {.days = (8*365)+(2*366)-4,   .wd = {.week = 52, .day = 7, .yr = 2009}},   // Sun Dec 27th 2009.
+      {.days = (8*365)+(2*366)-3,   .wd = {.week = 53, .day = 1, .yr = 2009}},   // Mon Dec 28th 2009.
+      {.days = (8*365)+(2*366),     .wd = {.week = 53, .day = 4, .yr = 2009}},   // Thurs Dec 31st 2009.
+      {.days = (8*365)+(2*366)+1,   .wd = {.week = 53, .day = 5, .yr = 2009}},   // Fri Jan 1st 2010.... Because Jan 1st is a holiday this is still last ISO week of 2009
+      {.days = (8*365)+(2*366)+3,   .wd = {.week = 53, .day = 7, .yr = 2009}},   // Sun Jan 3rd 2010.... is still last ISO week of 2009
+      {.days = (8*365)+(2*366)+4,   .wd = {.week = 1,  .day = 1, .yr = 2010}},   // Mon Jan 4th 2010.... starts the 2010 business year.
+
+      // Elapsed century, days in a century - 1
+      #define _CenturyE (25UL*(366+365+365+365)-1)
+
+      // Last day of 21st century. Jan 1st 2100 is Friday, 2nd is Sat, not a business day. So this remains last ISO week of current year.
+      {.days = _CenturyE,           .wd = {.week = 53,  .day = 4, .yr = 2099}},
+      {.days = _CenturyE+1,         .wd = {.week = 53,  .day = 5, .yr = 2099}},   // Fri Jan 1st 2100; 1st day of 22nd century.
+      {.days = _CenturyE+4,         .wd = {.week = 1,   .day = 1, .yr = 2100}},   // Mon Jan 4th 2100.
+
+      // Centurial year correction. 2100 is NOT a leap year.
+      {.days = _CenturyE+31+28-7,   .wd = {.week = 7,  .day = 7, .yr = 2100}},   // Sun Feb 21st 2100
+
+      // Sun Feb 28th 2100. Week 1 starts Jan 4th (above). 31+28 = (8x7)+3 Feb 28th is in Week 8
+      {.days = _CenturyE+31+28,     .wd = {.week = 8,  .day = 7, .yr = 2100}},   // Sun Feb 28th 2100.
+      {.days = _CenturyE+31+28+1,   .wd = {.week = 9,  .day = 1, .yr = 2100}},   // Sun Mar 1st 2100
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
