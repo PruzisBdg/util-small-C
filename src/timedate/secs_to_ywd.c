@@ -62,7 +62,9 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    U16 daysThisYr = yearsRem == 0 ? 366 : 365;
    U16 remThisYr = daysThisYr - daysRem;
 
-   /* Jan 1st 2000AD is Sat. So Week 01 2000AD starts on Mon 3rd. (ISO 8601 weeks are Mon-Sun).
+   /* ---- Week-Day (easy)
+
+      Jan 1st 2000AD is Sat. So Week 01 2000AD starts on Mon 3rd. (ISO 8601 weeks are Mon-Sun).
 
       After that, to get the day just count by 7's
    */
@@ -71,7 +73,9 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    // ISO weekdays are 1-7 so add 1.
    wd->day = 1+(7 + daysSince2000AD - _Days_To_Week01_2000AD)%7;
 
-   /* Calculate the number of ISO weekdays in this year which were carried over from previous
+   /* ---- Week & Year (must align with holidays and Gregorian calender, so complicated)
+
+      Get the number of ISO weekdays in this year which were carried over from previous
       year (below).
 
       At the start of 2000AD (the beginning of our 32bit time), there are 2 ISO weekdays
@@ -135,10 +139,14 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
    printf("since2000 %u daysThisYr %u remThisYr %u carried over %u finish this yr %u\r\n",
         daysSince2000AD, daysRem, remThisYr, weekdaysCarriedOver, weekdaysToFinishYr);
 
-   /* Start of a new year; the week carried does NOT enter a new business year
+   /* Start of a new year; and the last week of the previous year does NOT enter a new business
+      year
 
-      So we are still in last ISO week of previous year. Figure out whether previous year
-      had 52 or 53 weeks.
+      We are still in last ISO week of previous year.., so this week must be labeled with the
+      PREVIOUS year that it started in.
+
+      This last week was either ISO week 52 or 53, depending (below) on the numbers of days
+      carried over and whether the previous year was a leap year.
 
                            For a non-leap year
                     53 weeks if days carried E (3,4,5,6)
@@ -167,19 +175,25 @@ PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd)
          |F|S|S| _________ 51/357 __________________|M|T|W|T|F|S|    1       p   0+51+1 = 52
          |S|S| _________ 51/357 __________________|M|T|W|T|F|S|S|    0       p   0+51+1 = 52
    */
-   if(weekdaysCarriedOver <= 3 && daysRem < weekdaysCarriedOver) {
-      bool prevYrWasLeapYr = yearsRem == 1 ? true : false;
-      wd->week =
+   if(weekdaysCarriedOver <= 3 && daysRem < weekdaysCarriedOver)           // Start of year, current week does NOT start a new business year?
+   {
+      wd->yr--;                                                            // then this week belongs to the previous year; back up one.
+
+      bool prevYrWasLeapYr = yearsRem == 1 ? true : false;                 // In 2nd year (of 4)? => previous was leap year
+
+      wd->week =                                                           // Week is? ... see above.
          weekdaysCarriedOver >= (prevYrWasLeapYr == true ? 2 : 3) &&
          weekdaysCarriedOver <= 6
             ? 53 : 52;
    }
    /* Start of new year; the week carried over DOES enter a new business year.
 
-      So we are already in Week 01 of this new year
+      So we are already in Week 01 of this new year... which must be labeled
+      with the PREIVIOUS year that it started in.
    */
    else if(daysRem < weekdaysCarriedOver) {
-      wd->week = 1; }
+      wd->week = 1;
+      wd->yr--; }
 
    /* End of previous year; the week will carry over into the next business year
 
