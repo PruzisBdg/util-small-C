@@ -621,6 +621,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/days_to_weekdate.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/epoch_to_2000AD.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -647,6 +652,11 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/timedate/legal_hms.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/legal_weekdate.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -681,7 +691,27 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="../src/timedate/secs_to_ywd.c">
+		<Unit filename="../src/timedate/weekdate_A_GT_B.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/weekdate_A_LT_B.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/weekdate_equal.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/weekdate_to_days.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/year_week_day_to_ymd.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -697,11 +727,6 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/timedate/ymd_to_str.c">
-			<Option compilerVar="CC" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="../src/timedate/ymd_to_weekdate.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />

@@ -334,16 +334,18 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
    These functions convert between seconds and hours/minutes/seconds (HMS) and
    date/time (YMD/HMS). They can render HMS and YMD/HMS as ISO8601 strings.
 
-   Zero seconds is midnight, New-years Eve 2000AD and spans forward 132 years to
-   2132AD.
+   Zero seconds is midnight, New-years Eve 2000AD and spans forward 136 years to
+   Tues Feb 7th 2136 6:28:15 AM.
 
    S_DateTime (below) can represent any year from 0000AD onwards, function which use
    32-bit seconds run from 2000AD - 2136AD,
 */
 
-/* A 32bit count of seconds. Will count 132 years */
+/* A 32bit count of seconds. Will count 136 years */
 typedef U32 T_Seconds32;
 #define _Max_T_Seconds32 MAX_U32
+
+// Tues Feb 7th 2136 6:28:15 AM
 
 /* Used when exporting this struct (to another device). Then the contents are packed, regardless
    of the format internal to the code.
@@ -351,7 +353,7 @@ typedef U32 T_Seconds32;
 #define _YMDHMS_BytesPacked 7
 
 typedef struct {
-   U16 yr;        // 2000AD to 2000AD + 32bits of seconds = 2130.
+   U16 yr;        // 2000AD to 2000AD + 32bits of seconds = 2136.
    U8 mnth,       // 1-12 = Jan -> Dec.
       day;        // 1-28,29,30,31, depending.
    } S_YMD;
@@ -379,6 +381,15 @@ typedef struct {
    S_WeekDate  ywd;
    U8          hr, min, sec;
    } S_WeekDateTime;
+
+// A 16bit count of days. Counts more than T_Seconds32 of days, i.e more than 49711 days = 136 years.
+typedef U16 T_Days16;
+#define _Max_T_Days16 MAX_U16
+#define _Illegal_Days16 _Max_T_Days16
+
+// A 16bit count of weeks. Counts more than T_Seconds32 of weeks, i.e 7102 weeks.
+typedef U16 T_Weeks16;
+#define _Max_T_Weeks16 MAX_U16
 
 /* ------------------------------ Wildcards ----------------------------------------
 
@@ -454,7 +465,15 @@ PUBLIC BOOLEAN       YMD_Equal(S_YMD const *a, S_YMD const *b);
 PUBLIC U8            YMD_ToStr(S_YMD const *t, C8 *outStr);
 PUBLIC BOOLEAN       YMD_aGTEb(S_YMD const *a, S_YMD const *b);
 PUBLIC S_YMD         YearWeekDay_to_YMD(U16 yr, U8 week, U8 weekday);
-PUBLIC S_WeekDate const * DaysToYWD(U32 daysSince2000AD, S_WeekDate *wd);
+
+// ISO Week-Date
+PUBLIC BOOL Legal_WeekDateFields(S_WeekDate const *wd);
+PUBLIC BOOL Legal_WeekDate(S_WeekDate const *wd);
+PUBLIC BOOL WeekDate_Equal(S_WeekDate const *a, S_WeekDate const *b);
+PUBLIC BOOL WeekDate_A_GT_B(S_WeekDate const *a, S_WeekDate const *b);
+PUBLIC BOOL WeekDate_A_LT_B(S_WeekDate const *a, S_WeekDate const *b);
+PUBLIC S_WeekDate const * DaysToWeekDate(U32 daysSince2000AD, S_WeekDate *wd);
+PUBLIC T_Days16      WeekDateToDays(S_WeekDate const *wd);
 
 // Full Time/Date to the second.
 PUBLIC BOOL          Legal_YMDHMS(S_DateTime const *t);

@@ -11,6 +11,8 @@
 #define _mnth  ymd.mnth
 #define _day   ymd.day
 
+PRIVATE C8 const *tf(bool b) { return b != false ? "true" : "false"; }
+
 // These are by-element compares; which will handle differing alignments and packing.
 PRIVATE bool dtsEqual(S_DateTime const *a, S_DateTime const *b) {
    return
@@ -1223,12 +1225,9 @@ void test_ISO8601_ToSecs(void)
    }
 }
 
-/* -------------------------------- test_DaysToYWD --------------------------------------------- */
+/* -------------------------------- test_DaysToWeekDate --------------------------------------------- */
 
-//the week with 4 January in it,
-//if 1 January is on a Monday, Tuesday, Wednesday or Thursday, it is in week 01
-
-void test_DaysToYWD(void)
+void test_DaysToWeekDate(void)
 {
    typedef struct {U32 days; S_WeekDate wd; } S_Tst;
 
@@ -1331,6 +1330,9 @@ void test_DaysToYWD(void)
       {.days = _CenturyE+(4*365),   .wd = {.week = 1,  .day = 1, .yr = 2104}},   // Mon Dec 31st 2103. Weds Jan 2nd is 1st business day of 2104 so this is already Week 01 of 2104
       {.days = _CenturyE+(4*365)+1, .wd = {.week = 1,  .day = 2, .yr = 2104}},   // Tues Jan 1st 2104
       {.days = _CenturyE+(4*365)+7, .wd = {.week = 2,  .day = 1, .yr = 2104}},   // Mon Jan 7th 2104
+
+      // 'days' counts fully elapsed. So _Max_T_Seconds32 reaches to day AFTER last day.
+      {.days = _Max_T_Seconds32/(24*3600UL), .wd = {.week = 6,  .day = 2, .yr = 2136}},
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -1338,10 +1340,10 @@ void test_DaysToYWD(void)
       S_Tst const *t = &tsts[i];
 
       S_WeekDate wd;
-      S_WeekDate const *rtn = DaysToYWD(t->days, &wd);
+      S_WeekDate const *rtn = DaysToWeekDate(t->days, &wd);
 
       if(wd.week != t->wd.week || wd.day != t->wd.day || wd.yr != t->wd.yr) {
-         printf("DaysToYWD() fail #%d:  expected %lu -> %u-W%02u-%u  got %u-W%02u-%u\r\n",
+         printf("DaysToWeekDate() fail #%d:  expected %lu -> %u-W%02u-%u  got %u-W%02u-%u\r\n",
                i, t->days,
                t->wd.yr, t->wd.week, t->wd.day,
                wd.yr,       wd.week,    wd.day);
@@ -1350,14 +1352,123 @@ void test_DaysToYWD(void)
    }
 }
 
-/* -------------------------------- test_YearWeekDay_to_YMD ----------------------------------- */
+/* -------------------------------- test_Legal_WeekDate ------------------------------------- */
 
-void test_YearWeekDay_to_YMD(void)
+void test_Legal_WeekDate(void)
 {
+   S_WeekDate const legals[] = {
+      {.yr = 1999, .week = 52, .day = 6},    // 2000-1-1 Gregorian; the start of T_Seconds32.
+      {.yr = 1999, .week = 52, .day = 7},
+      {.yr = 2000, .week = 1,  .day = 1},    // 2000-1-3 Gregorian.
 
+      {.yr = 2015, .week = 53, .day = 7},
+
+      {.yr = 2015, .week = 53, .day = 7},
+
+      // Feb 7th 2136. The last day which contains some part of [0 ... _Max_T_Seconds32]
+      {.yr = 2136, .week = 6, .day = 1},
+   };
+
+   S_WeekDate const illegals[] = {
+      {.yr = 1999, .week = 52, .day = 5},    // Day before 2000-1-1 Gregorian; the start of T_Seconds32.
+
+      // Illegal weeks & days
+      {.yr = 2000, .week = 0,  .day = 1},
+      {.yr = 2000, .week = 1,  .day = 0},
+      {.yr = 2000, .week = 54, .day = 1},
+      {.yr = 2000, .week = 1,  .day = 8},
+
+      {.yr = 2000, .week = 1,  .day = 8},
+
+      // Feb 8th 2136. Is past [0 ... _Max_T_Seconds32]
+      {.yr = 2136, .week = 6, .day = 2},
+
+      {.yr = 2137, .week = 1, .day = 1},
+   };
+
+
+   for(U8 i = 0; i < RECORDS_IN(legals); i++)
+   {
+      S_WeekDate const *t = &legals[i];
+
+      if( Legal_WeekDate(t) == FALSE ) {
+         printf("Legal_WeekDate() legals[%d]:  %u-W%02u-%u->false, expected true\r\n",
+               i, t->yr, t->week, t->day);
+         TEST_FAIL();
+      }
+   }
+
+   for(U8 i = 0; i < RECORDS_IN(illegals); i++)
+   {
+      S_WeekDate const *t = &illegals[i];
+
+      if( Legal_WeekDate(t) == TRUE ) {
+         printf("Legal_WeekDate() illegals[%d]:  %u-W%02u-%u->false, expected true\r\n",
+               i, t->yr, t->week, t->day);
+         TEST_FAIL();
+      }
+   }
 }
 
 
+/* --------------------------------- test_WeekDate_A_LT_B --------------------------------- */
+
+void test_WeekDate_A_LT_B(void)
+{
+   typedef struct {S_WeekDate a, b; bool rtn;} S_Tst;
+
+   S_Tst const tsts[] = {
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = WeekDate_A_LT_B(&t->a, &t->b);
+
+      if(rtn != t->rtn) {
+         printf("WeekDate_A_LT_B() fail #%d:  expected %u-W%02u-%u LT %u-W%02u-%u -> %s got %s\r\n",
+               i,
+               t->a.yr, t->a.week, t->a.day,
+               t->b.yr, t->b.week, t->b.day,
+               tf(t->rtn), tf(rtn));
+         TEST_FAIL();
+      }
+   }
+}
+
+
+/* -------------------------------- test_WeekDateToDays ------------------------------------ */
+
+void test_WeekDateToDays(void)
+{
+   typedef struct {S_WeekDate wd; T_Days16 days; } S_Tst;
+
+   S_Tst const tsts[] = {
+      {.wd = {.yr = 1999, .week = 52,  .day = 6}, .days = 0},
+
+      {.wd = {.yr = 2000, .week = 1,   .day = 1}, .days = 3},
+      {.wd = {.yr = 2000, .week = 51,  .day = 7}, .days = 366-7},
+      {.wd = {.yr = 2000, .week = 52,  .day = 7}, .days = 366},
+      {.wd = {.yr = 2001, .week = 1,   .day = 1}, .days = 366+1},
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      T_Days16 rtn = WeekDateToDays(&t->wd);
+
+      if(rtn != t->days) {
+         printf("DaysToWeekDate() fail #%d:  expected %u-W%02u-%u -> %u got %u\r\n",
+               i, t->wd.yr, t->wd.week, t->wd.day, t->days, rtn );
+         TEST_FAIL();
+      }
+   }
+
+}
 
 // ----------------------------------------- eof --------------------------------------------
 

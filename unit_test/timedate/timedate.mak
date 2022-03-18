@@ -25,7 +25,11 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)ymdhms_to_str.c \
 								$(SRCDIR)ymdhms_A_GTE_B.c \
 								$(SRCDIR)ymdhms_add_secs.c \
-								$(SRCDIR)secs_to_ywd.c \
+								$(SRCDIR)days_to_weekdate.c \
+								$(SRCDIR)weekdate_to_days.c \
+								$(SRCDIR)legal_weekdate.c \
+								$(SRCDIR)weekdate_A_GT_B.c \
+								$(SRCDIR)weekdate_A_LT_B.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build
