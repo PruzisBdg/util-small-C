@@ -30,6 +30,7 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)legal_weekdate.c \
 								$(SRCDIR)weekdate_A_GT_B.c \
 								$(SRCDIR)weekdate_A_LT_B.c \
+								$(SRCDIR)weekdate_equal.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 
 # Clean and build

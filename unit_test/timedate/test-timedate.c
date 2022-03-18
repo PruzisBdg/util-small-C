@@ -1418,8 +1418,28 @@ void test_WeekDate_A_LT_B(void)
    typedef struct {S_WeekDate a, b; bool rtn;} S_Tst;
 
    S_Tst const tsts[] = {
+
+      {.a = (S_WeekDate){.yr=2001, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=53, .day=7 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=2,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=2 }, .rtn = false },
+
+      // Equal => false.
       {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
-      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=2 }, .rtn = true  },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=2,  .day=1 }, .rtn = true  },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=7 },  .b = (S_WeekDate){.yr=2000, .week=2,  .day=1 }, .rtn = true  },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2001, .week=1,  .day=1 }, .rtn = true },
+      {.a = (S_WeekDate){.yr=2000, .week=2,  .day=2 },  .b = (S_WeekDate){.yr=2001, .week=1,  .day=1 }, .rtn = true },
+      {.a = (S_WeekDate){.yr=2000, .week=53, .day=7 },  .b = (S_WeekDate){.yr=2001, .week=1,  .day=1 }, .rtn = true },
+
+      // Malformed Week-Dates always return false; even if arithmetic comparision imples true.
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=0 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=0,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=8 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=54,  .day=1 }, .rtn = false },
+
+      // May go outside range of 'T_Seconds32' i.e [2000AD..Feb 7th 2136].
+      {.a = (S_WeekDate){.yr=2136, .week=53,  .day=6 }, .b = (S_WeekDate){.yr=2136, .week=53, .day=7 }, .rtn = true },
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)
@@ -1440,6 +1460,99 @@ void test_WeekDate_A_LT_B(void)
 }
 
 
+/* --------------------------------- test_WeekDate_A_GT_B --------------------------------- */
+
+void test_WeekDate_A_GT_B(void)
+{
+   typedef struct {S_WeekDate a, b; bool rtn;} S_Tst;
+
+   S_Tst const tsts[] = {
+
+      {.a = (S_WeekDate){.yr=2000, .week=53, .day=7 },  .b = (S_WeekDate){.yr=2001, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=2 },  .b = (S_WeekDate){.yr=2000, .week=2,  .day=1 }, .rtn = false },
+
+      // Equal => false.
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=2 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = true  },
+      {.a = (S_WeekDate){.yr=2000, .week=2,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = true  },
+      {.a = (S_WeekDate){.yr=2000, .week=2,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=7 }, .rtn = true  },
+      {.a = (S_WeekDate){.yr=2001, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = true },
+      {.a = (S_WeekDate){.yr=2001, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=2,  .day=2 }, .rtn = true },
+      {.a = (S_WeekDate){.yr=2001, .week=1 , .day=1 },  .b = (S_WeekDate){.yr=2000, .week=53, .day=7 }, .rtn = true },
+
+      // Malformed Week-Dates always return false; even if arithmetic comparision imples true.
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=0 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=0,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=8 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=54,  .day=1 }, .rtn = false },
+
+      // May go outside range of 'T_Seconds32' i.e [2000AD..Feb 7th 2136].
+      {.a = (S_WeekDate){.yr=2136, .week=53,  .day=7 }, .b = (S_WeekDate){.yr=2136, .week=53, .day=6 }, .rtn = true },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = WeekDate_A_GT_B(&t->a, &t->b);
+
+      if(rtn != t->rtn) {
+         printf("WeekDate_A_GT_B() fail #%d:  expected %u-W%02u-%u GT %u-W%02u-%u -> %s got %s\r\n",
+               i,
+               t->a.yr, t->a.week, t->a.day,
+               t->b.yr, t->b.week, t->b.day,
+               tf(t->rtn), tf(rtn));
+         TEST_FAIL();
+      }
+   }
+}
+
+/* --------------------------------- test_WeekDate_Equal --------------------------------- */
+
+void test_WeekDate_Equal(void)
+{
+   typedef struct {S_WeekDate a, b; bool rtn;} S_Tst;
+
+   S_Tst const tsts[] = {
+
+      {.a = (S_WeekDate){.yr=2000, .week=53, .day=7 },  .b = (S_WeekDate){.yr=2001, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=2 },  .b = (S_WeekDate){.yr=2000, .week=2,  .day=1 }, .rtn = false },
+
+      // Equal => true.
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = true },
+      {.a = (S_WeekDate){.yr=2092, .week=53, .day=7 },  .b = (S_WeekDate){.yr=2092, .week=53, .day=7 }, .rtn = true },
+
+      // Malformed Week-Dates always return false; even if arithmetic comparision imples true.
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=0 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=0,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=1 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=1,  .day=8 }, .rtn = false },
+      {.a = (S_WeekDate){.yr=2000, .week=1,  .day=1 },  .b = (S_WeekDate){.yr=2000, .week=54,  .day=1 }, .rtn = false },
+
+      // May go outside range of 'T_Seconds32' i.e [2000AD..Feb 7th 2136].
+      {.a = (S_WeekDate){.yr=2136, .week=53,  .day=7 }, .b = (S_WeekDate){.yr=2136, .week=53, .day=7 }, .rtn = true },
+      {.a = (S_WeekDate){.yr=1990, .week=14,  .day=4 }, .b = (S_WeekDate){.yr=1990, .week=14, .day=4 }, .rtn = true },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+
+      bool rtn = WeekDate_Equal(&t->a, &t->b);
+
+      if(rtn != t->rtn) {
+         printf("test_WeekDate_Equal() fail #%d:  expected %u-W%02u-%u == %u-W%02u-%u -> %s got %s\r\n",
+               i,
+               t->a.yr, t->a.week, t->a.day,
+               t->b.yr, t->b.week, t->b.day,
+               tf(t->rtn), tf(rtn));
+         TEST_FAIL();
+      }
+   }
+}
+
+
+
 /* -------------------------------- test_WeekDateToDays ------------------------------------ */
 
 void test_WeekDateToDays(void)
@@ -1447,12 +1560,23 @@ void test_WeekDateToDays(void)
    typedef struct {S_WeekDate wd; T_Days16 days; } S_Tst;
 
    S_Tst const tsts[] = {
+      // 1st 2 days of Gregorian 2000AD last 2 days of WeekDate calendar 1999. Special case, check it.
       {.wd = {.yr = 1999, .week = 52,  .day = 6}, .days = 0},
+      {.wd = {.yr = 1999, .week = 52,  .day = 7}, .days = 1},
+      // But this is before Gregorian 2000AD and hence outside 'T_Seconds32'.
+      {.wd = {.yr = 1999, .week = 52,  .day = 5}, .days = _Illegal_Days16},
 
+      // WeekDate 2000AD starts on Gregorian Jan 3rd.
       {.wd = {.yr = 2000, .week = 1,   .day = 1}, .days = 3},
       {.wd = {.yr = 2000, .week = 51,  .day = 7}, .days = 366-7},
       {.wd = {.yr = 2000, .week = 52,  .day = 7}, .days = 366},
       {.wd = {.yr = 2001, .week = 1,   .day = 1}, .days = 366+1},
+
+      // Illegal Week-Date fields are rejected.
+      {.wd = {.yr = 2000, .week = 0,   .day = 1}, .days = _Illegal_Days16},
+      {.wd = {.yr = 2000, .week = 54,  .day = 1}, .days = _Illegal_Days16},
+      {.wd = {.yr = 2000, .week = 1,   .day = 0}, .days = _Illegal_Days16},
+      {.wd = {.yr = 2000, .week = 1,   .day = 8}, .days = _Illegal_Days16},
    };
 
    for(U8 i = 0; i < RECORDS_IN(tsts); i++)

@@ -13,8 +13,16 @@
 */
 PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
 {
-   if(wd->yr < 1999) {
-
+   if(Legal_WeekDate(wd) == false) {
+      return _Illegal_Days16;
+   }
+   else if(wd->yr == 1999) {
+      if(wd->week == 52) {
+         if(wd->day == 6) {
+            return 0;}
+         else if(wd->day == 7) {
+            return 1; }}
+      return _Illegal_Days16;
    }
    else {
       /* Start by assuming that the ISO week-year in 'wd' is the same as the Gregorian year.

@@ -2,11 +2,17 @@
 #include "util.h"
 
 
+/* ------------------------ WeekDate_Equal ----------------------------------
+
+   Return TRUE if a,b are properly formed Week-Dates AND a == b.
+*/
 PUBLIC BOOL WeekDate_Equal(S_WeekDate const *a, S_WeekDate const *b)
 {
    return
-      a->yr == b->yr && a->week == b->week && a->day == b->day
-         ? TRUE : FALSE;
+      Legal_WeekDateFields(a) == false || Legal_WeekDateFields(b) == false
+         ? FALSE
+         : (a->yr == b->yr && a->week == b->week && a->day == b->day
+            ? TRUE : FALSE);
 }
 
 // --------------------------------- EOF -----------------------------------------
