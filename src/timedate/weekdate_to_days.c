@@ -22,7 +22,8 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
             return 0;}
          else if(wd->day == 7) {
             return 1; }}
-      return _Illegal_Days16;
+
+      return _Illegal_Days16; // GCOVR_EXCL_LINE. Neer reached because of Legal_WeekDate() above.
    }
    else {
       /* Start by assuming that the ISO week-year in 'wd' is the same as the Gregorian year.
@@ -37,7 +38,7 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
       // Days in the whole number of Gregorian years.
       U16 gregDays =
          (yr4 * _4yr_days) +
-         (yrsRem == 3 ? (366+65+365) : (yrsRem == 2 ? (366+365): (yrsRem == 1 ? 366 : 0)));
+         (yrsRem == 3 ? (366+365+365) : (yrsRem == 2 ? (366+365): (yrsRem == 1 ? 366 : 0)));
 
       // 2100 is not a leap year. If past 2100 remove a day to correct for that.
       gregDays = gregDays > _Century+_4yr_days-1
@@ -98,18 +99,20 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
             ? 1
             : (daysIn1stWeek >= (prevYrWasLeapYr == true ? 2 : 3) ? 53 : 52);
 
-      U16 daysThisYr =
+      /* Get the number of days we are into this Gregorian year. Note that this can be negative if the
+         Week-Date year started before the Gregorian year and haven't yet crossed into the Gregorian
+         year.
+      */
+      S16 leftoverDays =
          daysIn1stWeek +
          (firstWeek == 1
             ? (7 * (U16)wd->week + wd->day - 14)
             : (7 * (U16)wd->week + wd->day - 7));
 
+   printf("yr %u -> yr4 %u + yrsRem %u gregDays %u -> weeks %u + daysRem %u\r\n carriedOver %u prevYrLeap %u 1stweek %u leftoverDays %d\r\n",
+          yr, yr4, yrsRem, gregDays, weeks, daysRem, carriedOver, prevYrWasLeapYr, firstWeek, leftoverDays);
 
-
-   printf("yr %u -> yr4 %u + yrsRem %u gregDays %u -> weeks %u + daysRem %u\r\n carriedOver %u prevYrLeap %u 1stweek %u daysThisYr %u\r\n",
-          yr, yr4, yrsRem, gregDays, weeks, daysRem, carriedOver, prevYrWasLeapYr, firstWeek, daysThisYr);
-
-      return gregDays + daysThisYr;
+      return gregDays + leftoverDays;
       }
 }
 

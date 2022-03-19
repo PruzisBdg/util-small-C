@@ -952,7 +952,14 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/timedate/test-weekdate.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/timedate/timedate.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/timedate/weekdate.mak">
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/util_common_build.mak">
