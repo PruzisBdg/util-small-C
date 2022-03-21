@@ -16,6 +16,10 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
    if(Legal_WeekDate(wd) == false) {
       return _Illegal_Days16;
    }
+   /* The last 2 days of Week-Date 1999 are the 1st 2 days of Gregorian year 2000, which
+      is the start of 'T_Seconds32'. Deal with them here because the arithmetic below
+      doesn't go pre-2000.
+    */
    else if(wd->yr == 1999) {
       if(wd->week == 52) {
          if(wd->day == 6) {
@@ -23,7 +27,7 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
          else if(wd->day == 7) {
             return 1; }}
 
-      return _Illegal_Days16; // GCOVR_EXCL_LINE. Neer reached because of Legal_WeekDate() above.
+      return _Illegal_Days16; // GCOVR_EXCL_LINE. Never reached because of Legal_WeekDate() above.
    }
    else {
       /* Start by assuming that the ISO week-year in 'wd' is the same as the Gregorian year.
@@ -100,7 +104,7 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
             : (daysIn1stWeek >= (prevYrWasLeapYr == true ? 2 : 3) ? 53 : 52);
 
       /* Get the number of days we are into this Gregorian year. Note that this can be negative if the
-         Week-Date year started before the Gregorian year and haven't yet crossed into the Gregorian
+         Week-Date year started before the Gregorian year and we haven't yet crossed into the Gregorian
          year.
       */
       S16 leftoverDays =
@@ -109,8 +113,8 @@ PUBLIC T_Days16 WeekDateToDays(S_WeekDate const *wd)
             ? (7 * (U16)wd->week + wd->day - 14)
             : (7 * (U16)wd->week + wd->day - 7));
 
-   printf("yr %u -> yr4 %u + yrsRem %u gregDays %u -> weeks %u + daysRem %u\r\n carriedOver %u prevYrLeap %u 1stweek %u leftoverDays %d\r\n",
-          yr, yr4, yrsRem, gregDays, weeks, daysRem, carriedOver, prevYrWasLeapYr, firstWeek, leftoverDays);
+   //printf("yr %u -> yr4 %u + yrsRem %u gregDays %u -> weeks %u + daysRem %u\r\n carriedOver %u prevYrLeap %u 1stweek %u leftoverDays %d\r\n",
+   //       yr, yr4, yrsRem, gregDays, weeks, daysRem, carriedOver, prevYrWasLeapYr, firstWeek, leftoverDays);
 
       return gregDays + leftoverDays;
       }
