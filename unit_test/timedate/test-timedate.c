@@ -11,6 +11,8 @@
 #define _mnth  ymd.mnth
 #define _day   ymd.day
 
+PRIVATE C8 const *tf(bool b) { return b != false ? "true" : "false"; }
+
 // These are by-element compares; which will handle differing alignments and packing.
 PRIVATE bool dtsEqual(S_DateTime const *a, S_DateTime const *b) {
    return
@@ -1192,7 +1194,41 @@ void test_ISO8601_ToSecs(void)
       // ----------- Date-only i.e YMD ---------------------------------------------
 
       {.str="2002-02-03", .secs=((365+366+31+2)*(24*(U32)3600)), .rtn=E_ISO8601_Date},
+
+      /* ----------- Week-Date 'W'. ------------------------------------------------
+
+         These test just that ISO8601_ToSecs() can parse the WeekDate format. ISO8601_ToSecs() uses
+         WeekDateToDays(). For the correctness of the conversions and for notes on the ISO WeekDate
+         calendar see test-weekdate.c which tests that function.
+      */
+      #define _DaysToSecs(days) ((T_Seconds32)(days) * 3600 * 24)
+
+      {.str="1999-W52-6",     .secs=_DaysToSecs(0),            .rtn=E_ISO8601_WeekDate,   .strict = false},     // Is 1st day of 2000AD, Gregorian.
+      {.str="2002-W01-3",     .secs=_DaysToSecs(366+365+2),    .rtn=E_ISO8601_WeekDate,   .strict = true},
+      // The Day field is 1-digit only.
+      {.str="2002-W01-03",    .secs=_Prefill,                  .rtn=E_ISO8601_None,       .strict = true},
+      // If non-strict then the following digit assumed to be part of something following.
+      {.str="2002-W01-51",    .secs=_DaysToSecs(366+365+4),    .rtn=E_ISO8601_WeekDate,   .strict = false},
+
+      {.str="2002-W01-3",     .secs=_DaysToSecs(366+365+2),    .rtn=E_ISO8601_WeekDate,   .strict = true},
+
+      // Week-only format if no Day then assume it's '-1' i.e Mon.
+      {.str="2002-W02-1",     .secs=_DaysToSecs(366+365+7),    .rtn=E_ISO8601_WeekDate,   .strict = true},
+      {.str="2002-W02",       .secs=_DaysToSecs(366+365+7),    .rtn=E_ISO8601_WeekDate,   .strict = true},
+
+      // Packed formats
+      {.str="2002W015",       .secs=_DaysToSecs(366+365+4),    .rtn=E_ISO8601_WeekDate,   .strict = true},
+      {.str="2002W02",        .secs=_DaysToSecs(366+365+7),    .rtn=E_ISO8601_WeekDate,   .strict = true},
+
+      // Illegal WeekDates fail.
+      {.str="2002-W00-3",     .secs=_Prefill,                  .rtn=E_ISO8601_None,       .strict = true},
+      {.str="2002-W54-3",     .secs=_Prefill,                  .rtn=E_ISO8601_None,       .strict = true},
+      {.str="2002-W01-0",     .secs=_Prefill,                  .rtn=E_ISO8601_None,       .strict = true},
+      {.str="2002-W01-8",     .secs=_Prefill,                  .rtn=E_ISO8601_None,       .strict = true},
    };
+
+
+
 
    C8 const * tf(BOOL b) {return b==true ? "TRUE" : "FALSE";}
 
@@ -1221,13 +1257,6 @@ void test_ISO8601_ToSecs(void)
          TEST_FAIL();
       }
    }
-}
-
-/* -------------------------------- test_YearWeekDay_to_YMD ----------------------------------- */
-
-void test_YearWeekDay_to_YMD(void)
-{
-
 }
 
 // ----------------------------------------- eof --------------------------------------------
