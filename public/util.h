@@ -310,7 +310,7 @@ typedef struct {
    struct {
       bit64K_Rds     *get;       // When the source is a bit-field, this get()s from a logical byte address.
       bit64K_Range   range;      // legal bit-addr for get() OR if source is a buffer, max bytes to read.
-      bit64K_atByte  maxOutBytes;// For bit64K_Out(), the max bytes to output; for bit64K_Out() the max bytes to read. Ignored if zero.
+      bit64K_atByte  maxOutBytes;// For bit64K_Out(), the max bytes to output; for bit64K_In() the max bytes to read. Ignored if zero.
       } src;
    struct {
       bit64K_Rds  *rd;           // When the destination is a bit-field, to read bytes from it (so they can be modified and put back).
