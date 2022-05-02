@@ -18,6 +18,7 @@ SRC_FILES := $(SRC_FILES) $(UNITYDIR)unity.c \
 								$(SRCDIR)num_bits_set_u16.c \
 								$(SRCDIR)num_bits_set_u32.c \
 								$(SRCDIR)swar_32.c \
+								$(SRCDIR)swar_u8.c \
 								$(SRCDIR)make_masks.c \
 								$(HARNESS_TESTS_SRC) $(HARNESS_MAIN_SRC) $(LIBS)
 

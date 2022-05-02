@@ -255,6 +255,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/bits/swar_u8.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/copys_fills/CopyBytesU8.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

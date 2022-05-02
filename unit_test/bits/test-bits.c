@@ -296,6 +296,35 @@ void test_SWAR32 (void)
 }
 
 
+/* ------------------------------- test_SWARU8 ------------------------------------------------ */
+
+void test_SWARU8 (void)
+{
+   typedef struct { U8 in; U8 cnt; } S_Tst;
+
+   S_Tst const tsts[] = {
+      { .in = 0x00,     .cnt = 0 },    // None set
+      { .in = 0xFF,     .cnt = 8 },    // All set
+      { .in = 0x01,     .cnt = 1 },    // Try some others.
+      { .in = 0x03,     .cnt = 2 },
+      { .in = 0x06,     .cnt = 2 },
+      { .in = 0x07,     .cnt = 3 },
+      { .in = 0x10,     .cnt = 1 },
+      { .in = 0x20,     .cnt = 1 },
+      { .in = 0x60,     .cnt = 2 },
+      { .in = 0xF0,     .cnt = 4 },
+      { .in = 0xF3,     .cnt = 6 },
+   };
+
+   for(U8 i = 0; i < RECORDS_IN(tsts); i++)
+   {
+      S_Tst const *t = &tsts[i];
+      U8 rtn = SWARU8(t->in);
+      TEST_ASSERT_EQUAL_UINT8(t->cnt, rtn);
+   }
+}
+
+
 
 
 // ----------------------------------------- eof --------------------------------------------
