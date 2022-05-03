@@ -599,7 +599,7 @@ PUBLIC C8 * C8bag_ListInv(C8 *buf, S_C8bag const *m);
 
 /* ----------------------------- Bit Store ---------------------------------------- */
 
-typedef struct tag_S_BitSore {
+typedef struct tag_S_BitStore {
    U32   *mem;         // Bits stored here. Must NOT be NULL
    U16   capacity;     // Number of bits the Store will hold. May be 0 (zero).
 } S_BitStore;
