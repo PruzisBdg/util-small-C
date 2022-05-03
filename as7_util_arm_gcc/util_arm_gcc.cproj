@@ -32,15 +32,15 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.42.0" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.42.0" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -530,6 +530,10 @@
     <Compile Include="..\src\stacks\ptr_stack.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\stacks\ptr_stack.c</Link>
+    </Compile>
+    <Compile Include="..\src\stores\bit_store.c">
+      <SubType>compile</SubType>
+      <Link>src\stores\bit_store.c</Link>
     </Compile>
     <Compile Include="..\src\stores\c8_bag.c">
       <SubType>compile</SubType>

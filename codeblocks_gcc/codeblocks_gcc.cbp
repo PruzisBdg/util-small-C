@@ -588,6 +588,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/stores/bit_store.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/stores/c8_bag.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -942,12 +947,20 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/stores/bit_store.mak">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../unit_test/stores/test-bit_store.c">
+			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="../unit_test/stores/test-u8_bag.c">
 			<Option compilerVar="CC" />
 			<Option compile="0" />
 			<Option link="0" />
-			<Option target="Debug" />
-			<Option target="Release" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="../unit_test/stores/u8_bag.mak">
 			<Option target="Debug" />

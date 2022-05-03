@@ -597,6 +597,38 @@ PUBLIC C8 const * C8bag_PrintLine(C8 *out, S_C8bag const *m);
 PUBLIC C8 * C8bag_List   (C8 *buf, S_C8bag const *m);
 PUBLIC C8 * C8bag_ListInv(C8 *buf, S_C8bag const *m);
 
+/* ----------------------------- Bit Store ---------------------------------------- */
+
+typedef struct tag_S_BitSore {
+   U32   *mem;         // Bits stored here. Must NOT be NULL
+   U16   capacity;     // Number of bits the Store will hold. May be 0 (zero).
+} S_BitStore;
+
+#define _BitStore_WordSize (32)
+
+#define _BitStore_WordsUsed(nbits)                    \
+   (nbits == 0                                        \
+      ? 0                                             \
+      : ( (((nbits) - 1) / _BitStore_WordSize) + 1))
+
+#define _BitStore_BytesUsed(nbits)  (sizeof(U32) * _BitStore_WordsUsed(nbits))
+
+// Make and return ref to a S_BitStore.
+PUBLIC S_BitStore * BitStore_Make(S_BitStore *bs, U32 *mem, U16 nbits);
+#define _BitStore_Make(nbits) \
+   BitStore_Make( &(S_BitStore){}, (U32[_BitStore_WordsUsed(nbits)]){0}, (nbits) )
+
+PUBLIC U16  bits_StoreCapacity(S_BitStore *bs);
+PUBLIC void bits_SetBit(S_BitStore *bs, U8 idx);
+PUBLIC void bits_ClrBit(S_BitStore *bs, U8 idx);
+PUBLIC bool bits_BitSet(S_BitStore *bs, U8 idx);
+PUBLIC bool bits_BitClr(S_BitStore *bs, U8 idx);
+PUBLIC U16  bits_NumSet(S_BitStore *bs);
+PUBLIC bool bits_AllSet(S_BitStore *bs);
+PUBLIC bool bits_AllClr(S_BitStore *bs);
+PUBLIC void bits_ClrAll(S_BitStore *bs);
+PUBLIC void bits_SetAll(S_BitStore *bs);
+
 /* ------------------------------------- Parsing - General --------------------------------------*/
 
 typedef U16 T_BracesIdx;
