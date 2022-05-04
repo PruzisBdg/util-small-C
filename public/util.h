@@ -292,6 +292,12 @@ typedef U16             bit64K_atByte;       // UP to 13 bit's for this; (3 for 
 typedef bit64K_atByte   bit64K_byteCnt;      // The same type which specifies a byte.
 typedef U16             bit64K_T_Cnt;        // Enumerates bit addresses.
 
+// Address and size of a bit field any size, anywhere in bit64_ space.
+typedef struct {
+   T_bit64K       addr;
+   bit64K_T_Cnt   nbits;
+} bit64K_Field;
+
 // Read / write to a logical byte-address. (Which is usually a memory-mapped peripheral over serial comms).
 // These return false if an operation fails.
 typedef bool bit64K_Rds(U8 *to,       bit64K_atByte from, bit64K_byteCnt cnt);
@@ -300,12 +306,12 @@ typedef bool bit64K_Wrs(bit64K_atByte to, U8 const *from, bit64K_byteCnt cnt);
 typedef union {
    // Source bit-address limits for bit64K_Out(); destination bit-address limits for bit64K_In(). Ignored if both zero.
    struct { T_bit64K min, max; } bits;
-   } bit64K_Range;
+} bit64K_Range;
 
 typedef struct {
    S_byteBuf      q;          // Use this 'S_byteBuf' for the cache.
    bit64K_atByte  atByte;     // the byte of the bit-addr of the 1st cache element (if it exists)
-   } bit64K_Cache;
+} bit64K_Cache;
 
 typedef struct {
    struct {
