@@ -896,6 +896,13 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/codec/3of6.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/codec/test-3of6.c">
+			<Option compilerVar="CC" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="../unit_test/endians/endians.mak">
 			<Option target="Unity TDD" />
 		</Unit>

@@ -902,6 +902,7 @@ PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 // ----------------------------------- Codecs ------------------------------------------------
 
 typedef struct {U8 *bs; U16 cnt;} S_BufU8;
+PUBLIC S_BufU8 * en13757_3of6(S_BufU8 * dest, S_BufU8 const * src);
 
 // ================================= Macros ======================================================
 
