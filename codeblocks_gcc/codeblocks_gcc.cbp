@@ -260,6 +260,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/codec/3of6.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/copys_fills/CopyBytesU8.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />

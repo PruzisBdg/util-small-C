@@ -899,6 +899,10 @@ PUBLIC U16 crc16_Block(crc16_S_Cfg* cfg, U8 const * src, U16 numBytes);
 typedef struct { U32 poly, initRemainder, finalXor; } crc32_S_Cfg;
 PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 
+// ----------------------------------- Codecs ------------------------------------------------
+
+typedef struct {U8 *bs; U16 cnt;} S_BufU8;
+
 // ================================= Macros ======================================================
 
 // CAT() force expansion of 'x','y' before they are pasted. Double XCAT() forces that expansion even
