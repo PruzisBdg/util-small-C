@@ -270,6 +270,10 @@
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\bits\swar_32.c</Link>
     </Compile>
+    <Compile Include="..\src\codec\3of6.c">
+      <SubType>compile</SubType>
+      <Link>src\codec\3of6.c</Link>
+    </Compile>
     <Compile Include="..\src\copys_fills\all_bytes_equal_u16.c">
       <SubType>compile</SubType>
       <Link>as7_util_arm_gcc\src\copys_fills\all_bytes_equal_u16.c</Link>
@@ -809,6 +813,7 @@
     <Folder Include="src\network" />
     <Folder Include="src\misc2" />
     <Folder Include="src\bcd" />
+    <Folder Include="src\codec" />
     <Folder Include="src\sensus" />
     <Folder Include="src\rand" />
     <Folder Include="src\stacks" />
