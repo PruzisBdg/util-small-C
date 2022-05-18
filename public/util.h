@@ -115,6 +115,7 @@ static inline bool isEndian(E_EndianIs e) { return e != eNoEndian ? true : false
 PUBLIC U8 * u16ToLE(U8 *out, U16 n);
 PUBLIC U8 * s16ToLE(U8 *out, S16 n);
 PUBLIC U8 * u32ToLE(U8 *out, U32 n);
+PUBLIC U8 * u24ToLE(U8 *out, U32 n);
 PUBLIC U8 * s32ToLE(U8 *out, S32 n);
 PUBLIC U8 * u64ToLE(U8 *out, U64 n);
 PUBLIC U8 * s64ToLE(U8 *out, S64 n);
@@ -902,7 +903,7 @@ PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 // ----------------------------------- Codecs ------------------------------------------------
 
 typedef struct {U8 *bs; U16 cnt;} S_BufU8;
-PUBLIC S_BufU8 * en13757_3of6(S_BufU8 * dest, S_BufU8 const * src);
+PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8 const * src);
 
 // ================================= Macros ======================================================
 

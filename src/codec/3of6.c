@@ -55,30 +55,32 @@ PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8 const *src)
    /* else eat 2 bytes at a time, (producing 3 encoded bytes at a time), until there
       are one or zero bytes left. If one byte left then encode that into a final 2 bytes.
 
-      Note that the endianess in reading in raw bytes and writing out encoded bytes does
-      not matter, as long at the same is used for both in and out.
+      Note that the endianess in interpreting raw bytes and emitting encoded bytes does
+      not matter, as long as the same is used for both in and out.
+         Also that the endianess of the Host system is irrelevant because the construction
+      of the codewords is an arithmetic operation.
    */
    else {
-      U8 const *s = src->bs;  U8 *d = dest->bs;             // 'from' and 'to'
+      U8 const *s = src->bs;  U8 *d = dest->bs;          // 'from' and 'to'
 
-      for(U16 rem = src->cnt; rem > 0; s+=2, d+=3)          // Until 'src' consumed...
-      {                                                     // ...eat 2 bytes; make 3.
-         if(rem == 1) {                                     // One left?
-            u16ToLE(d, one(*s));                            // then finish off
+      for(U16 rem = src->cnt; rem > 0; s+=2, d+=3)       // Until 'src' consumed...
+      {                                                  // ...eat 2 bytes; make 3.
+         if(rem == 1) {                                  // One left?
+            u16ToLE(d, one(*s));                         // then convert last byte to 2 encoded bytes.
             rem = 0; }
-         else {                                             // else convert another 2 bytes.
-            u32ToLE(d, two(leToU16(s)));
+         else {                                          // else convert another 2 bytes to 3 encoded bytes
+            u24ToLE(d, two(leToU16(s)));                 // **** u24ToLE() takes U32 but modifies just 3 bytes in 'd'; no overrun.
             rem -= 2; }
       } // for().
       dest->cnt = encodedCnt(src->cnt);      // Write encoded bytes produced.
       return dest; }                         // Success!
 }
 
-/* -------------------------- en13757_3of6 ----------------------------------------
+/* -------------------------- en13757_3of6_Encode ----------------------------------------
 
    3-of-6 encoding for MBus Wireless Mode T, Meter-to-Other.
 */
-PUBLIC S_BufU8 * en13757_3of6(S_BufU8 * dest, S_BufU8 const * src) {
+PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8 const * src) {
 
    // See EN13757-4:2019 7.4.2.1 Table 10.
    U8 const en13757_3of6[] = {

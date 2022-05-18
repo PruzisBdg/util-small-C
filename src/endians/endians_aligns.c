@@ -21,6 +21,11 @@ PUBLIC U8 * s64ToLE(U8 *out, S64 n)
 	{ s32ToLE(&out[0], LOW_DWORD(n)); s32ToLE(&out[4], HIGH_DWORD(n)); return out; }
 
 
+// Write the number represented by low 24 bits of 'n' to out; modifying just 3 bytes.
+PUBLIC U8 * u24ToLE(U8 *out, U32 n)
+	{ u16ToLE(&out[0], LOW_WORD(n)); out[2] = LOW_BYTE(HIGH_WORD(n)); return out; }
+
+
 
 PUBLIC S16 leToS16(U8 const * src)
 	{ return ((S16)src[1] << 8) + src[0]; }
