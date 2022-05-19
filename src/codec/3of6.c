@@ -76,6 +76,13 @@ PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8 const *src)
       return dest; }                         // Success!
 }
 
+/* ----------------------------- _3of6_EncodedBytes --------------------------------------
+
+   Given 'srcBytes', return the number of 3-of-6 encoded bytes.
+*/
+PUBLIC U16 _3of6_EncodedBytes(U16 srcBytes) { 
+   return ClipU32toU16(((3 * (U32)srcBytes) + 1) / 2);  }
+
 /* -------------------------- en13757_3of6_Encode ----------------------------------------
 
    3-of-6 encoding for MBus Wireless Mode T, Meter-to-Other.

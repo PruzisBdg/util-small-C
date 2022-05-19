@@ -904,6 +904,7 @@ PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 
 typedef struct {U8 *bs; U16 cnt;} S_BufU8;
 PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8 const * src);
+PUBLIC U16 _3of6_EncodedBytes(U16 srcBytes);
 
 // ================================= Macros ======================================================
 
