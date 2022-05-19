@@ -908,14 +908,26 @@ typedef struct {U8 const *bs; U16 cnt;} S_BufU8_rdonly;
 PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8_rdonly const * src);
 typedef S_BufU8 * (*T_CodecBufU8)(S_BufU8 * dest, S_BufU8_rdonly const * src);
 
-PUBLIC U16 _3of6_EncodedBytes(U16 srcBytes);
+//typedef struct {U16 raw, encoded;} _3of6_Counts;
+
+//PUBLIC U16 _3of6_CountEncoded(U16 srcBytes);
 typedef U16 (*T_CodecBufU8_EncodedCnt)(U16);
 
+//PUBLIC U16 _3of6_TrimSrcTail(U16 srcBytes);
+//PUBLIC U16 _3of6_FitSrc(U16 encBytes);
+
 typedef struct {
-   T_CodecBufU8            encodes;       // Is the encoder.
-   T_CodecBufU8_EncodedCnt numEncBytes;   // Given src bytes, returns the number of encoded bytes.
+   T_CodecBufU8   encodes;    // Is the encoder.
+   T_CodecBufU8_EncodedCnt 
+            // Given src bytes, the number of encoded bytes. (inluding padding)
+            toEncCnt,      
+            // Given src bytes, the most src bytes to fill encoded bytes without padding.
+            trimSrc,       
+            // Given encoded bytes, the most src bytes to occupy these without padding.
+            toSrcCnt;      
 } S_CodecBufU8;
 
+extern S_CodecBufU8 const en13757_3of6_Codec;
 
 // ================================= Macros ======================================================
 

@@ -76,13 +76,29 @@ PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8_rdonly cons
       return dest; }                         // Success!
 }
 
-/* ----------------------------- _3of6_EncodedBytes --------------------------------------
+/* ----------------------------- countEncoded --------------------------------------
 
    Given 'srcBytes', return the number of 3-of-6 encoded bytes.
 */
-PUBLIC U16 _3of6_EncodedBytes(U16 srcBytes) { 
+PRIVATE U16 countEncoded(U16 srcBytes) { 
    return ClipU32toU16(((3 * (U32)srcBytes) + 1) / 2);  }
+   
+/* -------------------------------- trimSrc ------------------------------------
 
+   Given 'srcBytes', return the number of those which will make a whole number of encoded
+   bytes. 3-of-6 makes 3 full encoded bytes for every 2 source bytes, so return 'srcBytes'
+   trimmed %2.
+*/  
+PRIVATE U16 trimSrc(U16 srcBytes) {
+   return (srcBytes >> 1) << 1; }
+  
+/* ----------------------------------- fitSrc ---------------------------------------
+
+   Given 'encBytes', return the most src bytes to occupy these without padding.
+*/
+PRIVATE U16 fitSrc(U16 encBytes) {
+   return 2 * (encBytes / 3); } 
+   
 /* -------------------------- en13757_3of6_Encode ----------------------------------------
 
    3-of-6 encoding for MBus Wireless Mode T, Meter-to-Other.
@@ -97,6 +113,13 @@ PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8_rdonly const * src)
       0b110100, 0b110001, 0b110010, 0b101001 };
 
    return _3of6_encode(en13757_3of6, dest, src); }
+
+// 3-of-6 encoder is... including fill calculators.
+PUBLIC S_CodecBufU8 const en13757_3of6_Codec = {    
+   .encodes   = en13757_3of6_Encode,
+   .toEncCnt  = countEncoded,
+   .trimSrc   = trimSrc, 
+   .toSrcCnt  = fitSrc };
 
 
 
