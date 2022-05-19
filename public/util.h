@@ -903,8 +903,19 @@ PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 // ----------------------------------- Codecs ------------------------------------------------
 
 typedef struct {U8 *bs; U16 cnt;} S_BufU8;
-PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8 const * src);
+typedef struct {U8 const *bs; U16 cnt;} S_BufU8_rdonly;
+   
+PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8_rdonly const * src);
+typedef S_BufU8 * (*T_CodecBufU8)(S_BufU8 * dest, S_BufU8_rdonly const * src);
+
 PUBLIC U16 _3of6_EncodedBytes(U16 srcBytes);
+typedef U16 (*T_CodecBufU8_EncodedCnt)(U16);
+
+typedef struct {
+   T_CodecBufU8            encodes;       // Is the encoder.
+   T_CodecBufU8_EncodedCnt numEncBytes;   // Given src bytes, returns the number of encoded bytes.
+} S_CodecBufU8;
+
 
 // ================================= Macros ======================================================
 

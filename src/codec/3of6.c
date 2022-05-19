@@ -26,7 +26,7 @@
       - 'dest' does not have enough room for the encoded content;
             in whch case 'dest' is unmodified.
 */
-PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8 const *src) {
+PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8_rdonly const *src) {
 
    // One byte to 2 sextets (12 bits), right-justified in U16
    U16 one(U8 n) {
@@ -87,7 +87,7 @@ PUBLIC U16 _3of6_EncodedBytes(U16 srcBytes) {
 
    3-of-6 encoding for MBus Wireless Mode T, Meter-to-Other.
 */
-PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8 const * src) {
+PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8_rdonly const * src) {
 
    // See EN13757-4:2019 7.4.2.1 Table 10.
    U8 const en13757_3of6[] = {
