@@ -100,8 +100,11 @@ typedef unsigned long int U32;                     // Succinct.
 __EXTENSION typedef unsigned long long  UINT64;
 #endif
 
-
+// Records in an array
 #define RECORDS_IN(a)  (sizeof(a)/sizeof(a[0]))
+
+// Offset of an element in a struct
+#define OFFSET_OF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 #define MAX(a,b)  ((a) > (b) ? (a) : (b))
 #define MIN(a,b)  ((a) < (b) ? (a) : (b))
