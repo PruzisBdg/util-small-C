@@ -18,6 +18,8 @@
 
 typedef enum { HAL_OK = 0x00U, HAL_ERROR = 0x01U, HAL_BUSY = 0x02U, HAL_TIMEOUT  = 0x03U, HAL_NACK = 0x04U  } T_HAL_Status;
 
+PUBLIC C8 const * radio_HAL_Status_Name(T_HAL_Status s);
+
 // For sendRcv()
 #define _radio_Spi_ReleaseCS false
 #define _radio_Spi_HoldCS   true
@@ -52,6 +54,8 @@ typedef struct {
    // (o) Send and receive equal numbrs of bytes
    T_HAL_Status (*sendRcv)(void *spiHdl, U8 const *txFrom, U8 *rxTo, U8 payloadBytes, U16 timeout_msec, bool holdCS);
 } radio_McuSpi;
+
+
 
 
 
