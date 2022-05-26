@@ -315,15 +315,15 @@ typedef struct {
 } bit64K_Cache;
 
 typedef struct {
-   struct {
-      bit64K_Rds     *get;       // When the source is a bit-field, this get()s from a logical byte address.
+   struct {                      // From a bit-field to a byte-buffer...
+      bit64K_Rds     *get;       // get()s from a logical byte address in the bit-field
       bit64K_Range   range;      // legal bit-addr for get() OR if source is a buffer, max bytes to read.
       bit64K_atByte  maxOutBytes;// For bit64K_Out(), the max bytes to output; for bit64K_In() the max bytes to read. Ignored if zero.
       } src;
-   struct {
-      bit64K_Rds  *rd;           // When the destination is a bit-field, to read bytes from it (so they can be modified and put back).
-      bit64K_Wrs  *wr;           // When the destination is a bit-field, to write bytes to it.
-      bit64K_Range range;
+   struct {                      // From a byte-buffer to a bit-field...
+      bit64K_Rds  *rd;           // ...to read bytes from it (so they can be modified and put back).
+      bit64K_Wrs  *wr;           // ...to write (modified) bytes to it.
+      bit64K_Range range;        // upper and lower bounds of the bit-field
       } dest;
    bit64K_Cache *cache;
 } bit64K_Ports;
@@ -904,27 +904,21 @@ PUBLIC U32 crc32_Block(crc32_S_Cfg const *cfg, U8 *src, U32 len);
 
 typedef struct {U8 *bs; U16 cnt;} S_BufU8;
 typedef struct {U8 const *bs; U16 cnt;} S_BufU8_rdonly;
-   
+
 PUBLIC S_BufU8 * en13757_3of6_Encode(S_BufU8 * dest, S_BufU8_rdonly const * src);
 typedef S_BufU8 * (*T_CodecBufU8)(S_BufU8 * dest, S_BufU8_rdonly const * src);
 
-//typedef struct {U16 raw, encoded;} _3of6_Counts;
-
-//PUBLIC U16 _3of6_CountEncoded(U16 srcBytes);
 typedef U16 (*T_CodecBufU8_EncodedCnt)(U16);
-
-//PUBLIC U16 _3of6_TrimSrcTail(U16 srcBytes);
-//PUBLIC U16 _3of6_FitSrc(U16 encBytes);
 
 typedef struct {
    T_CodecBufU8   encodes;    // Is the encoder.
-   T_CodecBufU8_EncodedCnt 
+   T_CodecBufU8_EncodedCnt
             // Given src bytes, the number of encoded bytes. (inluding padding)
-            toEncCnt,      
+            toEncCnt,
             // Given src bytes, the most src bytes to fill encoded bytes without padding.
-            trimSrc,       
+            trimSrc,
             // Given encoded bytes, the most src bytes to occupy these without padding.
-            toSrcCnt;      
+            toSrcCnt;
 } S_CodecBufU8;
 
 extern S_CodecBufU8 const en13757_3of6_Codec;
