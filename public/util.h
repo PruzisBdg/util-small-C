@@ -147,6 +147,7 @@ PUBLIC void ReverseBytesInPlace(U8 *io, U16 nBytes);
 PUBLIC U16 ToSysEndian_U16(U16 n, E_EndianIs e);
 PUBLIC U32 ToSysEndian_U32(U32 n, E_EndianIs e);
 PUBLIC void ToSysEndian_InPlace(U8 *io, U16 nBytes, E_EndianIs e);
+PUBLIC void FromSysEndian_InPlace(U8 *io, U16 nBytes, E_EndianIs e);
 
 // Endian-aware iterator.
 typedef struct T_EndianPtr T_EndianPtr;

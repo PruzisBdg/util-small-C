@@ -3,13 +3,13 @@
 
 /*-----------------------------------------------------------------------------------------
 |
-|  ToSysEndian_InPlace()
+|  FromSysEndian_InPlace()
 |
 |  Note: this is identical to ToSysEndian_InPlace()
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC void ToSysEndian_InPlace(U8 *io, U16 nBytes, E_EndianIs e)
+PUBLIC void FromSysEndian_InPlace(U8 *io, U16 nBytes, E_EndianIs e)
 {
    #ifdef __BYTE_ORDER__
       #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -20,7 +20,7 @@ PUBLIC void ToSysEndian_InPlace(U8 *io, U16 nBytes, E_EndianIs e)
          // No-endian; do nothing
       #endif
    #else
-      #warning "ToSysEndian_InPlace() Endian undefined - bytes will left unchanged."
+      #warning "FromSysEndian_InPlace() Endian undefined - bytes will left unchanged."
    #endif // __BYTE_ORDER__
 }
 

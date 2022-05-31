@@ -334,6 +334,10 @@
       <SubType>compile</SubType>
       <Link>src\endians\endian_iterator.c</Link>
     </Compile>
+    <Compile Include="..\src\endians\from_sys_endian_in_place.c">
+      <SubType>compile</SubType>
+      <Link>src\endians\from_sys_endian_in_place.c</Link>
+    </Compile>
     <Compile Include="..\src\endians\print_endian.c">
       <SubType>compile</SubType>
       <Link>src\endians\print_endian.c</Link>
