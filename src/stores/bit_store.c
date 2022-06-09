@@ -12,6 +12,7 @@
 -------------------------------------------------------------------- */
 #include "libs_support.h"
 #include "util.h"
+#include "arith.h"
 #include <string.h>
 
 #define _Wordsize 32
@@ -33,6 +34,34 @@ PUBLIC S_BitStore * BitStore_Make(S_BitStore *bs, U32 *mem, U16 nbits) {
 // ----------------------------------------------------------------------------
 PUBLIC U16 bits_StoreCapacity(S_BitStore *bs) {
    return bs->capacity; }
+
+// ----------------------------------------------------------------------------
+PUBLIC S_BitStore * bits_Merge(S_BitStore *dest, S_BitStore const *src) {
+
+   /* Non-overlapping; 'dest' and 'src' are either separate stores (with separate memories)
+      or they are the same Store, in which case an overlap OR changes nothing.
+   */
+   void memOR_U32(U32 *dest, U32 const *src, U16 cnt) {
+      for(; cnt > 0; cnt--, src++, dest++) {
+         *dest |= *src; }}
+
+   U16 destWords = _BitStore_WordsUsed(dest->capacity);
+
+   // Merge as much of 'src' as will fit onto 'dest'.
+   memOR_U32(dest->mem, src->mem, MinU16(destWords, _BitStore_WordsUsed(src->capacity)));
+
+   /* In the last word of 'dest' 1 to all (32) bits will be set. Unused bits remain <- 0.
+      This so bits_NumSet() works correctly.
+   */
+   U32 maskRem = dest->capacity % _Wordsize == 0         // Last word stores (32) bits
+                           ? _AllSet                        // then all are set
+                           : ((1UL << (dest->capacity % _Wordsize)) - 1);  // else 1 to 31 bits are set.
+
+   // If there's at least 1 word in 'dest' word then apply 'maskRem' to the last one.
+   if(destWords > 0) {
+      dest->mem[destWords-1] &= maskRem; }
+
+   return dest; }
 
 /* -------------------------- bits_Set/ClrBit ----------------------------------
 

@@ -636,6 +636,7 @@ PUBLIC bool bits_AllSet(S_BitStore *bs);
 PUBLIC bool bits_AllClr(S_BitStore *bs);
 PUBLIC void bits_ClrAll(S_BitStore *bs);
 PUBLIC void bits_SetAll(S_BitStore *bs);
+PUBLIC S_BitStore * bits_Merge(S_BitStore *dest, S_BitStore const *src);
 
 /* ------------------------------------- Parsing - General --------------------------------------*/
 

@@ -208,4 +208,73 @@ void test_SetandClrAll(void)
    TEST_ASSERT_EQUAL_UINT8(true, bits_AllClr(bs));
 }
 
+// ----------------------------------------------------------------------------------
+
+void test_Merge(void)
+{
+   {
+      // From smaller 'src', all bits set, into larger 'dest', all bits clear.
+      #define _SrcSize  23
+      #define _DestSize 30
+
+      // Stores are made with all bits clear.
+      S_BitStore *src = _BitStore_Make(_SrcSize);
+      S_BitStore *dest = _BitStore_Make(_DestSize);
+
+      // Set all bits in 'src' then merge into test.
+      bits_SetAll(src);
+      S_BitStore *m = bits_Merge(dest, src);
+
+      // bits_Merge() always returns dest.
+      TEST_ASSERT_EQUAL_PTR(dest, m);
+      // The (first) '_SrcSize' bits in 'dest' will be set.
+      TEST_ASSERT_EQUAL_UINT16(_SrcSize, bits_NumSet(dest));
+
+      #undef _SrcSize
+      #undef _DestSize
+   }
+   {
+      // From larger 'src', all bits set, into smaller 'dest', all bits clear.
+      #define _SrcSize  90
+      #define _DestSize 42
+
+      // Stores are made with all bits clear.
+      S_BitStore *src = _BitStore_Make(_SrcSize);
+      S_BitStore *dest = _BitStore_Make(_DestSize);
+
+      // Set all bits in 'src' then merge into test.
+      bits_SetAll(src);
+      S_BitStore *m = bits_Merge(dest, src);
+
+      // bits_Merge() always returns dest.
+      TEST_ASSERT_EQUAL_PTR(dest, m);
+      // 'src' was larger so all bits in 'dest' will be set.
+      TEST_ASSERT_EQUAL_UINT16(_DestSize, bits_NumSet(dest));
+
+      #undef _SrcSize
+      #undef _DestSize
+   }
+   {
+      // Some overlapping and non-overlapping bits
+      #define _SrcSize  8
+      #define _DestSize 8
+
+      S_BitStore *src = _BitStore_Make(_SrcSize);
+      S_BitStore *dest = _BitStore_Make(_DestSize);
+
+      bits_SetBit(src, 0);
+      bits_SetBit(src, 1);
+      bits_SetBit(src, 2);
+
+      bits_SetBit(dest, 2);
+      bits_SetBit(dest, 3);
+
+      bits_Merge(dest, src);
+      TEST_ASSERT_EQUAL_UINT16(4, bits_NumSet(dest));
+
+      #undef _SrcSize
+      #undef _DestSize
+   }
+}
+
 // ----------------------------------------- eof --------------------------------------------
