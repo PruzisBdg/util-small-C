@@ -535,9 +535,13 @@
       <SubType>compile</SubType>
       <Link>src\srecord\parse_s_record.c</Link>
     </Compile>
+    <Compile Include="..\src\stacks\callbacks_stack.c">
+      <SubType>compile</SubType>
+      <Link>src\callbacks_stack.c</Link>
+    </Compile>
     <Compile Include="..\src\stacks\ptr_stack.c">
       <SubType>compile</SubType>
-      <Link>as7_util_arm_gcc\src\stacks\ptr_stack.c</Link>
+      <Link>src\stacks\ptr_stack.c</Link>
     </Compile>
     <Compile Include="..\src\stores\bit_store.c">
       <SubType>compile</SubType>

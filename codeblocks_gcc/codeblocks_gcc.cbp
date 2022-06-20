@@ -594,6 +594,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/stacks/callbacks_stack.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/stacks/ptr_stack.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -956,7 +962,7 @@
 		</Unit>
 		<Unit filename="../unit_test/safe_string/test-heap_string.c">
 			<Option compilerVar="CC" />
-			<Option target="Console" />
+			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/sensus/sensus_decode.mak">
 			<Option target="Unity TDD" />
@@ -964,6 +970,14 @@
 		<Unit filename="../unit_test/sensus/test-sensus_decode.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/stacks/cbstack.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/stacks/test-cbstack.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../unit_test/stores/bit_store.mak">
 			<Option target="&lt;{~None~}&gt;" />

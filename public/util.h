@@ -230,6 +230,40 @@ PUBLIC void  PtrStack_Flush(S_PtrStack *stk);
 PUBLIC U8    PtrStack_Cnt(S_PtrStack *stk);
 PUBLIC U8    PtrStack_Free(S_PtrStack *stk);
 
+/* ----------------------- Callbacks Stack -------------------------------
+
+   To chain multiple callbacks to a collection of IRQ sources, usually from the one interrupt.
+
+   Host may add callbacks to the Stack. When the Stack is run, Callbacks on the Stack are
+   executed in the order they were pushed. A Callback gets the IRQ flags, clears any that it
+   handles, and returns a reference to the (revised) flags.
+
+*/
+typedef void * cbStack_Irqs;     // User substitutes a specific interrupt collection.
+
+/* A Callback gets the IRQ flags, clears any that it handles, and returns a reference to
+   the (revised) flags.
+*/
+typedef cbStack_Irqs const (*cbStack_T_Callback)(cbStack_Irqs irqs);
+#define _cbStack_Callback(_name) cbStack_Irqs const _name(cbStack_Irqs irqs)
+
+/* 'put' is volatile because, when cbStack_Run() runs a callbacks Stack, callback(s)
+   on that Stack may chain another callback or unchain themselves (or another callback),
+   thus modifying 'put'. So when walking down the Stack, cbStack_Run() must re-read
+   'put' at each step in case it was incremented or decremented.
+*/
+typedef struct { cbStack_T_Callback *fs; U8 size; U8 volatile put; } cbStack_S;
+typedef struct { cbStack_T_Callback *buf; U8 size; } cbStack_Cfg;
+
+PUBLIC bool cbStack_Init(cbStack_S *s, cbStack_Cfg const *cfg);
+PUBLIC bool cbStack_Chain(cbStack_S *s, cbStack_T_Callback cb);
+PUBLIC bool cbStack_UnChain(cbStack_S *s, cbStack_T_Callback cb);
+PUBLIC bool cbStack_DropLast(cbStack_S *s);
+PUBLIC U8   cbStack_Free(cbStack_S const *s);
+PUBLIC cbStack_Irqs const cbStack_Run(cbStack_S const *s, cbStack_Irqs irqs);
+
+
+
 /* ---------------------------- Bits ---------------------------------- */
 PUBLIC U8 IdxToLsbSet_U8(U8 n);
 

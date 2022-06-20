@@ -3,11 +3,11 @@
 #include "util.h"
 #include "arith.h"
 
-extern test_Renew(void);
+extern void test_CBStack(void);
 
 int main (void)
 {
-   test_Read();
+   test_CBStack();
 }
 
 // ------------------------------------- eof ---------------------------------------------
