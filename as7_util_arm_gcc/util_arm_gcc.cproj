@@ -537,7 +537,7 @@
     </Compile>
     <Compile Include="..\src\stacks\callbacks_stack.c">
       <SubType>compile</SubType>
-      <Link>src\callbacks_stack.c</Link>
+      <Link>src\stacks\callbacks_stack.c</Link>
     </Compile>
     <Compile Include="..\src\stacks\ptr_stack.c">
       <SubType>compile</SubType>
