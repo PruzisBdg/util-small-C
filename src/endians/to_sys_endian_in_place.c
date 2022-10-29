@@ -5,8 +5,6 @@
 |
 |  ToSysEndian_InPlace()
 |
-|  Note: this is identical to ToSysEndian_InPlace()
-|
 ------------------------------------------------------------------------------------------*/
 
 PUBLIC void ToSysEndian_InPlace(U8 *io, U16 nBytes, E_EndianIs e)
