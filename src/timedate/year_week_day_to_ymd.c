@@ -23,6 +23,8 @@ PUBLIC S16 const DaysToMonthStartTbl[] = {
    31+28+31+30+31+30+31+31+30+31+30  // End of Dec is 365 days
    };
 
+// Avoids '-Wmissing-prototypes' when this file is used directly.
+PUBLIC U8 splitDaysIntoMD(U16 allDays, U8 *monthOut, BOOLEAN isLeapYear);
 
 /* ---------------------- splitDaysIntoMD -----------------------------------
 

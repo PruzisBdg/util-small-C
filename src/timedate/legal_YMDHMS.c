@@ -16,6 +16,9 @@
 */
 PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
 {
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wshadow"
+   
    // 2136-2-7T06:28:15 is the last of 32 bit secs.
    BOOLEAN pastFinalSecsOnLastDay(S_DateTime const *t) {
       return
@@ -31,6 +34,8 @@ PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
             )
          ) ? true : false; }
 
+   #pragma GCC diagnostic pop
+   
    return
       pastFinalSecsOnLastDay(t) == true
          ? false
