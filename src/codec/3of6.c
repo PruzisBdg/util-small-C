@@ -26,21 +26,22 @@
       - 'dest' does not have enough room for the encoded content;
             in whch case 'dest' is unmodified.
 */
-PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8_rdonly const *src) {
 
    // One byte to 2 sextets (12 bits), right-justified in U16
-   U16 one(U8 n) {
+   static U16 one(U8 const *tbl, U8 n) {
       return ((U16)tbl[HIGH_NIBBLE(n)] << 6) + tbl[LOW_NIBBLE(n)]; }
 
    // Two bytes to 4 sextets (24 bits), right-justified in U32.
-   U32 two(U16 n) {
-      return ((U32)one(HIGH_BYTE(n)) << 12) + one(LOW_BYTE(n)); }
+   static U32 two(U8 const *tbl, U16 n) {
+      return ((U32)one(tbl, HIGH_BYTE(n)) << 12) + one(tbl, LOW_BYTE(n)); }
 
    // 1 src -> 2 encoded: 2 src -> 3 enc; 3 -> 5; 4->6 etc.
-   U16 encodedCnt(U16 srcCnt) { return ((3 * (U32)src->cnt) + 1) / 2;}
+   static U16 encodedCnt(U16 srcCnt) { return ((3 * (U32)srcCnt) + 1) / 2;}
 
    // ---------------------------------------------------------
 
+
+PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8_rdonly const *src) {
 
    // Fail rightaway if 'src' is too large or 'dest' is too small for encoded content.
    if(dest->cnt < encodedCnt(src->cnt) ||
@@ -66,10 +67,10 @@ PUBLIC S_BufU8 * _3of6_encode(U8 const *tbl, S_BufU8 * dest, S_BufU8_rdonly cons
       for(U16 rem = src->cnt; rem > 0; s+=2, d+=3)       // Until 'src' consumed...
       {                                                  // ...eat 2 bytes; make 3.
          if(rem == 1) {                                  // One left?
-            u16ToLE(d, one(*s));                         // then convert last byte to 2 encoded bytes.
+            u16ToLE(d, one(tbl, *s));                    // then convert last byte to 2 encoded bytes.
             rem = 0; }
          else {                                          // else convert another 2 bytes to 3 encoded bytes
-            u24ToLE(d, two(leToU16(s)));                 // **** u24ToLE() takes U32 but modifies just 3 bytes in 'd'; no overrun.
+            u24ToLE(d, two(tbl, leToU16(s)));            // **** u24ToLE() takes U32 but modifies just 3 bytes in 'd'; no overrun.
             rem -= 2; }
       } // for().
       dest->cnt = encodedCnt(src->cnt);      // Write encoded bytes produced.

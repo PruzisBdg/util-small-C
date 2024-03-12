@@ -18,14 +18,6 @@
     #define __PACKED
 #endif
 
-#undef TRUE
-#undef FALSE
-
-typedef enum _BOOL { FALSE = 0, TRUE } BOOL;    /* Undefined size */
-typedef enum _BIT { CLEAR = 0, SET } BIT;
-
-#define _ToBool(n) ((n) == 0 ? FALSE : TRUE)
-
 #define PUBLIC                                  /* Function attributes */
 #define PROTECTED
 #define PRIVATE static
@@ -48,6 +40,16 @@ typedef unsigned short int U16;
 
 typedef signed char S8;
 typedef char C8;
+
+#undef TRUE
+#undef FALSE
+
+typedef enum _BOOL { FALSE = 0, TRUE } BOOL;    /* Undefined size */
+//typedef enum _BIT { CLEAR = 0, SET } BIT;
+
+typedef U8 BIT;
+
+#define _ToBool(n) ((n) == 0 ? FALSE : TRUE)
 
 // Extrema
 #define MIN_U8 0

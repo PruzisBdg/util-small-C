@@ -14,13 +14,11 @@
 
    Also allows wildcards e.g _YMD_AnyYear (0xFEFE) -> every year.
 */
-PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
-{
    #pragma GCC diagnostic push
    #pragma GCC diagnostic ignored "-Wshadow"
    
    // 2136-2-7T06:28:15 is the last of 32 bit secs.
-   BOOLEAN pastFinalSecsOnLastDay(S_DateTime const *t) {
+   static BOOLEAN pastFinalSecsOnLastDay(S_DateTime const *t) {
       return
          t->ymd.yr == 2136 && t->ymd.mnth == 2 && t->ymd.day == 7 &&    // 2136-2-7? AND
          (
@@ -36,6 +34,10 @@ PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
 
    #pragma GCC diagnostic pop
    
+   // --------------------------------------------------
+
+PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)
+{
    return
       pastFinalSecsOnLastDay(t) == true
          ? false

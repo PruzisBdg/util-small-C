@@ -84,10 +84,8 @@ PUBLIC C8 const * PrintS16s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, S16 con
 
    Print 2 lines under/over. Mark any differences with '^'
 */
-PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 const *fmt, U8 const *srcA, size_t aBytes, U8 const *srcB, size_t bBytes)
-{
    // ---- Mark differences with carets '^'.
-   C8 const * markDiffs(C8 *out, U16 outBufLen, U8 ofs, U8 stride, U8 const *srcA, U8 const *srcB, size_t numBytes)
+   static C8 const * markDiffs(C8 *out, U16 outBufLen, U8 ofs, U8 stride, U8 const *srcA, U8 const *srcB, size_t numBytes)
    {
       // Print something if 'src' and 'out' exist and there's room for at least 'prefix'.
       if(srcA != NULL && srcB != NULL && out != NULL)
@@ -142,6 +140,11 @@ PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 c
 
       return out;
    }
+
+   // ---------------------------------------------------------------------------
+
+PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 const *fmt, U8 const *srcA, size_t aBytes, U8 const *srcB, size_t bBytes)
+{
 
    // ------ Print and compare, breaking into as many lines as necessary.
 

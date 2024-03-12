@@ -7,6 +7,7 @@
 #define SENSUS_CODEC_H
 
 #include "libs_support.h"
+#include <stdbool.h>
 
 #define _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 

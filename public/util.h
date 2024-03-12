@@ -11,6 +11,8 @@
 
 #include "libs_support.h"
 #include "bit_field.h"
+#include <stdlib.h>
+#include <stdbool.h>
 
 /* ------------------------- On Ints ------------------------------- */
 
@@ -244,7 +246,7 @@ typedef void * cbStack_Irqs;     // User substitutes a specific interrupt collec
 /* A Callback gets the IRQ flags, clears any that it handles, and returns a reference to
    the (revised) flags.
 */
-typedef cbStack_Irqs const (*cbStack_T_Callback)(cbStack_Irqs irqs);
+typedef cbStack_Irqs (*cbStack_T_Callback)(cbStack_Irqs irqs);
 #define _cbStack_Callback(_name) cbStack_Irqs const _name(cbStack_Irqs irqs)
 
 /* 'put' is volatile because, when cbStack_Run() runs a callbacks Stack, callback(s)
@@ -260,7 +262,7 @@ PUBLIC bool cbStack_Chain(cbStack_S *s, cbStack_T_Callback cb);
 PUBLIC bool cbStack_UnChain(cbStack_S *s, cbStack_T_Callback cb);
 PUBLIC bool cbStack_DropLast(cbStack_S *s);
 PUBLIC U8   cbStack_Free(cbStack_S const *s);
-PUBLIC cbStack_Irqs const cbStack_Run(cbStack_S const *s, cbStack_Irqs irqs);
+PUBLIC cbStack_Irqs cbStack_Run(cbStack_S const *s, cbStack_Irqs irqs);
 
 
 
@@ -558,6 +560,9 @@ extern S16 const     DaysToMonthStartTbl[];
 #define _ISO8601_HMS_AsSpaces "        "
 
 #define _ISO8601_YMD_MaxStr (sizeof("2018-03-06") + 1)
+
+// Compact into U16, tagged with secs, minutes or hrs.
+PUBLIC U16 Secs_IntoHMS_U16(S32 secs);
 
 /* --------------------------- Pretty Prints -------------------------------------- */
 PUBLIC C8 const * ArrayPrettyPrint(C8 *out, U16 outBufLen, C8 const *prefix, U8 const *src, size_t len, U16 maxLine);

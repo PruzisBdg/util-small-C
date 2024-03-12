@@ -36,15 +36,17 @@ PUBLIC U16 bits_StoreCapacity(S_BitStore *bs) {
    return bs->capacity; }
 
 // ----------------------------------------------------------------------------
+   static void memOR_U32(U32 *dest, U32 const *src, U16 cnt) {
+      for(; cnt > 0; cnt--, src++, dest++) {
+         *dest |= *src; }}
+
+   // -------------------------------------------------
+
 PUBLIC S_BitStore * bits_Merge(S_BitStore *dest, S_BitStore const *src) {
 
    /* Non-overlapping; 'dest' and 'src' are either separate stores (with separate memories)
       or they are the same Store, in which case an overlap OR changes nothing.
    */
-   void memOR_U32(U32 *dest, U32 const *src, U16 cnt) {
-      for(; cnt > 0; cnt--, src++, dest++) {
-         *dest |= *src; }}
-
    U16 destWords = _BitStore_WordsUsed(dest->capacity);
 
    // Merge as much of 'src' as will fit onto 'dest'.

@@ -1259,5 +1259,29 @@ void test_ISO8601_ToSecs(void)
    }
 }
 
+/* -------------------------------- test_Secs_IntoHMS_U16 ----------------------------------- */
+
+void test_Secs_IntoHMS_U16(void)
+{
+   // (Signed) underrange
+   TEST_ASSERT_EQUAL_UINT16(0x0000,                      Secs_IntoHMS_U16(MIN_S32));
+   TEST_ASSERT_EQUAL_UINT16(0x0000,                      Secs_IntoHMS_U16(-1));
+
+   // Second counts 0..16383s
+   TEST_ASSERT_EQUAL_UINT16(0,                           Secs_IntoHMS_U16(0));
+   TEST_ASSERT_EQUAL_UINT16(0x3FFF,                      Secs_IntoHMS_U16(16384-1));
+
+   // Minute counts 0..16383m
+   TEST_ASSERT_EQUAL_UINT16(0x4000 | (16384/60),         Secs_IntoHMS_U16(16384));
+   TEST_ASSERT_EQUAL_UINT16(0x4000 | 0x3FFF,             Secs_IntoHMS_U16(60 * (16384-1)));
+
+   // Hour counts 0,,16383h
+   TEST_ASSERT_EQUAL_UINT16(0x8000 | (16384/60),         Secs_IntoHMS_U16((60*(16384L)))  );
+   TEST_ASSERT_EQUAL_UINT16(0x8000 | 0x3FFF,             Secs_IntoHMS_U16((3600*(16384L-1))) );
+
+   TEST_ASSERT_EQUAL_UINT16(0xFFFF,                      Secs_IntoHMS_U16((3600*(16384L))));
+   TEST_ASSERT_EQUAL_UINT16(0xFFFF,                      Secs_IntoHMS_U16(MAX_S32));
+}
+
 // ----------------------------------------- eof --------------------------------------------
 

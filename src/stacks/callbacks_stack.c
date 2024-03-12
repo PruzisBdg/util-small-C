@@ -36,13 +36,15 @@ PUBLIC U8 cbStack_Free(cbStack_S const *s) {
 
    Chain 'cb' to existing callbacks
 */
-PUBLIC bool cbStack_Chain(cbStack_S *s, cbStack_T_Callback cb) {
-
-   bool isOnStack(cbStack_S *_s, cbStack_T_Callback _cb) {
+   static bool isOnStack(cbStack_S *_s, cbStack_T_Callback _cb) {
       for(U8 i = 0; i < _s->size; i++) {
          if(_s->fs[i] == _cb) {
             return true; }}
       return false; }
+
+   // --------------------------------------------
+
+PUBLIC bool cbStack_Chain(cbStack_S *s, cbStack_T_Callback cb) {
 
    if(cb == NULL) {                       // NULL 'cb'?
       return true; }                      // don't add; just succeed in doing nothing.
@@ -85,7 +87,7 @@ PUBLIC bool cbStack_DropLast(cbStack_S *s) {
    Run callbacks; from latest-added to first. Each callback gets 'irqs' and should
    clear the ones it handles.
 */
-PUBLIC cbStack_Irqs const cbStack_Run(cbStack_S const *s, cbStack_Irqs irqs) {
+PUBLIC cbStack_Irqs cbStack_Run(cbStack_S const *s, cbStack_Irqs irqs) {
    if(s->put > 0) {                          // At least 1 callback?
       for(U8 i = s->put; i > 0; i--) {       // Walk back...
          if(s->fs[i-1] == NULL) {            // CB is not NULL? (it should not be... it was added with _Chain() )

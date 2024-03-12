@@ -38,12 +38,6 @@
 
    If not successful 'dateStr', absTime' and 'utcOfs' are not modified
 */
-PUBLIC E_ISO8601Fmts ISO8601_ToSecs(C8 const **dateStr, T_Seconds32 *absTime, S32 *utcOfs_secs, BOOL strictLen)
-{
-   // sscanf() needs parms to 'ISO8601Formatter' to be all 'int'; cannot output directly to
-   // S_DateTime because S_DateTime has some U8 field.
-   typedef struct {int yr, mnth, week, day, hr, min, sec, ofsHr, ofsMin; } S_DTInt;
-
    // ISO8601 formats (see fmts[] below).
    typedef enum {
       OfsPlus=0, OfsMinus, OfsZ, Full, Packed, DateOnly,       // Gregorian YMD 'T'
@@ -51,77 +45,81 @@ PUBLIC E_ISO8601Fmts ISO8601_ToSecs(C8 const **dateStr, T_Seconds32 *absTime, S3
       WeekDatePacked, WeekOnlyPacked,                          // ISO Week-Date 'W'
       NoMatch = 0xFF } E_Fmts;
 
-   bool isAWeekDate(E_Fmts f) {
+   // sscanf() needs parms to 'ISO8601Formatter' to be all 'int'; cannot output directly to
+   // S_DateTime because S_DateTime has some U8 field.
+   typedef struct {int yr, mnth, week, day, hr, min, sec, ofsHr, ofsMin; } S_DTInt;
+
+   static bool isAWeekDate(E_Fmts f) {
       return
          f == WeekDate || f == WeekOnly || f == WeekDatePacked || f == WeekOnlyPacked
             ? true : false; }
 
-   // --------------------------------------------------------------------------------------
-   E_Fmts parse(C8 const **dateStr, S_DTInt *t)
-   {
-      typedef struct {C8 const *fmt; U8 len, numFields;} S_Fmts;
-      #define _formatter(fmt, str, fields) {fmt, sizeof(str)-1, fields}
+   typedef struct {C8 const *fmt; U8 len, numFields;} S_Fmts;
+   #define _formatter(fmt, str, fields) {fmt, sizeof(str)-1, fields}
 
-      PRIVATE S_Fmts fmts[] = {
-         [OfsPlus]         = _formatter("%04d-%02d-%02dT%02d:%02d:%02d+%02d:%02d%n", "2000-01-01T00:00:00+00:00",  8 ),
-         [OfsMinus]        = _formatter("%04d-%02d-%02dT%02d:%02d:%02d-%02d:%02d%n", "2000-01-01T00:00:00-00:00",  8 ),
-         [OfsZ]            = _formatter("%04d-%02d-%02dT%02d:%02d:%02dZ%n",          "2000-01-01T00:00:00Z",       6 ),
-         [Full]            = _formatter("%04d-%02d-%02dT%02d:%02d:%02d%n",           "2000-01-01T00:00:00",        6 ),
-         [Packed]          = _formatter("%04d%02d%02dT%02d%02d%02d%n",               "20000101T000000",            6 ),
-         [DateOnly]        = _formatter("%04d-%02d-%02d%n",                          "2000-01-01",                 3 ),
-         [WeekDate]        = _formatter("%04d-W%02d-%01d%n",                         "2000-W01-7",                 3 ),
-         [WeekOnly]        = _formatter("%04d-W%02d%n",                              "2000-W01",                   2 ),
-         [WeekDatePacked]  = _formatter("%04dW%02d%01d%n",                           "2000W017",                   3 ),
-         [WeekOnlyPacked]  = _formatter("%04dW%02d%n",                               "2000W01",                    2 ),
-         };
+   PRIVATE S_Fmts fmts[] = {
+      [OfsPlus]         = _formatter("%04d-%02d-%02dT%02d:%02d:%02d+%02d:%02d%n", "2000-01-01T00:00:00+00:00",  8 ),
+      [OfsMinus]        = _formatter("%04d-%02d-%02dT%02d:%02d:%02d-%02d:%02d%n", "2000-01-01T00:00:00-00:00",  8 ),
+      [OfsZ]            = _formatter("%04d-%02d-%02dT%02d:%02d:%02dZ%n",          "2000-01-01T00:00:00Z",       6 ),
+      [Full]            = _formatter("%04d-%02d-%02dT%02d:%02d:%02d%n",           "2000-01-01T00:00:00",        6 ),
+      [Packed]          = _formatter("%04d%02d%02dT%02d%02d%02d%n",               "20000101T000000",            6 ),
+      [DateOnly]        = _formatter("%04d-%02d-%02d%n",                          "2000-01-01",                 3 ),
+      [WeekDate]        = _formatter("%04d-W%02d-%01d%n",                         "2000-W01-7",                 3 ),
+      [WeekOnly]        = _formatter("%04d-W%02d%n",                              "2000-W01",                   2 ),
+      [WeekDatePacked]  = _formatter("%04dW%02d%01d%n",                           "2000W017",                   3 ),
+      [WeekOnlyPacked]  = _formatter("%04dW%02d%n",                               "2000W01",                    2 ),
+      };
 
-      int parseCnt=2;
-      E_Fmts parseInner(C8 const *dateStr, S_DTInt *t, int *_parseCnt) {
+   static E_Fmts parseInner(C8 const *dateStr, S_DTInt *t, int *_parseCnt, BOOL strictLen) {
 
-         /* Try each of the ISO8601 parses, from largest number of fields to the smallest, and use the first
-            one that succeeds.
-               Try longest first means that a full-length Date/Time/UTC will be tried before shorter
-            alternatives - and won't match prematurely on e.g Date-only.
+      /* Try each of the ISO8601 parses, from largest number of fields to the smallest, and use the first
+         one that succeeds.
+            Try longest first means that a full-length Date/Time/UTC will be tried before shorter
+         alternatives - and won't match prematurely on e.g Date-only.
 
-            For each possible parse, check that 'dateStr' is long enough; If 'strict' then it must be exact
-            length. Then try a parse. If sscanf() grabs the correct number of fields then accept the match
-            output the fields.
-         */
-         U16 len = strlen(dateStr);
+         For each possible parse, check that 'dateStr' is long enough; If 'strict' then it must be exact
+         length. Then try a parse. If sscanf() grabs the correct number of fields then accept the match
+         output the fields.
+      */
+      U16 len = strlen(dateStr);
 
-         for(E_Fmts i = 0; i < RECORDS_IN(fmts); i++)
-         {
-            S_Fmts const *f = &fmts[i];
+      for(E_Fmts i = 0; i < RECORDS_IN(fmts); i++)
+      {
+         S_Fmts const *f = &fmts[i];
 
-            if(len == f->len ||                             // 'dateStr' exactly same length as it's ISO8601 match? OR
-               (strictLen == false && len >= f->len)) {     // if 'strictLen' is off, 'dateStr' is at least as long?
+         if(len == f->len ||                             // 'dateStr' exactly same length as it's ISO8601 match? OR
+            (strictLen == false && len >= f->len)) {     // if 'strictLen' is off, 'dateStr' is at least as long?
 
-               if(f->numFields == 8) {
-                  if(sscanf(dateStr, f->fmt, &t->yr, &t->mnth, &t->day, &t->hr, &t->min, &t->sec, &t->ofsHr, &t->ofsMin, _parseCnt) == 8) {
+            if(f->numFields == 8) {
+               if(sscanf(dateStr, f->fmt, &t->yr, &t->mnth, &t->day, &t->hr, &t->min, &t->sec, &t->ofsHr, &t->ofsMin, _parseCnt) == 8) {
+                  return i; }}
+            else if(f->numFields == 6) {
+               if(sscanf(dateStr, f->fmt, &t->yr, &t->mnth, &t->day, &t->hr, &t->min, &t->sec, _parseCnt) == 6) {
                      return i; }}
-               else if(f->numFields == 6) {
-                  if(sscanf(dateStr, f->fmt, &t->yr, &t->mnth, &t->day, &t->hr, &t->min, &t->sec, _parseCnt) == 6) {
-                        return i; }}
-               else if(f->numFields == 3) {
-                  if(i == DateOnly) {
-                     if(sscanf(dateStr, f->fmt, &t->yr, &t->mnth, &t->day, _parseCnt) == 3) {
-                        return i; }}
-                  else if(i == WeekDate || i == WeekDatePacked) {
-                     if(sscanf(dateStr, f->fmt, &t->yr, &t->week, &t->day, _parseCnt) == 3) {
-                        return i; }}}
-               else if(f->numFields == 2) {                 // Can be only WeekOnly or WeekOnlyPacked?
-                  if(sscanf(dateStr, f->fmt, &t->yr, &t->week, _parseCnt) == 2) {
-                     t->day = 1;                            // Successfully read a week-only WeekDate so Day <- 1 (Mon).
+            else if(f->numFields == 3) {
+               if(i == DateOnly) {
+                  if(sscanf(dateStr, f->fmt, &t->yr, &t->mnth, &t->day, _parseCnt) == 3) {
                      return i; }}
-            }
+               else if(i == WeekDate || i == WeekDatePacked) {
+                  if(sscanf(dateStr, f->fmt, &t->yr, &t->week, &t->day, _parseCnt) == 3) {
+                     return i; }}}
+            else if(f->numFields == 2) {                 // Can be only WeekOnly or WeekOnlyPacked?
+               if(sscanf(dateStr, f->fmt, &t->yr, &t->week, _parseCnt) == 2) {
+                  t->day = 1;                            // Successfully read a week-only WeekDate so Day <- 1 (Mon).
+                  return i; }}
          }
-         *_parseCnt = 0;
-         return NoMatch;
-      } // ends: parseInner()
+      }
+      *_parseCnt = 0;
+      return NoMatch;
+   } // ends: parseInner()
 
+
+   static E_Fmts parse(C8 const **dateStr, S_DTInt *t, BOOL strictLen)
+   {
+      int parseCnt=2;
 
       E_Fmts fmtTag;
-      if(NoMatch == ( fmtTag = parseInner(*dateStr, t, &parseCnt))) {
+      if(NoMatch == ( fmtTag = parseInner(*dateStr, t, &parseCnt, strictLen))) {
          return NoMatch; }
       else {
          if(parseCnt != fmts[fmtTag].len) {
@@ -131,6 +129,10 @@ PUBLIC E_ISO8601Fmts ISO8601_ToSecs(C8 const **dateStr, T_Seconds32 *absTime, S3
             return fmtTag;}}
    } // ends: parse()
 
+   // ----------------------------------------------------------
+
+PUBLIC E_ISO8601Fmts ISO8601_ToSecs(C8 const **dateStr, T_Seconds32 *absTime, S32 *utcOfs_secs, BOOL strictLen)
+{
    /* Prefill a 'S_DTInt' with zeros. Depending on 'dateStr' 2 to 8 of the fields will
       be filled by the parse.
    */
@@ -138,7 +140,7 @@ PUBLIC E_ISO8601Fmts ISO8601_ToSecs(C8 const **dateStr, T_Seconds32 *absTime, S3
 
    E_Fmts fmt;
 
-   if( (fmt = parse(dateStr, &t)) == NoMatch) {                            // Parsed 'dateStr'?. No!...
+   if( (fmt = parse(dateStr, &t, strictLen)) == NoMatch) {                 // Parsed 'dateStr'?. No!...
       return E_ISO8601_None; }                                             // ...then got nothing.
    else {                                                                  // else was some ISO8601, successfully read.
       if( isAWeekDate(fmt) == true )                                       // WeekDate, with or without a Day, packed or not-packed?
