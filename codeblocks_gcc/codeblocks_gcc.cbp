@@ -693,6 +693,11 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/secs_into_HMS_u16.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="../src/timedate/secs_to_YMDHMS.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
