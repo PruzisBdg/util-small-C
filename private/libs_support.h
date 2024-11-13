@@ -60,8 +60,9 @@
 // A line with a phrase in each of the supported languages.
 typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 
-#define TOOL_GCC     1
-#define TOOL_CC430   2
+#define TOOL_GCC        1
+#define TOOL_CC430      2
+#define TOOL_STM32_GCC  3
 
 #define bool BOOL
 #define false FALSE
@@ -81,7 +82,7 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
    #define _EXPORT_FOR_TEST PRIVATE
 #endif
 
-#ifdef _COMPILER_IS_TI_MSP430
+#ifdef __COMPILER_IS_TI_CC430
    #define __ORDER_LITTLE_ENDIAN__ 1
    #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
    #define _TOOL_IS TOOL_CC430
@@ -106,8 +107,10 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
       #else
          #ifdef __TARGET_IS_LIB_GCC_ARM
             #define _TARGET_IS _TARGET_LIB_ARM_GCC
+            #define _TOOL_IS TOOL_STM32_GCC
+            #define _TPRINT_IS TPRINT_FLOAT
          #else
-            #ifdef _TARGET_IS_LIB_430_CCS_SMALL_SMALL
+            #ifdef __TARGET_IS_LIB_430_CCS_SMALL_SMALL
                #define _TARGET_IS _TARGET_LIB_430_CCS_SMALL
             #else
                #ifdef _TARGET_IS_LIB_AVR32
