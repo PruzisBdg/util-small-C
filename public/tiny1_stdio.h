@@ -75,7 +75,7 @@
    #error "Specify _TPRINT_IS float/no-float/tiny  (In your bldcfg.h)"
 #endif
 
-#include "GenericTypeDefs.h"  // S16, PUBLIC
+#include "spj_stdint.h"  // S16, PUBLIC
 
 #if _TPRINT_IS == TPRINT_FLOAT
    #include <float.h>

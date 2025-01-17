@@ -54,7 +54,7 @@
 extern float GetPwr10Float(S16 exp);
 extern S32 ClipFloatToLong(float f);
 	#else
-#include "GenericTypeDefs.h"
+#include "spj_stdint.h"
 #include "libs_support.h"
 #include <math.h>
 #include <ctype.h>
@@ -93,7 +93,7 @@ PRIVATE void (*putChPtr)(U8);    // Pointer to the user-supplied putchar()
    /* These #defs encode how data types are converted when passed as optional parms (...). The
       conversion is target dependent.
    */
-   #if _TOOL_IS == TOOL_GCC || _TOOL_IS == _TOOL_GCC_ARM
+   #if _TOOL_IS == TOOL_STM32_GCC || _TOOL_IS == TOOL_GCC_X86
       #define VA_ARG_S16      int
       #define VA_ARG_U16      unsigned int
       #define VA_ARG_CHAR     int
@@ -1216,7 +1216,7 @@ skip:
 
 	This is exported just for tiny1_print_heap1w(). It must output '\0' unconditionally as-is so
 	that tiny1_print_heap1w() can terminate it's output string.
-	
+
 	Returns the number of bytes actually output.
 */
 PUBLIC T_PrintCnt tprintf_PutCh(U8 ch)

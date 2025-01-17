@@ -9,7 +9,7 @@
 #ifndef LIBS_SUPPORT_H
 #define LIBS_SUPPORT_H
 
-#include "GenericTypeDefs.h"		// Redirect to typedefs
+#include "spj_stdint.h"		// Sized types.
 #include <stdlib.h>
 
 // ======= Bits and stuff, which were in Tiny1's 'common.h'
@@ -60,13 +60,6 @@
 // A line with a phrase in each of the supported languages.
 typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 
-#define TOOL_GCC        1
-#define TOOL_CC430      2
-#define TOOL_STM32_GCC  3
-
-#define bool BOOL
-#define false FALSE
-#define true TRUE
 #include <stddef.h>
 #include <stdio.h>
 
@@ -88,6 +81,8 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
    #define _TOOL_IS TOOL_CC430
 #endif
 
+// =============================== Targets =============================================
+
 #define _TARGET_X86_CONSOLE        1
 #define _TARGET_UNITY_TDD          2
 #define _TARGET_X86_LIB            3
@@ -97,7 +92,6 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
 
 #ifdef __TARGET_IS_X86_LIB
    #define _TARGET_IS _TARGET_X86_LIB
-   #define _TOOL_IS TOOL_GCC
 #else
    #ifdef __TARGET_IS_CONSOLE
       #define _TARGET_IS _TARGET_X86_CONSOLE
@@ -129,6 +123,18 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
       #define __ORDER_BIG_ENDIAN__ 1
       #define __BYTE_ORDER__ __ORDER_BIG_ENDIAN__
    #endif
+#endif
+
+// =========================== Tools / Compilers =======================================
+
+#define TOOL_GCC_X86    1
+#define TOOL_CC430      2
+#define TOOL_STM32_GCC  3
+
+#ifdef __TOOL_IS_GCC_X86
+   #define _TOOL_IS TOOL_GCC_X86
+#else
+   #error "_TOOL_IS must be defined"
 #endif
 
 #endif // LIBS_SUPPORT_H

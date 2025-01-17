@@ -15,6 +15,7 @@
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-Wall" />
+					<Add option="-std=c11" />
 					<Add option="-g" />
 					<Add option="-Wno-pointer-sign" />
 					<Add option="-DTPRINT_IS_FLOAT" />
@@ -68,13 +69,16 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add directory="../GenericTypes" />
+			<Add option="-D__TOOL_IS_GCC_X86" />
 			<Add directory="../private" />
 			<Add directory="../public" />
 			<Add directory="../src" />
+			<Add directory="../../libs_common/public" />
+			<Add directory="../../libs_common/libs_only" />
 			<Add directory="$(SPJ_SWR_LOC)/arith/public" />
 			<Add directory="$(SPJ_SWR_LOC)/tiny2/public" />
 		</Compiler>
+		<Unit filename="../../libs_common/public/spj_stdint.h" />
 		<Unit filename="../../unity_tdd/tdd_common.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
@@ -87,6 +91,11 @@
 		</Unit>
 		<Unit filename="../../unity_tdd/tdd_common_pre_build.mak">
 			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../GenericTypes/GenericTypeDefs.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+			<Option target="Console" />
 		</Unit>
 		<Unit filename="../private/bit64k_copy_tests_inline.h">
 			<Option target="Console" />
