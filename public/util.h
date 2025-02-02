@@ -10,9 +10,9 @@
 #define UTIL_H
 
 #include "libs_support.h"
-#include "bit_field.h"
+#include "spj_stdint.h"
 #include <stdlib.h>
-#include <stdbool.h>
+#include "bit_field.h"
 
 /* ------------------------- On Ints ------------------------------- */
 
@@ -73,8 +73,8 @@ PUBLIC C8 const* GetNextHexASCII_U32(C8 const *hexStr, U32 *out);
 PUBLIC C8 const* GetNextHexASCII_U8toU32(C8 const *hexStr, U32 *out, U8 *bytesGot);
 PUBLIC C8 const* GetNextHexASCIIByte_Lenient(C8 const *hexStr, C8 *out);
 
-PUBLIC U16 HexASCII_ToU16(U8 const *hexStr);
-PUBLIC U32 HexASCII_ToU32(U8 const *hexStr);
+PUBLIC U16 HexASCII_ToU16(C8 const *hexStr);
+PUBLIC U32 HexASCII_ToU32(C8 const *hexStr);
 
 // -------------------------- ACSII to Number Parsers ------------------------
 
@@ -823,7 +823,7 @@ typedef enum { eHttp_OK = 200, eHttp_BadRequest = 400,  eHttp_Unauthorised = 401
 typedef U16 Heap1w_T_Size;
 
 typedef struct {
-	void	*mem;		// Heap starts here
+   uintptr_t mem;		// Heap starts here
 	Heap1w_T_Size
 			size,		// Size IN BYTES.
 			get,		// Next free space; as offset from 'mem'.
@@ -834,7 +834,7 @@ typedef struct {
 
 // Specifies a 1-way heap for Heap1_Make()
 typedef struct {
-	void	*mem;		// Memory supplied for heap is this
+   uintptr_t mem;		// Memory supplied for heap is this
 	Heap1w_T_Size
 			size,		// and this many BYTES.
 			align;		// Alignment for new Take()s. Allowed are 1,2,4 bytes or multiple of 4.
@@ -930,7 +930,10 @@ PUBLIC tSoftMatchStr SoftMatchStr(C8 const *ref, C8 const *str, C8 const **match
 PUBLIC U16 SafeStrCopy(C8 *out, C8 const *src, U16 maxCh);
 PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh);
 
-PUBLIC C8 * EndStr(C8 const* str);  // Spot the end of a non-const string.
+// Spot the end of const and non-const strings.
+PUBLIC C8 * EndStr(C8 * str);
+PUBLIC C8 const * EndStrC(C8 const * str);
+
 PUBLIC U8 strlenU8(C8 const* str);
 
 // ------------------------------------------ CRCs --------------------------------------------

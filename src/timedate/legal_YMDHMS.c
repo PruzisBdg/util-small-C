@@ -14,9 +14,7 @@
 
    Also allows wildcards e.g _YMD_AnyYear (0xFEFE) -> every year.
 */
-   #pragma GCC diagnostic push
-   #pragma GCC diagnostic ignored "-Wshadow"
-   
+
    // 2136-2-7T06:28:15 is the last of 32 bit secs.
    static BOOLEAN pastFinalSecsOnLastDay(S_DateTime const *t) {
       return
@@ -32,8 +30,7 @@
             )
          ) ? true : false; }
 
-   #pragma GCC diagnostic pop
-   
+
    // --------------------------------------------------
 
 PUBLIC BOOLEAN Legal_YMDHMS(S_DateTime const *t)

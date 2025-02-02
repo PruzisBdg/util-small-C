@@ -171,9 +171,12 @@ PUBLIC enc_E_StreamState Sensus_DecodeStream(enc_S_StreamDecode *dc, enc_S_MsgDa
 // ===================================== ends: Stream Decoder ========================================
 
 // ============================ Exported just for Test Harness =========================================
+
+#ifdef UNITY_TDD
 _EXPORT_FOR_TEST bool __attribute__((unused)) decodeBasicStatus(U16 mf, enc_S_MsgData *ed);
 _EXPORT_FOR_TEST C8 const * __attribute__((unused)) getXT(C8 const *src, enc_S_MsgData *ed );
 _EXPORT_FOR_TEST C8 const * __attribute__((unused)) getXP(C8 const *src,  enc_S_MsgData *ed );
+#endif
 
 // =================================== Test harness support ===========================================
 

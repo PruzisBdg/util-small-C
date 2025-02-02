@@ -137,7 +137,10 @@ typedef struct { C8 const *strs[LANGUAGE_COUNT]; } textBld_S_LangStrs;
    #ifdef __COMPILER_IS_TI_CC430
       #define _TOOL_IS TOOL_CC430
    #else
-      #error "_TOOL_IS must be defined"
+      // _TOOL_IS not defined under __TARGET (above)?
+      #ifndef _TOOL_IS
+         #error "_TOOL_IS must be defined"
+      #endif
    #endif
 #endif
 

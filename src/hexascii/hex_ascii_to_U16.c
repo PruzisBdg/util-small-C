@@ -8,10 +8,10 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U16 HexASCII_ToU16(U8 const *hexStr)
+PUBLIC U16 HexASCII_ToU16(C8 const *hexStr)
 {
    U8  c1, c2;
-   
+
    if( (hexStr = GetNextHexASCIIByte(hexStr, &c1)) )     // Got high byte?
    {
       if( (hexStr = GetNextHexASCIIByte(hexStr, &c2)) )  // Got low byte?
@@ -24,4 +24,4 @@ PUBLIC U16 HexASCII_ToU16(U8 const *hexStr)
 
 
 
-// --------------------- eof --------------------------------  -       
+// --------------------- eof --------------------------------  -

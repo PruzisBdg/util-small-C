@@ -37,8 +37,14 @@ PUBLIC void *heapLog_Malloc(heapLog_S *l, size_t n) {
    return p; }
 
 // ---------------------------------------------------------------------------------------
+
+/* Wrapping free() avoids -Wuse-after-free on some gcc.
+   'void *p1 = p; does not stop this warning; presumably compiler optimises out the assignment.
+*/
+static void ffree(void *p) {free(p);}
+
 PUBLIC void heapLog_Free(heapLog_S *l, void *p) {
-   free(p);
+   ffree(p);
    add(&l->frees, p, 0); }
 
 // ------------------ There's a free for every malloc ------------------------------------
@@ -66,7 +72,7 @@ PUBLIC bool heapLog_Match(heapLog_S *l) {
 // ---------------------------------------------------------------------------------------
 PUBLIC C8 const * heapLog_Report(C8 *out, heapLog_S_Stats* stats, heapLog_S *l) {
    if(out != NULL) {
-      sprintf(out, "....... mallocs %u frees %u bytes malloced %lu", l->mallocs.put, l->frees.put, l->bytesMalloced); }
+      sprintf(out, "....... mallocs %u frees %u bytes malloced %lu", l->mallocs.put, l->frees.put, (unsigned long)l->bytesMalloced); }
    else {
       return "NULL out"; }
 

@@ -130,7 +130,7 @@ PUBLIC void C8bag_Print(S_C8bag const *m)
    if(sizeof(m->lines[0]) == sizeof(U32)) {
       U8 i;
       for(i = 0; i < _C8bag_NumLines; i++) {
-         printf("  %d: 0x08%lX\r\n", i, m->lines[i]); }}
+         printf("  %d: 0x08%lX\r\n", i, (unsigned long)m->lines[i]); }}
 
 }
 
@@ -149,7 +149,7 @@ PUBLIC C8 const * C8bag_PrintLine(C8 *out, S_C8bag const *m)
                : (i == _C8bag_NumLines-1
                   ? " %08lX]"                 // End with right-bracket.
                   : " %08lX"),
-            m->lines[i]); }
+            (unsigned long)m->lines[i]); }
       return out; }
    return strcpy(out, "[C8Bag print error]");
 }

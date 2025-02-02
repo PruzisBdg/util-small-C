@@ -46,7 +46,7 @@ PUBLIC U8 GENERIC * Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt )
 {
    // Note: We can case return from Str_GetNthWord() to non-const because we know that
    // return is 'lst' (which is non-const).
-   return strcpy( (C8*)Str_GetNthWord(lst, start), trimLeadof_NthWord(lst, start+cnt) );
+   return (U8 GENERIC *)strcpy( (C8*)Str_GetNthWord(lst, start), (C8*)trimLeadof_NthWord(lst, start+cnt) );
 }
 
 // --------------------------- eof -------------------------------

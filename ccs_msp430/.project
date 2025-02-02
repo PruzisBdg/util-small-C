@@ -26,11 +26,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>GenericTypes</name>
-			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/GenericTypes</locationURI>
-		</link>
-		<link>
 			<name>private</name>
 			<type>2</type>
 			<locationURI>PARENT-1-PROJECT_LOC/private</locationURI>

@@ -34,12 +34,12 @@ PUBLIC C8 const * ReadTaggedASCIIInt(C8 const *in, C8 const *tag, S32 *out, C8 c
    if(delimiters != NULL) {                              // Supplied delimiters?
       Str_Delimiters = delimiters; }                     // then use them.
 
-   C8 const *tail = Str_TailAfterWord(in, tag);          // Goto after 'tag', if it's there.
+   C8 const *tail = (C8 const*)Str_TailAfterWord((U8 const*)in, (U8 const *)tag); // Goto after 'tag', if it's there.
 
    if( tail != NULL && *tail != '\0' ) {                 // Got 'tag' and there's content beyond it?
       T_FloatOrInt fi = { .reqFloat = false };           // Number will be returned here, as an Int.
 
-      if(NULL != (tail = ReadASCIIToNum(tail, &fi))) {   // Got a number after tag?
+      if(NULL != (tail = (C8 const*)ReadASCIIToNum((U8 const*)tail, &fi))) {   // Got a number after tag?
          if(fi.gotInt == true) {                         // That number is an integer?
             if(fi.gotUnsigned == true) {                 // Unsigned? ...
                if(fi.num.asU32 <= MAX_S32) {             // then ensure it fits in S32?

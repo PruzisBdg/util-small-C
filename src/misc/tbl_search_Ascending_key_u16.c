@@ -40,7 +40,8 @@ PUBLIC void const * TblSearchSAR_AscendKeyU16(void const *tbl, U16 numRecords, U
 
    if(  numRecords < 20 ) {                                    // Short table? then do linear search
       for( idx = 0, p = tbl; 
-            idx < numRecords; idx++, p += bytesPerRec ) {      // From table start, for each record
+            idx < numRecords; idx++,
+            p = (void const *)((uintptr_t)p + bytesPerRec) ) { // From table start, for each record
          if( *(U16*)p == keyToMatch ) {                        // Matched key?
             return p;                                          // then return record
             }
@@ -58,7 +59,7 @@ PUBLIC void const * TblSearchSAR_AscendKeyU16(void const *tbl, U16 numRecords, U
       maxLoop = MSB_U16(numRecords) + 2;     // Add 2 as a cushion.                  
 
       while(1) {                                               // Until search terminates...
-         p = tbl + (idx * (U32)bytesPerRec);                   // p <- start of record
+         p = (void const*)(uintptr_t)((uintptr_t)tbl + (idx * (U32)bytesPerRec)); // p <- start of record
          key = *(U16*)p;                                       // 'key' is the 1st field of the record.
       
          if( key == keyToMatch ) {                             // Matched 'keyToMatch'?
@@ -67,7 +68,8 @@ PUBLIC void const * TblSearchSAR_AscendKeyU16(void const *tbl, U16 numRecords, U
          else if( ++loopCnt > maxLoop ) {                      // Too many loops? Means keys are out of order...
                                                                // ... so fall back to linear search
             for( idx = 0, p = tbl;                             // From table start, for each record
-                  idx < numRecords; idx++, p += bytesPerRec ) {
+                  idx < numRecords; idx++,
+                  p = (void const *)((uintptr_t)p + bytesPerRec) ) {
                if( *(U16*)p == keyToMatch ) {                  // Matched key?
                   return p;                                    // then return the record
                   }

@@ -7,7 +7,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-static inline U32 reverseU32(U32 n) {  return (ReverseU16(LOW_WORD(n)) << 16) + ReverseU16(HIGH_WORD(n)); }
+static inline U32 reverseU32(U32 n) {  return ((U32)ReverseU16(LOW_WORD(n)) << 16) + ReverseU16(HIGH_WORD(n)); }
 
 PUBLIC U32 ToSysEndian_U32(U32 n, E_EndianIs e)
 {

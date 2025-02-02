@@ -99,8 +99,6 @@ void test_decodeBasicStatus(void) {
 
 /* -------------------------------------- test_getXT -------------------------------------------- */
 
-//_EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed );
-
 void test_getXT(void)
 {
    typedef struct {

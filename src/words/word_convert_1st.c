@@ -32,7 +32,7 @@ PRIVATE C8 const *convert1stWord(C8 *out, C8 const *str, U8(*cvts)(U8))
 {
    if(out == str)                            // In-place conversion?
    {
-      if( (out = Str_LTrim(str)) != '\0')    // There's at least 1 word? (of 1 or more chars)
+      if( (out = (C8*)Str_LTrim((U8 GENERIC const*)str)) != NULL) // There's at least 1 word? (of 1 or more chars)
       {
          while( Str_WordChar(*out) == 1)     // Until end of that 1st word....
          {
@@ -44,9 +44,9 @@ PRIVATE C8 const *convert1stWord(C8 *out, C8 const *str, U8(*cvts)(U8))
    }
    else                                      // else copy just converted word to 'out'
    {
-      U8 *p;
-      U8 *q = out;                           // Mark start of 1st word.
-      if( (p = Str_LTrim(str)) != '\0')      // There's at least 1 word? (of 1 or more chars)
+      C8 *p;
+      C8 *q = out;                           // Mark start of 1st word.
+      if( (p = (C8*)Str_LTrim((U8 GENERIC const*)str)) != NULL) // There's at least 1 word? (of 1 or more chars)
       {
          while( Str_WordChar(*p) == 1)       // Until end of that 1st word....
          {
@@ -54,7 +54,7 @@ PRIVATE C8 const *convert1stWord(C8 *out, C8 const *str, U8(*cvts)(U8))
             p++; q++;
          }
       }
-      if(q > (U8*)out)                       // Converted at least 1 char/word? (into 'out').
+      if(q > out)                            // Converted at least 1 char/word? (into 'out').
          { *q = '\0'; }                      // then terminate what we wrote to 'out'
       return out;
    }

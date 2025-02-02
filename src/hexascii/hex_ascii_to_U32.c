@@ -13,7 +13,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U32 HexASCII_ToU32(U8 const *hexStr)
+PUBLIC U32 HexASCII_ToU32(C8 const *hexStr)
 {
    U16  n1, n2;
 

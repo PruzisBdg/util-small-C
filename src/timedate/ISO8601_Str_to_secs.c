@@ -70,7 +70,7 @@
       [WeekOnlyPacked]  = _formatter("%04dW%02d%n",                               "2000W01",                    2 ),
       };
 
-   static E_Fmts parseInner(C8 const *dateStr, S_DTInt *t, int *_parseCnt, BOOL strictLen) {
+   static U8 parseInner(C8 const *dateStr, S_DTInt *t, int *_parseCnt, BOOL strictLen) {
 
       /* Try each of the ISO8601 parses, from largest number of fields to the smallest, and use the first
          one that succeeds.
@@ -83,7 +83,7 @@
       */
       U16 len = strlen(dateStr);
 
-      for(E_Fmts i = 0; i < RECORDS_IN(fmts); i++)
+      for(U8 i = 0; i < RECORDS_IN(fmts); i++)
       {
          S_Fmts const *f = &fmts[i];
 
@@ -119,7 +119,7 @@
       int parseCnt=2;
 
       E_Fmts fmtTag;
-      if(NoMatch == ( fmtTag = parseInner(*dateStr, t, &parseCnt, strictLen))) {
+      if(NoMatch == ( fmtTag = (E_Fmts)parseInner(*dateStr, t, &parseCnt, strictLen))) {
          return NoMatch; }
       else {
          if(parseCnt != fmts[fmtTag].len) {

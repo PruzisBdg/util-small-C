@@ -24,7 +24,7 @@ PRIVATE U8 IDATA digitsAfterDP;
 
 PRIVATE void finishMantissa(float *m)
 {
-   *m = *m * (isNeg ? -1.0 : 1.0) * GetPwr10Float(-digitsAfterDP);
+   *m = *m * (isNeg ? -1.0F : 1.0F) * GetPwr10Float(-digitsAfterDP);
 }
 
 

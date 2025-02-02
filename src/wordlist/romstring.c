@@ -14,27 +14,7 @@
 #include "romstring.h"
 #include <string.h>
 
-#if 0
-PUBLIC void strcpy_C(U8 *dest, U8 CONST *src)
-{
-   for( ; *src != '\0'; dest++, src++ ) *dest = *src;
-   *dest = '\0';
-}
-
-PUBLIC U16 strlen_C(U8 CONST *str)
-{
-   U16 n;
-
-   for( n = 0; *str != '\0'; n++, str++ )
-   return n;
-}
-
-PUBLIC void strcat_C(U8 *dest, U8 CONST *src)
-{
-   strcpy_C( dest + strlen(dest), src );
-}
-#endif
-
+    #if _TOOL_IS == TOOL_Z8_ENCORE
 #if 1
 
 typedef U16 T_BufSize;
@@ -75,16 +55,16 @@ PUBLIC C8 * RamStrCore(S_StrBuf *b, U16 src, U8 cnt, U8 isROM)
             start = 0;                                // mark revised string start
             c = 0;                                    // and reset source counter
             continue;                                 // and start over, copying into start of buffer
-         }                                            
+         }
       }
       else                                            // else not at end of buffer
       {
          if( isROM )                                  // source is ROM?
             { ch = ((U8 CONST*)src)[c]; }             // so get char from ROM (LDC)
-         else 
+         else
             { ch = ((U8*)src)[c]; }                   // else get form RAM (LDX)
 
-         b->buf[b->free] = ch;                        // write char to buffer                     
+         b->buf[b->free] = ch;                        // write char to buffer
          c++;                                         // bump source count
          b->free++;                                   // bump dest cnt past char.
 
@@ -152,7 +132,7 @@ PUBLIC U8 * RamStr(U8 CONST *src)
             start = 0;                                // mark revised string start
             c = 0;                                    // and reset source counter
             continue;                                 // and start over, copying into start of buffer
-         }                                            
+         }
       }
       else if( (stringBuf[free] = src[c]) == '\0' )   // do copy... end of source string?
       {
@@ -169,4 +149,5 @@ PUBLIC U8 * RamStr(U8 CONST *src)
 
 
 #endif
+   #endif // #if _TOOL_IS == TOOL_Z8_ENCORE
 // ------------------------------------------ eof ------------------------------------------

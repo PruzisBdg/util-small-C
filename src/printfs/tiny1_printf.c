@@ -933,7 +933,6 @@ PUBLIC T_PrintCnt tprintf_internal(void (*putChParm)(U8), C8 CONST *fmt, va_list
    BIT gotPcent = 0;          // Got a '%', so parsing a format specifier.
    BIT gotEsc = 0;            // Got '\' for escape char
    BIT pastWidth = 0;         // Past width modifier field, whether it was filled or no.
-   BIT gotWidthCh = 0;        // Got a digit which starts a width modifier; even if turns out to be just a '0', meaning leading zeros.
    BIT gotLong = 0;           // Got 'l' long modifier
    BIT zeroPad = 0;           //
    U8 ch;

@@ -15,23 +15,20 @@
 // Legal alignments are 1,2,4 bytes or multiple of 4.
  PRIVATE bool legalAlign(Heap1w_T_Size n) { return n == 1 || n == 2 || n % 4 == 0; }
 
-PRIVATE bool legalHeap(Heap1w_S const *h) { return h->mem != NULL && h->size > 0 && legalAlign(h->align); }
+PRIVATE bool legalHeap(Heap1w_S const *h) { return h->mem != (uintptr_t)NULL && h->size > 0 && legalAlign(h->align); }
 
 // From 'get' to end-of-heap. 'get' should not get ahead of size but, n case it does.
 PRIVATE Heap1w_T_Size freeTail(Heap1w_S const *h) { return _AminusB_unsigned(h->size, h->get); }
 
 /* -------------------------------------------------------------------------------------------- */
-PRIVATE U32 alignUp(U32 n, Heap1w_T_Size align) {
+PRIVATE uintptr_t alignUp(uintptr_t n, Heap1w_T_Size align) {
 	return
 		n % align == 0						// Already aligned?
 			? n								// then no change
 			: align * ((n/align) + 1); }	// else round up to alignment.
 
-PRIVATE void * vpAlignUp(void *p, Heap1w_T_Size align)
-	{ return (void*)alignUp((U32)p, align); }
-
 /* -------------------------------------------------------------------------------------------- */
-PRIVATE U32 alignDown(U32 n, Heap1w_T_Size align) {
+PRIVATE uintptr_t alignDown(uintptr_t n, Heap1w_T_Size align) {
 	return
 		n % align == 0					// Already aligned?
 			? n							// then no change
@@ -40,8 +37,8 @@ PRIVATE U32 alignDown(U32 n, Heap1w_T_Size align) {
 /* -------------------------------------------------------------------------------------------- */
 PUBLIC bool Heap1w_Make(Heap1w_S *h, Heap1w_S_Spec const *spec)
 {
-	if(spec->mem != NULL && legalAlign(spec->align) && spec->size > 0 ) {	// Legal malloc(), legal alignment and non-zero size?
-		h->mem = vpAlignUp(spec->mem, spec->align);							// Used memory starts at first aligned mark at or above spec->mem
+	if(spec->mem != (uintptr_t)NULL && legalAlign(spec->align) && spec->size > 0 ) {	// Legal malloc(), legal alignment and non-zero size?
+		h->mem = alignUp(spec->mem, spec->align);							// Used memory starts at first aligned mark at or above spec->mem
 
 		if(h->mem < spec->mem + spec->size) {								// Aligned store will hold at least 1 byte?
 			h->size = spec->size - (spec->mem - h->mem);					// then mark actual store size, which may be smaller than memory supplied because of alignment.
@@ -51,7 +48,7 @@ PUBLIC bool Heap1w_Make(Heap1w_S *h, Heap1w_S_Spec const *spec)
 			return true; }}													// Success!
 
 	// Any fail above; kill the heap; say fail!
-	h->mem = NULL; h->get = 0; h->size = 0;
+	h->mem = (uintptr_t)NULL; h->get = 0; h->size = 0;
 	return false;
 }
 
@@ -61,11 +58,14 @@ PUBLIC Heap1w_T_Size Heap1w_BytesFree(Heap1w_S const *h)
 
 /* -------------------------------------------------------------------------------------------- */
 PUBLIC void * Heap1w_BufAt(Heap1w_S const *h)
-	{ return h->mem + h->get; }
+	{ return (void*)(h->mem + h->get); }
 
 /* -------------------------------------------------------------------------------------------- */
 PUBLIC bool Heap1w_IsInHeap(Heap1w_S const *h, void const *addr)
-	{ return h->mem != NULL && addr >= h->mem && addr <= h->mem+h->size; }
+	{ return
+	      h->mem != (uintptr_t)NULL &&
+	      (uintptr_t)addr >= h->mem &&
+	      (uintptr_t)addr <= h->mem+h->size; }
 
 /* ------------------------------- Get (1-way) -------------------------------------------------------
 
@@ -75,10 +75,10 @@ PUBLIC void * Heap1w_Get(Heap1w_S *h, Heap1w_T_Size n) {
 	if( legalHeap(h) ) {									// Legal heap?
 		n = alignUp(n, h->align);							// Expand bytes-requested to fill whole number of alignment-blocks.
 		if(n > 0 && freeTail(h) >= n) {						// Request > 0 bytes ? AND has at least 'n' more bytes?
-			void *p = h->mem + h->get;						// Block we will allocate starts here. 'get' is already aligned, from any previous Take().
+		   uintptr_t p = h->mem + h->get;						// Block we will allocate starts here. 'get' is already aligned, from any previous Take().
 			h->get += n;									// Advance 'get' to next aligned free spot.
 			h->get = MIN(h->get, h->size);					// If 'get' beyond end of block then set it to end. (being tidy)
-			return p; }}									// Return start of allocated block.
+			return (void *)p; }}									// Return start of allocated block.
 	return NULL; }				// Some fail - return NULL.
 
 /* -------------------------------------------------------------------------------------------- */
@@ -108,13 +108,13 @@ PUBLIC void * Heap1w_Take(Heap1w_S *h, Heap1w_T_Size n) {
 			if(freeTail(h) < n) {							// New block won't fit after previous one (in memory)...
 				h->used += (n + freeTail(h));				// We took the tail of the heap plus 'n' bytes from start.
 				h->get = 0;									// ... allocated from start of heap.
-				return h->mem; }
+				return (void*)h->mem; }
 			else {											// else new block will fit after previous one.
-				void *p = h->mem + h->get;					// Block we will allocate starts here. 'get' is already aligned, from any previous Take().
+			   uintptr_t p = h->mem + h->get;					// Block we will allocate starts here. 'get' is already aligned, from any previous Take().
 				h->get += n;								// Advance 'get' to next aligned free spot.
 				h->used += n;								// Used an additional 'n' bytes.
 				h->get = MIN(h->get, h->size);				// If 'get' beyond end of block then set it to end. (being tidy)
-				return p; }}}								// Return start of allocated block.
+				return (void *)p; }}}								// Return start of allocated block.
 	return NULL; }				// Some fail - return NULL.
 
 /* -------------------------------------------------------------------------------------------- */

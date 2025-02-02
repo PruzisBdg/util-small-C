@@ -66,7 +66,8 @@ _EXPORT_FOR_TEST C8 const * getSerialWord(C8 const *src, C8 *out)
    U8 i;
    for(i = 0; i <= _enc_MaxSerNumChars; i++, src++, out++)      // From 'src', up to 10 (alphanumeric) chars
    {
-      if(isalnum(*src)) {                                      // else another char of the serial number?...
+      // *** Args to <ctype> e.g isalnum() must be unsigned ***
+      if(isalnum((U8)*src)) {                                  // else another char of the serial number?...
          *out = *src; }                                        // ...copy it to 'out'.
       else {                                                   // else, fail or no, we are done with the serial number.
          *out = '\0';                                          // Terminate whatever we built in 'out'.
@@ -291,7 +292,8 @@ _EXPORT_FOR_TEST C8 const * getXT(C8 const *src, enc_S_MsgData *ed ) {
             return p; }}                                 // Return end-of-message or next field delimiter
 
       // else check for ';XTddd', 2nd and 3rd of 'ddd' must be digits...
-      else if( isdigit(src[1]) && isdigit(src[2])) {
+      // *** Args to <ctype> e.g isdigit() must be unsigned ***
+      else if( isdigit((U8)src[1]) && isdigit((U8)src[2])) {
          // ... and 'ddd' must read as positive or negative integer.
          S16 n;
          if( NULL != (p = ReadDirtyASCIIInt(src, &n))) {    // Read a signed int?
@@ -496,7 +498,7 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
                                              // If M-field ends message then it's Gen1, HRE-LCD or Mag.
                                              if(endMsg(p)) {
                                                 if(bytesGot == 3 && BSET(filterFor, mHRE_LCD | mGen1)) {       // else 24-bit M-field? AND requested Gen1 or HRE-LCD?
-                                                   ed->encoderType = mHRE_LCD | mGen1;                         // then we got one of those; they have same message format
+                                                   ed->encoderType = (enc_M_EncType)(mHRE_LCD | mGen1);        // then we got one of those; they have same message format
                                                    return true; }}
 
                                              // else if M-field is followed by ';XT... ' (temperature) then it's a Gen1 or Gen2.

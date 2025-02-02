@@ -137,7 +137,7 @@ static C8 const *showOnePres(C8 *out, enc_T_Pressure p) {
    else if(p == 0xFF) {
       sprintf(out, "null"); }
    else {
-      sprintf(out, "%2.1f", (float)p/10); }
+      sprintf(out, "%2.1f", (float)((float)p/10)); }
    return out;
 }
 
@@ -176,7 +176,8 @@ static C8 const *safeKStr(C8 const *str) {
    for(U8 i = 0; i < _enc_MaxSerNumChars+1; i++) {
       if(str[i] == '\0') {
          break; }
-      else if(isprint(str[i]) == false) {
+      // *** Args to <ctype> e.g isalnum() must be unsigned ***
+      else if(isprint((U8)str[i]) == false) {
          return "bogus KStr"; }
    }
    return str;

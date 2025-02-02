@@ -31,7 +31,7 @@ PUBLIC U8 SecsToHMS32_Str(T_Seconds32 secsCnt, C8 *strOut) {
    U8 secs   = secsCnt - (3600 * hours) - (60 * (U32)mins);
 
    // Make sure resulting string is no more than "hhhhhhh:mm:ss".
-   U8 rtn = MinS16(sprintf(strOut, HMS32_Formatter, hours, mins, secs), sizeof("hhhhhhh:mm:ss"));
+   U8 rtn = MinS16(sprintf(strOut, HMS32_Formatter, (unsigned long)hours, mins, secs), sizeof("hhhhhhh:mm:ss"));
    strOut[sizeof("hhhhhhh:mm:ss")] = '\0';
    return rtn;
 }
@@ -53,7 +53,7 @@ PUBLIC C8 const * SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut) {
    U8 mins   = (secsCnt - (3600 * hours))/60;
    U8 secs   = secsCnt - (3600 * hours) - (60 * (U32)mins);
 
-   sprintf(strOut, HMS32_Formatter, hours, mins, secs);
+   sprintf(strOut, HMS32_Formatter, (unsigned long)hours, mins, secs);
    // Make sure resulting string is no more than "hhhh:mm:ss".
    strOut[sizeof("hhhhhhh:mm:ss")] = '\0';
    return strOut;
