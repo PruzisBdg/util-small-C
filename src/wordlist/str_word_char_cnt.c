@@ -16,7 +16,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 Str_WordCharCnt( U8 GENERIC const *w )
+PUBLIC U8 Str_WordCharCnt( C8 GENERIC const *w )
 {
    U8 ch, cnt;
    BIT inWord;

@@ -17,7 +17,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC * Str_GetEndWord( U8 GENERIC const *lst, U8 n )
+PUBLIC C8 GENERIC * Str_GetEndWord( C8 GENERIC const *lst, U8 n )
 {
    U8       wordCnt,       // counts through words
             ch,            // current char
@@ -77,7 +77,7 @@ PUBLIC U8 GENERIC * Str_GetEndWord( U8 GENERIC const *lst, U8 n )
          }
       }
    }
-   return (U8 GENERIC *)(lst+i);
+   return (C8 GENERIC*)(lst+i);
 }
 
 // ----------------------------------- eof -----------------------------------------------

@@ -15,7 +15,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 Str_WordCnt( U8 GENERIC const *str )
+PUBLIC U8 Str_WordCnt( C8 GENERIC const *str )
 {
    U8 rIDATA cnt, ch;
    BIT spc;

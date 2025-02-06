@@ -20,7 +20,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC BIT GotFloatFromASCII(U8 const *inTxt, float *out)
+PUBLIC BIT GotFloatFromASCII(C8 const *inTxt, float *out)
 {
    return ReadASCIIToFloat(inTxt, out) != 0;
 }

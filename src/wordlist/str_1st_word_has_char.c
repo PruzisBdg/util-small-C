@@ -17,12 +17,12 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PRIVATE BIT charEndsWord(U8 ch)
+PRIVATE BIT charEndsWord(C8 ch)
 {
    return Str_Delimiter(ch) || ch == '\0';
 }
 
-PUBLIC U8 Str_1stWordHasChar( U8 GENERIC const *lst, U8 ch )
+PUBLIC U8 Str_1stWordHasChar( C8 GENERIC const *lst, U8 ch )
 {
    if( charEndsWord(ch))                           // 'ch' is not a word char?
    {

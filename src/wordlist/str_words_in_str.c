@@ -25,7 +25,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 Str_WordsInStr( U8 GENERIC const *str, U8 GENERIC const *wordsToMatch )
+PUBLIC U8 Str_WordsInStr( C8 GENERIC const *str, C8 GENERIC const *wordsToMatch )
 {
    U8 c, cnt;
 

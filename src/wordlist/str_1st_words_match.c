@@ -18,7 +18,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC BIT Str_1stWordsMatch( U8 GENERIC const *w1, U8 GENERIC const *w2 )
+PUBLIC BIT Str_1stWordsMatch( C8 GENERIC const *w1, C8 GENERIC const *w2 )
 {
    w1 = Str_LTrim(w1);
    w2 = Str_LTrim(w2);

@@ -25,7 +25,7 @@
 #include "libs_support.h"
 #include "util.h"
 
-PUBLIC U8 const * ReadDirtyBinaryWord(U8 const *inTxt, U16 *out) 
+PUBLIC C8 const * ReadDirtyBinaryWord(C8 const *inTxt, U16 *out)
 {
    U8          ch;                     // the current char
    static BIT  gotLeadZero, gotB;      // got '0' then 'b'

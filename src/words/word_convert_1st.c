@@ -32,7 +32,7 @@ PRIVATE C8 const *convert1stWord(C8 *out, C8 const *str, U8(*cvts)(U8))
 {
    if(out == str)                            // In-place conversion?
    {
-      if( (out = (C8*)Str_LTrim((U8 GENERIC const*)str)) != NULL) // There's at least 1 word? (of 1 or more chars)
+      if( (out = Str_LTrim(str)) != NULL)    // There's at least 1 word? (of 1 or more chars)
       {
          while( Str_WordChar(*out) == 1)     // Until end of that 1st word....
          {
@@ -46,7 +46,7 @@ PRIVATE C8 const *convert1stWord(C8 *out, C8 const *str, U8(*cvts)(U8))
    {
       C8 *p;
       C8 *q = out;                           // Mark start of 1st word.
-      if( (p = (C8*)Str_LTrim((U8 GENERIC const*)str)) != NULL) // There's at least 1 word? (of 1 or more chars)
+      if( (p = Str_LTrim(str)) != NULL) 	 // There's at least 1 word? (of 1 or more chars)
       {
          while( Str_WordChar(*p) == 1)       // Until end of that 1st word....
          {

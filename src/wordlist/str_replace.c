@@ -26,9 +26,9 @@
 |
 ------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC * Str_Replace( U8 GENERIC *str,
-                  U8 GENERIC const *toFind,
-                  U8 GENERIC const * replaceWith,
+PUBLIC C8 GENERIC * Str_Replace( C8 GENERIC *str,
+                  C8 GENERIC const *toFind,
+                  C8 GENERIC const * replaceWith,
                   U8 numToCut,
                   U8 numToInsert )
 {

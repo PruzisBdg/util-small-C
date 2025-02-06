@@ -130,7 +130,7 @@ PRIVATE bool finishFloat(T_FloatOrInt *out, float f)
 |  Note: If a number is NOT parsed '*out' is undefined. It may have been modified.
 |
 ------------------------------------------------------------------------------------------*/
-PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out)
+PUBLIC C8 const * ReadASCIIToNum(C8 const *inTxt, T_FloatOrInt *out)
 {
    U8 DATA ch;                   // the current char
    U8 IDATA digitCnt = 0;        // digits so ofr in mantissa or exponent

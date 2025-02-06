@@ -24,9 +24,9 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 Str_CopyNthWord( U8 GENERIC const *lst, U8 *out, U8 n, U8 maxChars )
+PUBLIC U8 Str_CopyNthWord( C8 GENERIC const *lst, C8 *out, U8 n, U8 maxChars )
 {
-   U8 GENERIC * rIDATA p;
+   C8 GENERIC * rIDATA p;
    U8 rIDATA c, ch;
 
    p = Str_GetNthWord( lst, n );

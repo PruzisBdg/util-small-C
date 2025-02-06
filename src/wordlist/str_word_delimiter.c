@@ -117,12 +117,12 @@ PUBLIC U8 Str_1stDelimiter(void)
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC * Str_LTrim(U8 GENERIC const *w)
+PUBLIC C8 GENERIC * Str_LTrim(C8 GENERIC const *w)
 {
    while( Str_Delimiter(*w) ) {w++;}
     // Return 'w' as non-const; what the caller gave may have been non-const or no;
     // the type-modifier will be enforced on the caller's scope.
-   return (U8 *)w;
+   return (C8 *)w;
 }
 
 

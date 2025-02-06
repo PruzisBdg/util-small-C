@@ -51,14 +51,14 @@ PRIVATE void makeGap( U8 *p, U8 gap)
 |
 ------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC * Str_Insert( U8 GENERIC *dest, U8 GENERIC const *src, U8 start, U8 cnt )
+PUBLIC C8 GENERIC * Str_Insert( C8 GENERIC *dest, C8 GENERIC const *src, U8 start, U8 cnt )
 {
    if( cnt > 0 )                                                     // insert at least one word?
    {
       /* Will insert from start of 'src' to end of nth word ('endOfInsert'). (if start and finish are
          the same letter then there's one byte to insert).
       */
-      U8 *endOfInsert = Str_GetEndWord((U8 GENERIC*)src, cnt-1);     // Get end of cnt-th word in src.
+      C8 *endOfInsert = Str_GetEndWord(src, cnt-1);                  // Get end of cnt-th word in src.
 
       if(*endOfInsert != '\0')                                       // NOT end-of-string?...
       {                                                              // ...meaning 'src' had at least word, so there's something to insert.

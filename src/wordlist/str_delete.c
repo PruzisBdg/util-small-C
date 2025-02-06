@@ -26,14 +26,14 @@
 ------------------------------------------------------------------------------*/
 
 // One past lead delimiter e.g  "...abc' -> '..abc', '..abc' -> '.abc', '.abc' -> 'abc'.
-PRIVATE U8 const * trimLeadDelimiter(U8 *wd)
+PRIVATE C8 const * trimLeadDelimiter(C8 *wd)
 {
    while( Str_Delimiter(*wd) ) { wd--; }     // Starting on a delimiter; backup until last char of previous word
    return wd+2;                              // Forward 2 to skip earliest delimiter.
 }
 
 // e.g ("abc...def", 1) -> '..def' or ('abc.def', 1) -> 'def'
-PRIVATE U8 const *trimLeadof_NthWord(U8 *wd, U8 idx)
+PRIVATE C8 const *trimLeadof_NthWord(C8 *wd, U8 idx)
 {
    wd = Str_GetNthWord(wd, idx);
    return
@@ -42,11 +42,11 @@ PRIVATE U8 const *trimLeadof_NthWord(U8 *wd, U8 idx)
          : trimLeadDelimiter(wd-1);       // else trim lead delimiter (above)
 }
 
-PUBLIC U8 GENERIC * Str_Delete( U8 GENERIC *lst, U8 start, U8 cnt )
+PUBLIC C8 GENERIC * Str_Delete( C8 GENERIC *lst, U8 start, U8 cnt )
 {
    // Note: We can case return from Str_GetNthWord() to non-const because we know that
    // return is 'lst' (which is non-const).
-   return (U8 GENERIC *)strcpy( (C8*)Str_GetNthWord(lst, start), (C8*)trimLeadof_NthWord(lst, start+cnt) );
+   return strcpy( Str_GetNthWord(lst, start), trimLeadof_NthWord(lst, start+cnt) );
 }
 
 // --------------------------- eof -------------------------------

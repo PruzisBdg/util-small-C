@@ -86,14 +86,14 @@ typedef struct {
     bool reqFloat;
 } T_FloatOrInt;
 
-PUBLIC U8 const * ReadASCIIToNum(U8 const *inTxt, T_FloatOrInt *out);
-PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out);
-PUBLIC BIT        GotFloatFromASCII(U8 const *inTxt, float *out);
+PUBLIC C8 const * ReadASCIIToNum(C8 const *inTxt, T_FloatOrInt *out);
+PUBLIC C8 const * ReadASCIIToFloat(C8 const *inTxt, float *out);
+PUBLIC BIT        GotFloatFromASCII(C8 const *inTxt, float *out);
 PUBLIC C8 const * ReadDirtyASCIIInt(C8 const *inTxt, S16 *out);
 PUBLIC BOOL       Stream_ReadDirtyASCIIInt(BOOL(*getCh)(C8*), S16 *out);
 PUBLIC C8 const * ReadDirtyASCII_S32(C8 const *inTxt, S32 *out);
 PUBLIC C8 const * ReadAsciiS32(C8 const *inTxt, S32 *out);
-PUBLIC U8 const * ReadDirtyBinaryWord(U8 const *inTxt, U16 *out);
+PUBLIC C8 const * ReadDirtyBinaryWord(C8 const *inTxt, U16 *out);
 PUBLIC C8 const * ReadTaggedASCIIInt(C8 const *in, C8 const *tag, S32 *out, C8 const *delimiters);
 PUBLIC C8 const * ReadThruToASCIIInt(C8 const *inTxt, S16 *out, BIT(*stripWith)(C8 ch));
 

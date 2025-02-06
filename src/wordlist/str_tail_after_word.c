@@ -20,7 +20,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC const * Str_TailAfterWord( U8 GENERIC const *lst, U8 GENERIC const *str )
+PUBLIC C8 GENERIC const * Str_TailAfterWord( C8 GENERIC const *lst, C8 GENERIC const *str )
 {
    U8 rIDATA ch,           // current char from 'lst'
             idx = 0,       // indexes 'str'

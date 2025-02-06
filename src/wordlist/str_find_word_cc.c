@@ -21,7 +21,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 Str_FindWord_CC( U8 CONST *lst, U8 CONST *str )
+PUBLIC U8 Str_FindWord_CC( C8 CONST *lst, C8 CONST *str )
 {
    U8 rIDATA ch,           // current char from 'lst'
             idx = 0,       // indexes 'str'

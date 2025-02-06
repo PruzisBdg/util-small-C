@@ -50,9 +50,9 @@ PRIVATE void finishMantissa(float *m)
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 const * ReadASCIIToFloat(U8 const *inTxt, float *out)
+PUBLIC C8 const * ReadASCIIToFloat(C8 const *inTxt, float *out)
 {
-   U8 DATA ch;                   // the current char
+   C8 DATA ch;                   // the current char
    U8 IDATA digitCnt = 0;        // digits so ofr in mantissa or exponent
    S16 exponent;
 

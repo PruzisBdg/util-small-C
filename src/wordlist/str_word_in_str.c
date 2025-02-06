@@ -16,7 +16,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC BIT Str_WordInStr( U8 GENERIC const *str, U8 GENERIC const *theWord )
+PUBLIC BIT Str_WordInStr( C8 GENERIC const *str, C8 GENERIC const *theWord )
 {
    return Str_FindWord(str, theWord) != _Str_NoMatch;
 }

@@ -16,7 +16,7 @@
 |
 ------------------------------------------------------------------------------------------*/
 
-PUBLIC U8 GENERIC * Str_GetNthWord( U8 GENERIC const *lst, U8 n )
+PUBLIC C8 GENERIC * Str_GetNthWord( C8 GENERIC const *lst, U8 n )
 {
    U8 rIDATA wordCnt,
              ch;      // current char
@@ -27,7 +27,7 @@ PUBLIC U8 GENERIC * Str_GetNthWord( U8 GENERIC const *lst, U8 n )
       ch = *lst;                             // next char
 
       if( ch == 0 )                          // is end of list?
-         { return (U8 GENERIC *)lst; }       // then return end ptr
+         { return (C8 GENERIC *)lst; }       // then return end ptr
 
       if( isSpc )                            // last was space?
       {
@@ -37,7 +37,7 @@ PUBLIC U8 GENERIC * Str_GetNthWord( U8 GENERIC const *lst, U8 n )
 
             if( wordCnt == n )               // nth word?
             {
-               return (U8 GENERIC *)lst;     // then return ptr to its 1st char
+               return (C8 GENERIC *)lst;     // then return ptr to its 1st char
             }
          }
       }
