@@ -53,7 +53,7 @@ PUBLIC BOOL IsPrintableStr_NoLongerThan(C8 const *str, U8 maxLen)
     {
         if(str[c] == '\0')
             { return TRUE; }
-        else if(!isprint(str[c]))
+        else if(!isprint((U8)str[c]))
             { return FALSE; }
     }
     return FALSE;
@@ -65,7 +65,7 @@ PUBLIC BOOL IsPrintableStr_NoLongerThan(C8 const *str, U8 maxLen)
 */
 PUBLIC U16 SafeStrCopy(C8 *out, C8 const *src, U16 maxCh) {
 	U16 chs; C8 *dest = out;
-	for(chs = 0; (isprint(*src) || isspace(*src)) && chs < maxCh; chs++) {
+	for(chs = 0; (isprint((U8)*src) || isspace((U8)*src)) && chs < maxCh; chs++) {
 		*dest++ = *src++; }
 	*dest = '\0';
 	return chs+1; }
@@ -77,7 +77,7 @@ PUBLIC U16 SafeStrCopy(C8 *out, C8 const *src, U16 maxCh) {
 */
 PUBLIC U16 TestStrPrintable(C8 const *str, U16 maxCh) {
 	U16 chs;
-	for(chs = 0; (isprint(*str) || isspace(*str)) && chs < maxCh; chs++, str++) {}
+	for(chs = 0; (isprint((U8)*str) || isspace((U8)*str)) && chs < maxCh; chs++, str++) {}
 	return *str != '\0' ? 0 : chs+1; }
 
 

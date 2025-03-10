@@ -102,14 +102,14 @@ PUBLIC BOOL FindHTTPstatusMsg(C8 const *str, S_MatchedinStr *match)
     S16 nnn;
 
     for(p = str; *p != '\0'; p++) {                                     // Until the end of 'str'
-        if(isdigit(*p)) {                                               // Got (1st) digit?
+        if(isdigit((U8)*p)) {                                           // Got (1st) digit?
             if(p > str) {                                               // If past start of string?...
-                if(isdigit(*(p-1))) {                                   // ...is previous char a digit?
+                if(isdigit((U8)*(p-1))) {                               // ...is previous char a digit?
                     continue; }}                                        // if yes, this is NOT start of a status code; move on.
                                                 // else got <not-digit> <digit>; continue checking
-            if(isspace(*(p+3))) {                                       // 4th char is space? AND
-                if(isdigit(*(p+1))) {                                   // ...2nd AND...
-                    if(isdigit(*(p+2)))                                 // ...3rd chars are digits?
+            if(isspace((U8)*(p+3))) {                                   // 4th char is space? AND
+                if(isdigit((U8)*(p+1))) {                               // ...2nd AND...
+                    if(isdigit((U8)*(p+2)))                             // ...3rd chars are digits?
                     {                                                   // then we have [no-digit,3digits,space]
                         ReadDirtyASCIIInt(p, &nnn);                     // Read the 'nnn'.
 

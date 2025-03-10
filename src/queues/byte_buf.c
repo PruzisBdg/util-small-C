@@ -40,6 +40,20 @@ PRIVATE void copyIn(S_byteBuf *b, U8 const *src, U8 cnt)
 
 /*-----------------------------------------------------------------------------------------
 |
+|  copyInReversed()
+|
+------------------------------------------------------------------------------------------*/
+
+PRIVATE void copyInReversed(S_byteBuf *b, U8 const *src, U8 cnt)
+{
+   for(U8 c = 0; c < cnt; c++ )
+   {
+      b->buf[b->cnt++] = src[cnt-c-1];
+   }
+}
+
+/*-----------------------------------------------------------------------------------------
+|
 |  fillUp()
 |
 ------------------------------------------------------------------------------------------*/
@@ -122,6 +136,34 @@ PUBLIC BIT byteBuf_Write(S_byteBuf *b, U8 const *src, U8 bytesToWrite)
 
 /*-----------------------------------------------------------------------------------------
 |
+|  byteBuf_Write_reversed()
+|
+|  Same as byteBuf_Write() but 'src[]' are copied in reverse order.
+|  Write 'bytesToWrite' from 'src' to 'b'. Don't write any of 'src' unless all will fit.
+|
+|  Return 0 if the write didn't happen.
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC BIT byteBuf_Write_reversed(S_byteBuf *b, U8 const *src, U8 bytesToWrite)
+{
+   if(b->locked ||                           // Buffer locked?
+      bytesToWrite > b->size - b->cnt )      // or not enough room?
+   {
+      return 0;                              // then can't do this write
+   }
+   else                                      // else we can proceed
+   {
+      b->locked = 1;                         // Lock it now, for duration of write
+      copyInReversed(b, src, bytesToWrite);  // .... but reversed.
+      b->locked = 0;                         // and we're done; unlock the queue.
+      return 1;                              // Return success
+   }
+}
+
+
+/*-----------------------------------------------------------------------------------------
+|
 |  byteBuf_Insert()
 |
 |  Write 'bytesToWrite' from 'src' to 'b' at index 'insertAt', moving up any bytes already
@@ -150,13 +192,13 @@ PUBLIC BIT byteBuf_Insert(S_byteBuf *b, U8 const *src, U8 insertAt, U8 numBytes)
          U8 afterInsert = b->cnt - insertAt;    // These many data bytes after the insertion point.
          moveUp(b, insertAt, insertAt + numBytes, afterInsert);
          b->cnt = insertAt;                     // Place 'put' here.
-         copyIn(b, src, numBytes);         // Copy in bytes to be inserted.
+         copyIn(b, src, numBytes);              // Copy in bytes to be inserted.
          b->cnt += afterInsert;                 // 'put' beyond to past the last data byte.
       }
       else                                      // else insertion point is past existing data
       {
          fillUp(b, 0, b->cnt - insertAt);       // Zero fill from last data to the insertion point
-         copyIn(b, src, numBytes);         // Append the bytes to insert.
+         copyIn(b, src, numBytes);              // Append the bytes to insert.
       }
 
       b->locked = 0;                            // and we're done; unlock the queue.
@@ -385,6 +427,37 @@ PUBLIC U8 byteBuf_Size(S_byteBuf *b)
 PUBLIC U8 byteBuf_Free(S_byteBuf *b)
 {
    return b->size - b->cnt;
+}
+
+
+/* ----------------------------------------------------------------------------------------
+|
+|  byteBuf_TakeBack()
+|
+|  Take back i.e unwrite 'nBytes' bytes from 'b'. If necessary back up 'get' so it is never
+|  past 'cnt' i.e you took back more bytes than there were to read and now there are exactly
+|  zero bytes to read.
+|
+|  If 'nBytes' is more than the number of bytes in 'b' then empties 'b'
+|
+------------------------------------------------------------------------------------------*/
+
+PUBLIC BIT byteBuf_TakeBack(S_byteBuf *b, U8 nBytes)
+{
+   if(b->locked)
+   {
+      return 0;
+   }
+   else
+   {
+      b->locked = 1;
+      b->cnt = nBytes >= b->cnt ? 0 : b->cnt - nBytes;   // Remove 'nBytes', up to emptying 'b'.
+      if(b->get > b->cnt)                                // 'get' now past 'cnt' i.e 'put'
+         {b->get = b->cnt;}                              // then back-up 'get' there are exactly 0 bytes to read.
+      b->locked = 0;
+      return 1;                                          // Always succeeds.
+   }
+
 }
 
 // ------------------------------------ eof -------------------------------------------------

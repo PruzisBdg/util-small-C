@@ -21,7 +21,7 @@ PUBLIC BOOL macAddr_LegalStr(C8 const * macStr)
         for(c = 0; c < RECORDS_IN(colonsAt); c++) {         // At each colon position...
             if( macStr[colonsAt[c]] != ':' )                // there's a colon?
                 return FALSE; }                             // No, fail.
-        if( isdigit(macStr[_MacAddr_Chars]) )               // There's a digit right after the last octect? e.g 00:11:22:33:44:556
+        if( isdigit((U8)macStr[_MacAddr_Chars]) )           // There's a digit right after the last octect? e.g 00:11:22:33:44:556
             { return FALSE; }                               // then consider this bogus.
         return TRUE;
     }

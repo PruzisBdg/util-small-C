@@ -26,9 +26,9 @@ PUBLIC C8 const *PrintIPAddr(C8 *out, T_IPAddrNum ip) {
 
 // Assuming we got a number with @lastDigit, that number has 1-3 digits.
 PRIVATE bool was1to3Digits(C8 const *start, C8 const *lastDigit) {
-   return                                                      // Either...
+   return                                                       // Either...
         lastDigit-start < _MaxOctectDigits ||                   // No more than 3 chars 'start' to 'lastDigit' (so number cannot have > 3 digits)? OR
-        isdigit(*(lastDigit-_MaxOctectDigits)) == false; }      // 3rd char back from 'lastDigit' is NOT a digit; so number cannot have > 3?
+        isdigit((U8)*(lastDigit-_MaxOctectDigits)) == false; }  // 3rd char back from 'lastDigit' is NOT a digit; so number cannot have > 3?
 
 PRIVATE bool endsOnAnOctet(S16 n, C8 const *str, C8 const *lastCh) {
     return _IsAnOctet(n) && was1to3Digits(str, lastCh); }
@@ -39,16 +39,16 @@ PRIVATE bool toAfterDot(C8 const **src) { U8 i;
         i++, (*src)++) {
         if(**src == '.') {                                      // Hit a '.'?
             (*src)++;                                           // Bump past that '.'
-            return isprint(**src) != 0                          // Return true if that ch is printable.
+            return isprint((U8)**src) != 0                      // Return true if that ch is printable.
                 ? true : false; }}
     return false; }
 
 // Up to 2 spaces then digit. Return on digit.
 PRIVATE bool toDigit(C8 const **src) { U8 i;
    for(i = 0;
-        (**src == ' ' || isdigit(**src)) && **src != '\0' && i < _MaxSpaces+1;       // While space OR digit AND 1st,2nd or 3rd char....
+        (**src == ' ' || isdigit((U8)**src)) && **src != '\0' && i < _MaxSpaces+1;       // While space OR digit AND 1st,2nd or 3rd char....
         i++, (*src)++) {
-       if(isdigit(**src))                                   // Hit a digit?
+       if(isdigit((U8)**src))                               // Hit a digit?
             { return true; }}                               // then return @digit.
     return false; }                                         // No digit within 3 chars -> fail.
 

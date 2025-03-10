@@ -161,7 +161,7 @@ PUBLIC C8 const * ReadASCIIToNum(C8 const *inTxt, T_FloatOrInt *out)
          */
          if( Str_Delimiter(ch) == 1 &&          // A delimiter specified by 'Str_Delimiters'?, Default is SPC.
              !(                                 // but NOT a "+' or '-' directly before a digit?
-                  (isdigit(*(inTxt+1)) || *(inTxt+1) == '.') &&
+                  (isdigit((U8)*(inTxt+1)) || (U8)*(inTxt+1) == '.') &&
                   (ch == '-' || ch == '+')
                ))
          {

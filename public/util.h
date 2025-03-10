@@ -200,6 +200,7 @@ PUBLIC void byteBuf_Init  ( S_byteBuf *b, U8 *buf, U8 size);
 PUBLIC BOOL byteBuf_Exists( S_byteBuf *b);
 PUBLIC void byteBuf_Flush ( S_byteBuf *b);
 PUBLIC BIT  byteBuf_Write ( S_byteBuf *b, U8 const *src, U8 bytesToWrite);
+PUBLIC BIT  byteBuf_Write_reversed(S_byteBuf *b, U8 const *src, U8 bytesToWrite);
 PUBLIC BIT  byteBuf_Insert(S_byteBuf *b, U8 const *src, U8 insertAt, U8 numBytes);
 PUBLIC BIT  byteBuf_Read  ( S_byteBuf *b, U8 *dest, U8 bytesToRead);
 PUBLIC BIT  byteBuf_ReadAt( S_byteBuf *b, U8 *dest, U8 from, U8 bytesToRead );
@@ -209,6 +210,7 @@ PUBLIC U8   byteBuf_Size  ( S_byteBuf *b);
 PUBLIC U8   byteBuf_Free  (S_byteBuf *b);
 PUBLIC void byteBuf_Unlock(S_byteBuf *b);
 PUBLIC BIT  byteBuf_ForcePut(S_byteBuf *b, U8 newPut);
+PUBLIC BIT  byteBuf_TakeBack(S_byteBuf *b, U8 nBytes);
 
 // Direct access to buffer.
 PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b);
