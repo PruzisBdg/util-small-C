@@ -58,6 +58,7 @@
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
+      <Value>%24(SPJ_SWR_LOC)\libs_common\public</Value>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
       <Value>%24(PackRepoDir)\Atmel\SAML22_DFP\1.2.77\include</Value>
     </ListValues>
@@ -71,6 +72,7 @@
     </ListValues>
   </armgcc.linker.libraries.Libraries>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
@@ -104,10 +106,10 @@
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\cmsis\5.0.1\CMSIS\Include\</Value>
-      <Value>../../GenericTypes</Value>
       <Value>../../private</Value>
       <Value>../../public</Value>
       <Value>../../src</Value>
+      <Value>%24(SPJ_SWR_LOC)\libs_common\public</Value>
       <Value>../../../arith/public</Value>
       <Value>../../../tiny2/public</Value>
       <Value>%24(PackRepoDir)\Atmel\SAML22_DFP\1.2.77\include</Value>
@@ -145,10 +147,6 @@
     <Compile Include="..\arith_incl\arith.h">
       <SubType>compile</SubType>
       <Link>arith_incl\arith.h</Link>
-    </Compile>
-    <Compile Include="..\GenericTypes\GenericTypeDefs.h">
-      <SubType>compile</SubType>
-      <Link>GenericTypes\GenericTypeDefs.h</Link>
     </Compile>
     <Compile Include="..\private\bit64k_copy_tests_inline.h">
       <SubType>compile</SubType>
@@ -806,7 +804,6 @@
     <Folder Include="Debug\" />
     <Folder Include="Debug\src\" />
     <Folder Include="Debug\src\stacks\" />
-    <Folder Include="GenericTypes" />
     <Folder Include="arith_incl" />
     <Folder Include="private" />
     <Folder Include="src" />
