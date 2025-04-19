@@ -314,6 +314,29 @@ PUBLIC U8 * byteBuf_PutAt(S_byteBuf *b)
    }
 }
 
+/* ---------------------------------------------------------------------------------------
+|
+|  byteBuf_Fill()
+|
+|   Fill with 'n'
+|
+----------------------------------------------------------------------------------------- */
+
+PUBLIC BIT byteBuf_Fill(S_byteBuf *b, U8 n, U8 bytesToWrite)
+{
+   if(b->locked ||                           // Buffer locked?
+      bytesToWrite > b->size - b->cnt )      // or not enough room?
+   {
+      return 0;                              // then can't do this write
+   }
+   else                                      // else we can proceed
+   {
+      b->locked = 1;                         // Lock it now, for duration of write
+      fillUp(b, n, bytesToWrite);
+      b->locked = 0;                         // and we're done; unlock the queue.
+      return 1;                              // Return success
+   }
+}
 
 /*-----------------------------------------------------------------------------------------
 |

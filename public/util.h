@@ -200,6 +200,7 @@ PUBLIC void byteBuf_Init  ( S_byteBuf *b, U8 *buf, U8 size);
 PUBLIC BOOL byteBuf_Exists( S_byteBuf *b);
 PUBLIC void byteBuf_Flush ( S_byteBuf *b);
 PUBLIC BIT  byteBuf_Write ( S_byteBuf *b, U8 const *src, U8 bytesToWrite);
+PUBLIC BIT  byteBuf_Fill(S_byteBuf *b, U8 n, U8 bytesToWrite);
 PUBLIC BIT  byteBuf_Write_reversed(S_byteBuf *b, U8 const *src, U8 bytesToWrite);
 PUBLIC BIT  byteBuf_Insert(S_byteBuf *b, U8 const *src, U8 insertAt, U8 numBytes);
 PUBLIC BIT  byteBuf_Read  ( S_byteBuf *b, U8 *dest, U8 bytesToRead);
