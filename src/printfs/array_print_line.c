@@ -151,8 +151,10 @@ PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 c
    U8 stride = sprintf( (C8[20]){}, fmt, srcA[0]);
    U8 blocks = MaxU16(aBytes, bBytes) / _BytesPerLine;
 
-   if( (3 * stride * MaxU16(aBytes, bBytes)) + (((3 * blocks)-1) * sizeof("\r\n")) > outBufLen) {
-      *out = '\0'; }
+   U16 outBytesBytesReqd = (3 * stride * MaxU16(aBytes, bBytes)) + (((3 * blocks)-1) * sizeof("\r\n"));
+
+   if( outBytesBytesReqd > outBufLen) {
+      sprintf(out, "PrintU8s_MarkDiffs(): Outbuf too small: need %u\r\n", outBytesBytesReqd); }
    else {
       while(aBytes > _BytesPerLine || bBytes > _BytesPerLine)
       {
