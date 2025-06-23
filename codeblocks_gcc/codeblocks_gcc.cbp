@@ -269,6 +269,9 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/bits/swar_u8s.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../src/codec/3of6.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
