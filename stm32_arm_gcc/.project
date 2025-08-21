@@ -280,11 +280,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/src/bits/idx_to_1st_bit_set_u8.c</locationURI>
 		</link>
 		<link>
-			<name>src/bits/make_masks - Copy.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src/bits/make_masks%20-%20Copy.c</locationURI>
-		</link>
-		<link>
 			<name>src/bits/make_masks.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/bits/make_masks.c</locationURI>
