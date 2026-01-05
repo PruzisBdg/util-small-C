@@ -285,6 +285,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/src/bits/make_masks.c</locationURI>
 		</link>
 		<link>
+			<name>src/bits/next_left_bit_u32.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src/bits/next_left_bit_u32.c</locationURI>
+		</link>
+		<link>
 			<name>src/bits/num_bits_set_u16.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/bits/num_bits_set_u16.c</locationURI>

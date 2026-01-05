@@ -285,6 +285,9 @@ PUBLIC U8  MakeAtoBSet_U8 (U8 msb, U8 lsb);
 PUBLIC U16 MakeAtoBSet_U16(U8 msb, U8 lsb);
 PUBLIC U32 MakeAtoBSet_U32(U8 msb, U8 lsb);
 
+typedef struct {U32 mask, rem;} S_BitMaskIterU32;
+U32 NextLeftBitU32(S_BitMaskIterU32 *m);
+
 /* ---------------------------------- BCD ------------------------------------------- */
 
 PUBLIC bool U8isBCD(U8 n);
@@ -939,6 +942,10 @@ PUBLIC C8 * EndStr(C8 * str);
 PUBLIC C8 const * EndStrC(C8 const * str);
 
 PUBLIC U8 strlenU8(C8 const* str);
+
+typedef struct {C8 *cs; U16 cnt;} S_BufC8;
+PUBLIC U16 PutStr_Safe(S_BufC8 *put, C8 const *str);
+PUBLIC U16 PutStrs_Safe(S_BufC8 *put, C8 const * const *strs, U8 cnt);
 
 // ------------------------------------------ CRCs --------------------------------------------
 
