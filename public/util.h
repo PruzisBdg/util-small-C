@@ -805,7 +805,7 @@ PUBLIC T_RegexRtn RegexLT_Replace     (C8 const *regexStr, C8 const *ien13757_Ma
 PUBLIC T_RegexRtn RegexLT_ReplaceProg (void *prog, C8 const *inStr, C8 const *replaceStr, C8 *out);
 PUBLIC C8 const * RegexLT_RtnStr      (T_RegexRtn r);
 PUBLIC void       RegexLT_FreeMatches (RegexLT_S_MatchList const *ml);
-PUBLIC T_RegexRtn RegexLT_FreeProgram (void *prog);
+PUBLIC T_RegexRtn RegexLT_FreeProgram (void const *prog);
 
 PUBLIC void       RegexLT_PrintMatchList(RegexLT_S_MatchList const *ml);
 PUBLIC void       RegexLT_PrintMatchList_OnOneLine(RegexLT_S_MatchList const *ml);
