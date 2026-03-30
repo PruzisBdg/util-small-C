@@ -34,18 +34,28 @@
 */
 PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
 {
-   if(pk->minLen == 0 ||                                       // Minmum book length specified as 0 (zero)? OR
-      src->cnt < pk->minLen) {                                 // 'src' doesn't hold even 1 book?
-      return NULL; }                                           // then bail now.
+   if(pk->minLen == 0 ||                                          // Minmum book length specified as 0 (zero)? OR
+      src->cnt < pk->minLen) {                                    // 'src' doesn't hold even 1 book?
+      return NULL; }                                              // then Illegal, bail now.
    else {
-      U8 *tail = src->bs;                                            // 'tail' starts at 1st book
-      T_ReBook const *t = pk->digest(tail, &(T_ReBook){});
+      // Setup initial tail. Length must be legal and fit in 'src'
+      U8 *tail = src->bs;                                         // 'tail' starts at 1st book
+      T_ReBook const *t = pk->digest(tail, &(T_ReBook){});        // digest() of 1st book, because need length
 
-      if(t->len + pk->minLen > src->cnt) {
-         return NULL; }
+      if(t->len < pk->minLen || t->len > src->cnt) {              // Too short (illegal)? ? OR longer than bookshelf?
+         return NULL; }                                           // then fail
 
-      U8 *head = src->bs + t->len;                                   // 'head' starts at 2nd book.
-      T_ReBook const *h = pk->digest(head, &(T_ReBook){});           // Get digest from 'head' book.
+      else if(t->len == src->cnt) {                               // Just 1 book?
+         if(t->keep == false) {                                   // Cull it?
+            src->cnt = 0; }                                       // then now 'src' is empty.
+         return src; }                                            // and we are done.
+
+      //else if(t->len + pk->minLen > src->cnt) {
+      //   return NULL; }
+
+      // Setup initial head
+      U8 *head = src->bs + t->len;                                // (else) 'head' starts at 2nd book.
+      T_ReBook const *h = pk->digest(head, &(T_ReBook){});        // Get digest from 'head' book.
 
       if(h->len + pk->minLen > src->cnt) {
          return NULL; }
@@ -64,9 +74,15 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
             tail += t->len;                                          // then advance 'tail' past that book.
 
             if(head > tail) {                                        // A gap from prev (tail) book to next (head) one?
-               memcpy(tail, head, h->len);}}                         // then copy-down head book over the gap.
+               memmove(tail, head, h->len);                          // then move-down head book over the gap.
+               head = tail; }}                                       // Adjust 'head' to match the move.
          else {                                                      // else overwrite the tail book...
-            memcpy(tail, head, h->len);                              // ... copy down the head book on top of it.
+            /* ... then move() down the head book on top of previous one (tail). This head book
+               becomes the new tail; the new Head is at 'head + h->len' (below).
+
+               Note it's a move i.e source image can overlap its destination.
+            */
+            memmove(tail, head, h->len);
 
             // Reduce total books-length by the size of the tail book which was just copied over.
             src->cnt -= t->len;
@@ -74,14 +90,17 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
             t = pk->digest(tail, &(T_ReBook){});        // New 'tail' book is...
 
             if(tail + t->len == src->bs + src->cnt) {
-               return src; }
-            }
+               return src; }}
 
          /* Whether we copied over the existing tail book or advanced 'tail' to the next book
             there is a new tail book. Update the tail-digest.
          */
          t = pk->digest(tail, &(T_ReBook){});        // New 'tail' book is...
 
+         if(tail + t->len == src->bs + src->cnt) {
+            if(t->keep == false) {
+               src->cnt -= t->len; }
+            return src; }
          /* Whatever we did above, advance 'head' to the next book.
          */
          if(head + h->len == src->bs + src->cnt) {
@@ -89,7 +108,6 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
                src->cnt -= h->len; }
             return src; }
          else if(head + h->len > src->bs + src->cnt) {
-printf("-------- here\r\n");
             return NULL; }
          else {
             head += h->len;
@@ -98,15 +116,10 @@ printf("-------- here\r\n");
          // If this book is too small then bail now.
          if(h->len < pk->minLen) {
             return NULL; }
-      } // while( ...)
+      } // while(1)
 
-      return NULL; }
+      return NULL; }       // while(1) so should never get here but some compilers complain.
 
-      /* If the last book went past the total books width then then somewhere there was
-         a bogus length. The return NULL indication failure. Else all-good; return 'src'
-      */
-//      return head + h->len != src->bs + src->cnt
-//               ? NULL : src; }
 } // CullPackedBooks()
 
 // ---------------------------------------- eof ----------------------------------------------------

@@ -989,7 +989,7 @@ typedef struct {     // 'Book' stats gotten by S_BookScanner.digest()
 typedef T_ReBook const * (*F_GetsDigest)(U8 const *bk, T_ReBook *dig);
 
 typedef struct {
-   F_GetsDigest digest;    // Return digets of a book.
+   F_GetsDigest digest;    // Return digets of a book (required).
    U8           minLen;    // Minimum length of a book.
 } S_BookScanner;
 
