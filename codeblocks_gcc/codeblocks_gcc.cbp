@@ -277,6 +277,11 @@
 		<Unit filename="../src/bits/swar_u8s.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/bookshelf/bookshelf.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Console" />
+		</Unit>
 		<Unit filename="../src/codec/3of6.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -926,6 +931,13 @@
 			<Option target="Unity TDD" />
 		</Unit>
 		<Unit filename="../unit_test/bits/test-bits.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bookshelf/bookshelf.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/bookshelf/test-bookshelf.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
