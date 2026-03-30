@@ -978,6 +978,24 @@ typedef struct {
 
 extern S_CodecBufU8 const en13757_3of6_Codec;
 
+// -------------------------------- Bookshelf Packer ---------------------------------------------
+
+typedef struct {     // 'Book' stats gotten by S_BookScanner.digest()
+   U16   len;        // Size of the 'book' in bytes, including the length/size encoding.
+   bool  keep;       // Keep this book; else remove from shelf.
+} T_ReBook;
+
+// Return stats 'info' from book 'at'.
+typedef T_ReBook const * (*F_GetsDigest)(U8 const *bk, T_ReBook *dig);
+
+typedef struct {
+   F_GetsDigest digest;    // Return digets of a book.
+   U8           minLen;    // Minimum length of a book.
+} S_BookScanner;
+
+PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src);
+
+
 // ================================= Macros ======================================================
 
 // CAT() force expansion of 'x','y' before they are pasted. Double XCAT() forces that expansion even
