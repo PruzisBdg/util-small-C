@@ -32,7 +32,7 @@
 
    A NULL return leaves the book & shelves in an undefined state.
 */
-PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
+PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *sts)
 {
    if(pk->minLen == 0 ||                                       // Minmum book length specified as 0 (zero)? OR
       src->cnt < pk->minLen) {                                 // 'src' doesn't hold even 1 book?
@@ -48,8 +48,11 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
          return NULL; }                                        // then fail
 
       else if(t->len == src->cnt) {                            // Just 1 book?
+         sts->nBooks++;
          if(t->keep == false) {                                // Cull it?
             src->cnt = 0; }                                    // then now 'src' is empty.
+         else {
+            sts->nCulled++; }
          return src; }                                         // and we are done.
 
       // Setup initial head
@@ -69,8 +72,9 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
          The gap between the the last moved book and the next grows as books are removed. When all
          books have been addressed they will be packed to left, with gap at right.
       */
-      while(1)
-      {
+      while(1) {
+         sts->nBooks++;
+
          if(t->keep == true) {                                 // Keep the tail book?
             tail += t->len;                                    // then advance 'tail' past that book.
 
@@ -86,7 +90,8 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src)
             memmove(tail, head, h->len);
 
             // Reduce total books-length by the size of the tail book which was just copied over.
-            src->cnt -= t->len; }
+            src->cnt -= t->len;
+            sts->nCulled++; }
 
          /* Whether we copied over the existing tail book or advanced 'tail' to the next book
             there is a new tail book. Update the tail-digest.

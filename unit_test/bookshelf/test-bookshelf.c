@@ -24,6 +24,20 @@ static T_ReBook const * alwaysKeep(U8 const *bk, T_ReBook *dig) {
    return dig; }
 
 S_BookScanner scanner;
+S_ScanStats stats;
+
+/* -------------------------- initScan -------------------------------------
+
+*/
+static void initScan(S_BookScanner *s, F_GetsDigest d)
+{
+   s->minLen = 2;          // A book is a least 2bytes
+   s->digest = d;
+}
+
+
+
+static void initStats()
 
 /* --------------------------------- test_NoBooks ---------------------------------------
 
@@ -35,16 +49,18 @@ void test_NoBooks(void) {
    U8 b0[4] = {0,1,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 1};
 
-   scanner.digest = alwaysKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, alwaysKeep);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 unchanged.
    TEST_ASSERT_NULL(rtn);
    TEST_ASSERT_EQUAL_UINT8(1, bs0->cnt);
    U8 bout[4] = {0,1,2,3};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
+
+   TEST_ASSERT_EQUAL_UINT8(0, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT8(0, stats.nCulled);
 }
 
 /* ------------------------------ maybeKeep ------------------------------------
@@ -64,16 +80,18 @@ void test_keepOne(void)
    U8 b0[4] = {4,1,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns bs0 unchanged.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
    TEST_ASSERT_EQUAL_UINT8(4, bs0->cnt);
    U8 bout[4] = {4,1,2,3};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
+
+   TEST_ASSERT_EQUAL_UINT8(1, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT8(0, stats.nCulled);
 }
 
 /* ---------------------------------- test_RemoveOne --------------------------------- */
@@ -84,10 +102,9 @@ void test_RemoveOne(void)
    U8 b0[4] = {4,0,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns bs0 with count <- 0.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -104,10 +121,9 @@ void test_OneUndersized(void)
    U8 b0[4] = {1,10,11,12};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 unchanged.
    TEST_ASSERT_NULL(rtn);
@@ -124,10 +140,9 @@ void test_OneOversized(void)
    U8 b0[4] = {6,1,11,12};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 unchanged.
    TEST_ASSERT_NULL(rtn);
@@ -144,10 +159,9 @@ void test_Keep1st_2ndUndersized(void)
    U8 b0[6] = {3,1,8,  1,9,10};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 6};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 unchanged, but minus the illegal latter book.
    TEST_ASSERT_NULL(rtn);
@@ -164,10 +178,9 @@ void test_Keep1st_2ndOversized(void)
    U8 b0[6] = {3,1,8,  4,9,10};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 6};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns NULL, count omits 2nd illegal book.
    TEST_ASSERT_NULL(rtn);
@@ -185,10 +198,9 @@ void test_KeepBoth(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2 bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns bs0, which is unchanged.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -208,10 +220,9 @@ void test_CullLast(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2 bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns bs0 with just the 1st book.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -233,10 +244,9 @@ void test_Cull1stOfTwo(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -252,10 +262,9 @@ void test_Cull1stOfTwo(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -276,10 +285,9 @@ void test_CullBoth(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -295,10 +303,9 @@ void test_CullBoth(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -321,10 +328,9 @@ void test_IllegalLast(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
@@ -340,10 +346,9 @@ void test_IllegalLast(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
@@ -359,10 +364,9 @@ void test_IllegalLast(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
@@ -382,10 +386,9 @@ void test_KeepAll3(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2 bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns bs0 with 2nd & 3rd books at left.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -404,10 +407,9 @@ void test_CullAll3(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2 bytes
+   initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    // Returns bs0 with length zero
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -427,10 +429,9 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -446,10 +447,9 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -465,10 +465,9 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -484,10 +483,9 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -509,10 +507,9 @@ void test_IllegalLast_of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_NULL(rtn);
@@ -527,10 +524,9 @@ void test_IllegalLast_of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      scanner.digest = maybeKeep;
-      scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_NULL(rtn);
@@ -539,8 +535,6 @@ void test_IllegalLast_of3(void)
       U8 bout[9] = {3,1,10,  2,1,  5,1,5,6};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
    }
-
-
 }
 
 

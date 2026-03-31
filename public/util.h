@@ -989,11 +989,18 @@ typedef struct {     // 'Book' stats gotten by S_BookScanner.digest()
 typedef T_ReBook const * (*F_GetsDigest)(U8 const *bk, T_ReBook *dig);
 
 typedef struct {
-   F_GetsDigest digest;    // Return digets of a book (required).
-   U8           minLen;    // Minimum length of a book.
+   F_GetsDigest digest;    // Return digest of a book (required).
+   U8       minLen;        // Minimum length of a book.
 } S_BookScanner;
 
-PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src);
+typedef struct {
+   U16      nBooks,        // Number of books originally.
+            nCulled;       // Number removed.
+   U16      badOfs,        // If (1st) bad book, where in 'src'
+            badIdx;        // 0 <- bad book is 1st one etc.
+} S_ScanStats;
+
+PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *sts);
 
 
 // ================================= Macros ======================================================

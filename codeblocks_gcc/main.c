@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 S_BookScanner scanner;
+S_ScanStats stats;
 
 // A digest for a book where book[0] is length and keep if book[1] > 0.
 static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
@@ -21,7 +22,7 @@ int main (void)
    scanner.digest = maybeKeep;
    scanner.minLen = 2;           // A book is a least 2 bytes
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
    printf("--------------- done\r\n");
 }
