@@ -996,8 +996,7 @@ typedef struct {
 typedef struct {
    U16      nBooks,        // Number of books originally.
             nCulled;       // Number removed.
-   U16      badOfs,        // If (1st) bad book, where in 'src'
-            badIdx;        // 0 <- bad book is 1st one etc.
+   U16      badIdx;        // 0 <- bad book is 1st one etc.
 } S_ScanStats;
 
 PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *sts);

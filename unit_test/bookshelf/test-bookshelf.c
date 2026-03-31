@@ -26,7 +26,7 @@ static T_ReBook const * alwaysKeep(U8 const *bk, T_ReBook *dig) {
 S_BookScanner scanner;
 S_ScanStats stats;
 
-/* -------------------------- initScan -------------------------------------
+/* ------------------------------ initScan -------------------------------------
 
 */
 static void initScan(S_BookScanner *s, F_GetsDigest d)
@@ -35,9 +35,17 @@ static void initScan(S_BookScanner *s, F_GetsDigest d)
    s->digest = d;
 }
 
+/* --------------------------------- prefillStats --------------------------------------
+
+   Prefill with 0x5A5A so we can see which fields were updated.
+*/
+#define _StatsInit 0x5A5A
+static void prefillStats(S_ScanStats *s)
+{
+   s->badIdx = s->nBooks = s->nCulled = _StatsInit;
+}
 
 
-static void initStats()
 
 /* --------------------------------- test_NoBooks ---------------------------------------
 
@@ -50,6 +58,7 @@ void test_NoBooks(void) {
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 1};
 
    initScan(&scanner, alwaysKeep);
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -58,9 +67,9 @@ void test_NoBooks(void) {
    TEST_ASSERT_EQUAL_UINT8(1, bs0->cnt);
    U8 bout[4] = {0,1,2,3};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
-
-   TEST_ASSERT_EQUAL_UINT8(0, stats.nBooks);
-   TEST_ASSERT_EQUAL_UINT8(0, stats.nCulled);
+   // No books processed.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nCulled);
 }
 
 /* ------------------------------ maybeKeep ------------------------------------
@@ -81,6 +90,7 @@ void test_keepOne(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -89,20 +99,21 @@ void test_keepOne(void)
    TEST_ASSERT_EQUAL_UINT8(4, bs0->cnt);
    U8 bout[4] = {4,1,2,3};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
-
-   TEST_ASSERT_EQUAL_UINT8(1, stats.nBooks);
-   TEST_ASSERT_EQUAL_UINT8(0, stats.nCulled);
+   // 1 book processed.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nCulled);
 }
 
 /* ---------------------------------- test_RemoveOne --------------------------------- */
 
 void test_RemoveOne(void)
 {
-   // Single 4-byte book which we keep
+   // Single 4-byte book which we remove
    U8 b0[4] = {4,0,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -111,6 +122,10 @@ void test_RemoveOne(void)
    TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
    U8 bout[4] = {4,0,2,3};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
+
+   // 1 book processed and removed.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nCulled);
 }
 
 /* ----------------------------- test_OneUndersized --------------------------------- */
@@ -122,6 +137,7 @@ void test_OneUndersized(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -130,6 +146,13 @@ void test_OneUndersized(void)
    TEST_ASSERT_EQUAL_UINT8(4, bs0->cnt);
    U8 bout[4] = {1,10,11,12};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
+
+   // No book processed.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nCulled);
+
+   // The bad book was the 1st one, at 'src[0]'
+   TEST_ASSERT_EQUAL_UINT16(0, stats.badIdx);
 }
 
 /* ----------------------------- test_OneOversized --------------------------------- */
@@ -141,6 +164,7 @@ void test_OneOversized(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -149,6 +173,13 @@ void test_OneOversized(void)
    TEST_ASSERT_EQUAL_UINT8(4, bs0->cnt);
    U8 bout[4] = {6,1,11,12};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 4);
+
+   // No book processed.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nCulled);
+
+   // The bad book was the 1st one, at 'src[0]'
+   TEST_ASSERT_EQUAL_UINT16(0, stats.badIdx);
 }
 
 /* ----------------------------- test_Keep1st_2ndUndersized ----------------------------- */
@@ -160,6 +191,7 @@ void test_Keep1st_2ndUndersized(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 6};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -168,6 +200,13 @@ void test_Keep1st_2ndUndersized(void)
    TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
    U8 bout[6] = {3,1,8,  1,9,10};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 6);
+
+   // No book processed.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit,  stats.nCulled);
+
+   // The bad book was the 2nd one, at 'src[3]' (above)
+   TEST_ASSERT_EQUAL_UINT16(1, stats.badIdx);
 }
 
 /* ----------------------------- test_Keep1st_2ndOversized ----------------------------- */
@@ -179,6 +218,7 @@ void test_Keep1st_2ndOversized(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 6};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -199,6 +239,7 @@ void test_KeepBoth(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -207,6 +248,10 @@ void test_KeepBoth(void)
    TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
    U8 bout[5] = {3,1,10,  2,1};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+   // 2 books processed; none culled.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit,  stats.nCulled);
 }
 
 /* -------------------------------- test_CullLast --------------------------------
@@ -221,6 +266,7 @@ void test_CullLast(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -230,6 +276,10 @@ void test_CullLast(void)
    // Bytes for 2nd book was left in-place, even though its gone.
    U8 bout[5] = {3,1,10,  2,0};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+   // 2 books processed; 1 culled.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
 }
 
 /* -------------------------------- test_Cull1stOfTwo ------------------------------------
@@ -238,6 +288,9 @@ void test_CullLast(void)
 */
 void test_Cull1stOfTwo(void)
 {
+   // To test that stats are cumulative; reset them just here, before running 2 CullPackedBooks() below.
+   prefillStats(&stats);
+
    {
       // 2 Books, different lengths, remove 1st book.
       U8 b0[] = {3,0,10,  2,1};
@@ -254,6 +307,10 @@ void test_Cull1stOfTwo(void)
       // Original bytes for 2nd book are left in-place, even though 2nd book was copied down over 1st.
       U8 bout[5] = {2,1,10,  2,1};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // 2 books processed; 1 culled.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
    }
 
    {
@@ -272,6 +329,11 @@ void test_Cull1stOfTwo(void)
       // Original bytes for 2nd book are left in-place, even though 2nd book was copied down over 1st.
       U8 bout[5] = {3,1,10,  1,10};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // Another 2 books processed; another 1 culled.
+      // Add +2, +1 to exising totals.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+4, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2,  stats.nCulled);
    }
 }
 
@@ -279,6 +341,8 @@ void test_Cull1stOfTwo(void)
 */
 void test_CullBoth(void)
 {
+   // To test that stats are cumulative; reset them just here, before running 2 CullPackedBooks() below.
+   prefillStats(&stats);
    {
       // 2 Books, different lengths, remove both books.
       U8 b0[] = {3,0,10,  2,0};
@@ -295,6 +359,10 @@ void test_CullBoth(void)
       // Original bytes for 2nd book are left in-place, even though 2nd book was copied down over 1st.
       U8 bout[5] = {2,0,10,  2,0};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // 2 books processed; 2 culled.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2,  stats.nCulled);
    }
 
    {
@@ -313,6 +381,10 @@ void test_CullBoth(void)
       // Original bytes for 2nd book are left in-place, even though 2nd book was copied down over 1st.
       U8 bout[5] = {3,0,10,  0,10};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // Another 2 books processed; another 2 culled.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+4, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+4,  stats.nCulled);
    }
 }
 
@@ -322,6 +394,9 @@ void test_CullBoth(void)
 */
 void test_IllegalLast(void)
 {
+   // Reset Stats just here, before running 3 CullPackedBooks() below.
+   prefillStats(&stats);
+
    {
       // 2 Books, different lengths, remove both; but 2nd has illegal length (1).
       U8 b0[] = {3,0,10,  1,0};
@@ -338,6 +413,10 @@ void test_IllegalLast(void)
       TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
       U8 bout[5] = {3,0,10,  1,0};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // 1 book processed; 1 culled; 2nd was rejected.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
    }
 
    {
@@ -356,6 +435,10 @@ void test_IllegalLast(void)
       TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
       U8 bout[5] = {3,1,10,  1,0};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // (another) 1 book processed; 0 (more)  culled; 2nd was rejected.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
    }
 
    {
@@ -374,6 +457,10 @@ void test_IllegalLast(void)
       TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
       U8 bout[5] = {3,0,10,  3,0};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // (another) 1 book processed; 1 (more) culled; 2nd was rejected.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2,  stats.nCulled);
    }
 }
 
@@ -387,6 +474,7 @@ void test_KeepAll3(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -396,6 +484,10 @@ void test_KeepAll3(void)
    // Part of the orignal 3rd book is left in-place.
    U8 bout[9] = {3,1,10,  2,1,  4,1,5,6};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+
+   // 3 books process; none culled.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit,   stats.nCulled);
 }
 
 /* ------------------------------ test_CullAll3 --------------------------------- */
@@ -408,6 +500,7 @@ void test_CullAll3(void)
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
    initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+   prefillStats(&stats);
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
 
@@ -417,6 +510,10 @@ void test_CullAll3(void)
    // Not reqd. for test but see 3rd book now at left because 2 preceding ones were deleted.
    U8 bout[9] = {4,0,5,6,  0, 4,0,5,6};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+
+   // 3 books process; none culled.
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nBooks);
+   TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nCulled);
 }
 
 /* ----------------------------- test_Cull_1of3 -------------------------------

@@ -14,7 +14,7 @@
 
    Given a shelf of packed books in 'src' and 'pk->digest()' to query the size of a book and whether
    it should be culled, remove zero of more books from the 'shelf', leaving the remaining books packed
-   to the 'left', low memory.
+   to the 'left', low memory. Accumulate 'stats' on the cull.
 
    The method goes left-to-right, moving one book at a time i.e it is O(1) for shelf-size. Each book
    contains its own size 'len'. 'pk->digest()' determines whether it should be kept or culled.
@@ -32,8 +32,12 @@
 
    A NULL return leaves the book & shelves in an undefined state.
 */
-PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *sts)
+PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *stats)
 {
+   void bumpBooksCnt(S_ScanStats *s)      { if(s != NULL) s->nBooks++; }
+   void bumpCulledCnt(S_ScanStats *s)     { if(s != NULL) s->nCulled++; }
+   void wrBadIdx(S_ScanStats *s, U16 n)   { if(s != NULL) s->badIdx = n; }
+
    if(pk->minLen == 0 ||                                       // Minmum book length specified as 0 (zero)? OR
       src->cnt < pk->minLen) {                                 // 'src' doesn't hold even 1 book?
       return NULL; }                                           // then Illegal, bail now.
@@ -45,23 +49,29 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
       T_ReBook const *t = pk->digest(tail, &(T_ReBook){});     // digest() of 1st book, because need length
 
       if(t->len < pk->minLen || t->len > src->cnt) {           // Too short (illegal)? ? OR longer than bookshelf?
+         wrBadIdx(stats, 0);
          return NULL; }                                        // then fail
 
-      else if(t->len == src->cnt) {                            // Just 1 book?
-         sts->nBooks++;
+      bumpBooksCnt(stats);                                         // 1st legal book; bump count.
+
+      if(t->len == src->cnt) {                                 // Ends here, so just 1 book?
          if(t->keep == false) {                                // Cull it?
-            src->cnt = 0; }                                    // then now 'src' is empty.
-         else {
-            sts->nCulled++; }
+            src->cnt = 0;                                      // then now 'src' is empty.
+            bumpCulledCnt(stats); }                                // bump culled-count.
          return src; }                                         // and we are done.
 
-      // Setup initial head
+      // Setup initial head (to the 2nd book)
       U8 *head = src->bs + t->len;                             // (else) 'head' starts at 2nd book.
       T_ReBook const *h = pk->digest(head, &(T_ReBook){});     // Get digest from 'head' book.
 
-      if(h->len < pk->minLen || h->len + t->len > src->cnt) {
-         src->cnt = t->keep == true ? t->len : 0;
-         return NULL; }
+      if(h->len < pk->minLen || h->len + t->len > src->cnt) {  // 2nd book illegal-length? too short or past end of bookshelf.
+         src->cnt = t->keep == true                            // If culling 1st book then src->cnt <- 0 ...
+            ? t->len : 0;                                      // .. else src->cnt is length of 1st book.
+
+         if(t->keep == false) {                                // Culling 1st book?
+            bumpCulledCnt(stats);}                             // then bump cull-count.
+         stats->badIdx = 1;                                    // Mark 2nd book (idx <- 1) as bad.
+         return NULL; }    // fail. Processed 1 book then found a bad one.
 
       /* -------- Loop
 
@@ -73,7 +83,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          books have been addressed they will be packed to left, with gap at right.
       */
       while(1) {
-         sts->nBooks++;
+         bumpBooksCnt(stats);
 
          if(t->keep == true) {                                 // Keep the tail book?
             tail += t->len;                                    // then advance 'tail' past that book.
@@ -91,7 +101,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
             // Reduce total books-length by the size of the tail book which was just copied over.
             src->cnt -= t->len;
-            sts->nCulled++; }
+            bumpCulledCnt(stats); }
 
          /* Whether we copied over the existing tail book or advanced 'tail' to the next book
             there is a new tail book. Update the tail-digest.
@@ -99,22 +109,17 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          t = pk->digest(tail, &(T_ReBook){});        // New 'tail' book is...
 
 
-         // ------- Loop-done checks
+         // ------- maybe Loop-exit.
 
          /* If this tail book ends at the current books-width then its the last on
             the shelf. Done, no error! if not keeping the book the adjust src->cnt downwards.
          */
          if(tail + t->len == src->bs + src->cnt) {             // This tail book is the last one?
             if(t->keep == false) {                             // Not keeping this last book
-               src->cnt -= t->len; }                           // then adjust 'src->cnt' downwards.
+               src->cnt -= t->len;                             // then adjust 'src->cnt' downwards.
+               bumpCulledCnt(stats); }
             return src; }                                      // return 'src' => success.
 
-#if 0
-         else if(head + h->len == src->bs + src->cnt) {
-            if(h->keep == false) {
-               src->cnt -= h->len; }
-            return src; }
-#endif
          /* If head book will go past end of current books counts then width is not legal.
             Subtract it from src->cnt and return fail.
          */
