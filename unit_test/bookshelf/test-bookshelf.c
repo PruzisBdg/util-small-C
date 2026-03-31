@@ -149,9 +149,9 @@ void test_Keep1st_2ndUndersized(void)
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
 
-   // Returns NULL, bs0 unchanged.
+   // Returns NULL, bs0 unchanged, but minus the illegal latter book.
    TEST_ASSERT_NULL(rtn);
-   TEST_ASSERT_EQUAL_UINT8(6, bs0->cnt);
+   TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
    U8 bout[6] = {3,1,8,  1,9,10};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 6);
 }
@@ -169,9 +169,9 @@ void test_Keep1st_2ndOversized(void)
 
    S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
 
-   // Returns NULL, bs0 unchanged.
+   // Returns NULL, count omits 2nd illegal book.
    TEST_ASSERT_NULL(rtn);
-   TEST_ASSERT_EQUAL_UINT8(6, bs0->cnt);
+   TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
    U8 bout[6] = {3,1,8,  4,9,10};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 6);
 }
@@ -266,6 +266,157 @@ void test_Cull1stOfTwo(void)
    }
 }
 
+/* -------------------------------- test_CullBoth -------------------------------------
+*/
+void test_CullBoth(void)
+{
+   {
+      // 2 Books, different lengths, remove both books.
+      U8 b0[] = {3,0,10,  2,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns bs0 with just the 2nd book at left.
+      TEST_ASSERT_EQUAL_PTR(bs0, rtn);
+      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      // Original bytes for 2nd book are left in-place, even though 2nd book was copied down over 1st.
+      U8 bout[5] = {2,0,10,  2,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+   }
+
+   {
+      // 2 Books, different lengths, remove both books.
+      U8 b0[] = {2,0,  3,0,10};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns bs0 with just the 2nd book at left.
+      TEST_ASSERT_EQUAL_PTR(bs0, rtn);
+      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      // Original bytes for 2nd book are left in-place, even though 2nd book was copied down over 1st.
+      U8 bout[5] = {3,0,10,  0,10};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+   }
+}
+
+/* --------------------------- test_IllegalLast -------------------------------
+
+   Last /rightmost book illegal length.
+*/
+void test_IllegalLast(void)
+{
+   {
+      // 2 Books, different lengths, remove both; but 2nd has illegal length (1).
+      U8 b0[] = {3,0,10,  1,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns NULL / fail.
+      TEST_ASSERT_NULL(rtn);
+      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
+      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      U8 bout[5] = {3,0,10,  1,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+   }
+
+   {
+      // 2 Books, different lengths, remove 2nd; but 2nd has illegal length (1).
+      U8 b0[] = {3,1,10,  1,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns NULL / fail.
+      TEST_ASSERT_NULL(rtn);
+      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
+      TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
+      U8 bout[5] = {3,1,10,  1,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+   }
+
+   {
+      // 2 Books, different lengths, remove both; but 2nd has illegal length (too long).
+      U8 b0[] = {3,0,10,  3,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns NULL / fail.
+      TEST_ASSERT_NULL(rtn);
+      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
+      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      U8 bout[5] = {3,0,10,  3,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+   }
+}
+
+/* --------------------------- test_KeepAll3 -------------------------------- */
+
+void test_KeepAll3(void)
+{
+   // 3 Books, different lengths, keep all.
+   U8 b0[] = {3,1,10,  2,1,  4,1,5,6};
+
+   S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
+
+   scanner.digest = maybeKeep;
+   scanner.minLen = 2;           // A book is a least 2 bytes
+
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+   // Returns bs0 with 2nd & 3rd books at left.
+   TEST_ASSERT_EQUAL_PTR(bs0, rtn);
+   TEST_ASSERT_EQUAL_UINT8(9, bs0->cnt);
+   // Part of the orignal 3rd book is left in-place.
+   U8 bout[9] = {3,1,10,  2,1,  4,1,5,6};
+   TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+}
+
+/* ------------------------------ test_CullAll3 --------------------------------- */
+
+void test_CullAll3(void)
+{
+   // 3 Books, different lengths, cull all.
+   U8 b0[] = {3,0,10,  2,0,  4,0,5,6};
+
+   S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
+
+   scanner.digest = maybeKeep;
+   scanner.minLen = 2;           // A book is a least 2 bytes
+
+   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+   // Returns bs0 with length zero
+   TEST_ASSERT_EQUAL_PTR(bs0, rtn);
+   TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+   // Not reqd. for test but see 3rd book now at left because 2 preceding ones were deleted.
+   U8 bout[9] = {4,0,5,6,  0, 4,0,5,6};
+   TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+}
+
 /* ----------------------------- test_Cull_1of3 -------------------------------
 */
 void test_Cull_1of3(void)
@@ -345,6 +496,50 @@ void test_Cull_1of3(void)
       U8 bout[9] = {2,1, 4,1,5,6,  1,5,6};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
    }
+} // test_Cull_1of3
+
+
+/* --------------------------- test_IllegalLast_of3 ------------------------ */
+
+void test_IllegalLast_of3(void)
+{
+   {
+      // 3 Books, different lengths, but 3rd has illegal length 1 .
+      U8 b0[] = {3,1,10,  2,1,  1,1,5,6};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns bs0 with 2nd & 3rd books at left.
+      TEST_ASSERT_NULL(rtn);
+      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
+      // Part of the orignal 3rd book is left in-place.
+      U8 bout[9] = {3,1,10,  2,1,  1,1,5,6};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+   }
+   {
+      // 3 Books, different lengths, but 3rd has illegal length 1 .
+      U8 b0[] = {3,1,10,  2,1,  5,1,5,6};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
+
+      scanner.digest = maybeKeep;
+      scanner.minLen = 2;           // A book is a least 2 bytes
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0);
+
+      // Returns bs0 with 2nd & 3rd books at left.
+      TEST_ASSERT_NULL(rtn);
+      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
+      // Part of the orignal 3rd book is left in-place.
+      U8 bout[9] = {3,1,10,  2,1,  5,1,5,6};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+   }
+
 
 }
 

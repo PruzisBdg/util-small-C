@@ -14,13 +14,7 @@ static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
 
 int main (void)
 {
-   // 3 Books, different lengths, remove 1st book.
-   //U8 b0[] = {3,0,10,  2,1, 4,1,5,6};
-
-   //S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
-
-   // 2 Books, different lengths, remove 2nd book.
-   U8 b0[] = {3,1,10,  2,0};
+   U8 b0[] = {3,0,10,  2,0};
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
