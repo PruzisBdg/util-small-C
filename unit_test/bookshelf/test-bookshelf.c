@@ -23,6 +23,16 @@ static T_ReBook const * alwaysKeep(U8 const *bk, T_ReBook *dig) {
    dig->keep = true;
    return dig; }
 
+/* ------------------------------ maybeKeep ------------------------------------
+
+   A digest for a book where book[0] is length and keep if book[1] > 0.
+*/
+static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
+   dig->len = bk[0];
+   dig->keep = bk[1] > 0 ? true : false;
+   return dig; }
+
+
 S_BookScanner scanner;
 S_ScanStats stats;
 
@@ -45,7 +55,7 @@ static void prefillStats(S_ScanStats *s)
    s->badIdx = s->nBooks = s->nCulled = _StatsInit;
 }
 
-
+// ============================ Null Books tests =====================================
 
 /* --------------------------------- test_NoBooks ---------------------------------------
 
@@ -72,14 +82,14 @@ void test_NoBooks(void) {
    TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nCulled);
 }
 
-/* ------------------------------ maybeKeep ------------------------------------
+/* ============================ ends: Null Books tests =============================
 
-   A digest for a book where book[0] is length and keep if book[1] > 0.
-*/
-static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
-   dig->len = bk[0];
-   dig->keep = bk[1] > 0 ? true : false;
-   return dig; }
+
+
+
+
+// =========================== Legal Books tests ===========================
+
 
 /* ---------------------------------- test_keepOne --------------------------------- */
 
@@ -388,82 +398,6 @@ void test_CullBoth(void)
    }
 }
 
-/* --------------------------- test_IllegalLast -------------------------------
-
-   Last /rightmost book illegal length.
-*/
-void test_IllegalLast(void)
-{
-   // Reset Stats just here, before running 3 CullPackedBooks() below.
-   prefillStats(&stats);
-
-   {
-      // 2 Books, different lengths, remove both; but 2nd has illegal length (1).
-      U8 b0[] = {3,0,10,  1,0};
-
-      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
-
-      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
-
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
-
-      // Returns NULL / fail.
-      TEST_ASSERT_NULL(rtn);
-      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
-      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
-      U8 bout[5] = {3,0,10,  1,0};
-      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
-
-      // 1 book processed; 1 culled; 2nd was rejected.
-      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nBooks);
-      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
-   }
-
-   {
-      // 2 Books, different lengths, remove 2nd; but 2nd has illegal length (1).
-      U8 b0[] = {3,1,10,  1,0};
-
-      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
-
-      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
-
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
-
-      // Returns NULL / fail.
-      TEST_ASSERT_NULL(rtn);
-      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
-      TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
-      U8 bout[5] = {3,1,10,  1,0};
-      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
-
-      // (another) 1 book processed; 0 (more)  culled; 2nd was rejected.
-      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
-      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
-   }
-
-   {
-      // 2 Books, different lengths, remove both; but 2nd has illegal length (too long).
-      U8 b0[] = {3,0,10,  3,0};
-
-      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
-
-      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
-
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
-
-      // Returns NULL / fail.
-      TEST_ASSERT_NULL(rtn);
-      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
-      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
-      U8 bout[5] = {3,0,10,  3,0};
-      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
-
-      // (another) 1 book processed; 1 (more) culled; 2nd was rejected.
-      TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nBooks);
-      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2,  stats.nCulled);
-   }
-}
-
 /* --------------------------- test_KeepAll3 -------------------------------- */
 
 void test_KeepAll3(void)
@@ -594,46 +528,6 @@ void test_Cull_1of3(void)
 } // test_Cull_1of3
 
 
-/* --------------------------- test_IllegalLast_of3 ------------------------ */
-
-void test_IllegalLast_of3(void)
-{
-   {
-      // 3 Books, different lengths, but 3rd has illegal length 1 .
-      U8 b0[] = {3,1,10,  2,1,  1,1,5,6};
-
-      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
-
-      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
-
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
-
-      // Returns bs0 with 2nd & 3rd books at left.
-      TEST_ASSERT_NULL(rtn);
-      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
-      // Part of the orignal 3rd book is left in-place.
-      U8 bout[9] = {3,1,10,  2,1,  1,1,5,6};
-      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
-   }
-   {
-      // 3 Books, different lengths, but 3rd has illegal length 1 .
-      U8 b0[] = {3,1,10,  2,1,  5,1,5,6};
-
-      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
-
-      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
-
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
-
-      // Returns bs0 with 2nd & 3rd books at left.
-      TEST_ASSERT_NULL(rtn);
-      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
-      // Part of the orignal 3rd book is left in-place.
-      U8 bout[9] = {3,1,10,  2,1,  5,1,5,6};
-      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
-   }
-}
-
 /* --------------------------------------- test_5 ----------------------------------------------
 
    5 books/records; various combos. (3 above should be enough to check loop; but just be sure).
@@ -680,6 +574,128 @@ void test_5(void) {
       // 5 books processed; none culled.
       TEST_ASSERT_EQUAL_UINT16(_StatsInit+5, stats.nBooks);
       TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nCulled);
+   }
+}
+
+// =========================== ends: Legal Books tests ===========================
+
+
+
+// =========================== Bad Books Tests ====================================
+
+/* --------------------------- test_IllegalLast -------------------------------
+
+   Last /rightmost book illegal length.
+*/
+void test_IllegalLast(void)
+{
+   // Reset Stats just here, before running 3 CullPackedBooks() below.
+   prefillStats(&stats);
+
+   {
+      // 2 Books, different lengths, remove both; but 2nd has illegal length (1).
+      U8 b0[] = {3,0,10,  1,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns NULL / fail.
+      TEST_ASSERT_NULL(rtn);
+      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
+      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      U8 bout[5] = {3,0,10,  1,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // 1 book processed; 1 culled; 2nd was rejected.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
+   }
+
+   {
+      // 2 Books, different lengths, remove 2nd; but 2nd has illegal length (1).
+      U8 b0[] = {3,1,10,  1,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns NULL / fail.
+      TEST_ASSERT_NULL(rtn);
+      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
+      TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
+      U8 bout[5] = {3,1,10,  1,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // (another) 1 book processed; 0 (more)  culled; 2nd was rejected.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+1,  stats.nCulled);
+   }
+
+   {
+      // 2 Books, different lengths, remove both; but 2nd has illegal length (too long).
+      U8 b0[] = {3,0,10,  3,0};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns NULL / fail.
+      TEST_ASSERT_NULL(rtn);
+      // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
+      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      U8 bout[5] = {3,0,10,  3,0};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
+
+      // (another) 1 book processed; 1 (more) culled; 2nd was rejected.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2,  stats.nCulled);
+   }
+}
+
+/* --------------------------- test_IllegalLast_of3 ------------------------ */
+
+void test_IllegalLast_of3(void)
+{
+   {
+      // 3 Books, different lengths, but 3rd has illegal length 1 .
+      U8 b0[] = {3,1,10,  2,1,  1,1,5,6};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns bs0 with 2nd & 3rd books at left.
+      TEST_ASSERT_NULL(rtn);
+      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
+      // Part of the orignal 3rd book is left in-place.
+      U8 bout[9] = {3,1,10,  2,1,  1,1,5,6};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+   }
+   {
+      // 3 Books, different lengths, but 3rd has illegal length 1 .
+      U8 b0[] = {3,1,10,  2,1,  5,1,5,6};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns bs0 with 2nd & 3rd books at left.
+      TEST_ASSERT_NULL(rtn);
+      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
+      // Part of the orignal 3rd book is left in-place.
+      U8 bout[9] = {3,1,10,  2,1,  5,1,5,6};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
    }
 }
 

@@ -34,11 +34,117 @@
 */
 PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *stats)
 {
+#if 1
+
+   /* -------------------------- getDigest --------------------------------- */
+
+   T_ReBook const * getDigest(S_BufU8 const *src, T_ReBook *dig) {
+      if(src->cnt < pk->minLen) {
+         return NULL; }
+
+       T_ReBook const *d = pk->digest(src->bs, dig);
+
+      if(d->len < pk->minLen || d->len > src->cnt) {
+         return NULL; }
+      else {
+         return dig; }}
+
+   /* ---------------------- firstMaybeKeeper -----------------------------------
+
+      Given 'src' at a packed list of 'books' which encode their own lengths, return
+
+         - 'src' at the next legal 'keeper' book with 'd' to a digest of that book. Other wise...
+
+         - if there are no more keeper books on the shelf then return 'src' at the last (legal)
+           book. (with digest 'd')
+
+         - return NULL if hit illegal data before the a matching book above. Illegal is where
+           encoded length is too short (0|1) or too long and is past the bookshelf.
+
+      A keeper book has d->keep <- true.
+   */
+   T_ReBook const * firstKeeper(S_BufU8 *src, T_ReBook *d)
+   {
+      while(1){
+         if(NULL == getDigest(src, d)) {
+            return NULL; }
+         else if(d->keep == true || src->cnt == d->len) {
+            return d; }
+         else {
+            src->bs += d->len;
+            src->cnt -= d->len; }}
+   }
+
+   /* ------------------------------ nextMaybeKeeper -----------------------------------
+
+      Given 'src' is at a legal book, return
+
+         - 'src' at the next legal 'keeper' book with 'd' to a digest of that book. Other wise...
+
+         - if there are no more keeper books on the shelf then return 'src' at the last (legal)
+           book. (with digest 'd')
+
+         - return NULL if
+               - hit illegal data before the a matching book above. Illegal is where the
+                 encoded length is too short (0|1) or too long and is past the bookshelf.
+
+               - src->cnt is too small to hold a book.
+
+      A keeper book has d->keep <- true.
+   */
+   T_ReBook const * nextMaybeKeeper(S_BufU8 *src, T_ReBook *d)
+   {
+      pk->digest(src->bs, d);
+
+      while(1) {
+         src->bs += d->len;
+         src->cnt -= d->len;
+
+         if(NULL == getDigest(src, d)) {
+            return NULL; }
+         else if(d->keep == true || src->cnt == d->len) {
+            return d; }}
+   }
+
+   // --------------------------------------------------------------------
+
+   T_ReBook *bk = &(T_ReBook){};
+
+   S_BufU8 *rd = &(S_BufU8){.bs = src->bs, .cnt = src->cnt};
+
+   if(NULL == firstKeeper(rd, bk)) {
+      return NULL;
+   }
+   else if(bk->keep == false) {
+      src->cnt -= rd->cnt;
+      return src;
+   }
+   else {
+      U8 *tail = rd->bs + bk->len;
+
+      while(1) {
+
+         if(NULL == nextMaybeKeeper(rd, bk)) {
+            return NULL;
+         }
+         else if(bk->keep == false) {
+            src->cnt -= rd->cnt;
+            return rd;
+         }
+         else {
+            U8 *next = rd->bs + bk->len;
+            memmove(tail, rd->bs, bk->len);
+            tail = next;
+         }
+      }
+   }
+
+
+#else
+
    void incrBooksCnt(S_ScanStats *s)      { if(s != NULL) s->nBooks++; }
    void incrCulledCnt(S_ScanStats *s)     { if(s != NULL) s->nCulled++; }
    void wrBadIdx(S_ScanStats *s, U16 n)   { if(s != NULL) s->badIdx = n; }
-
-   bool movedHead = false;
 
    if(pk->minLen == 0 ||                                       // Minmum book length specified as 0 (zero)? OR
       src->cnt < pk->minLen) {                                 // 'src' doesn't hold even 1 book?
@@ -141,6 +247,8 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
       } // while(1)
 
       return NULL; }       // while(1) so should never get here but some compilers complain.
+
+#endif // 1
 
 } // CullPackedBooks()
 
