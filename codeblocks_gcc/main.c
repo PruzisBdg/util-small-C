@@ -13,16 +13,37 @@ static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
    dig->keep = bk[1] > 0 ? true : false;
    return dig; }
 
+/* ------------------------------ initScan -------------------------------------
+
+*/
+static void initScan(S_BookScanner *s, F_GetsDigest d)
+{
+   s->minLen = 2;          // A book is a least 2bytes
+   s->digest = d;
+}
+
+/* --------------------------------- prefillStats --------------------------------------
+
+   Prefill with 0x5A5A so we can see which fields were updated.
+*/
+#define _StatsInit 0x5A5A
+static void prefillStats(S_ScanStats *s)
+{
+   s->badIdx = s->nBooks = s->nCulled = _StatsInit;
+}
+
 int main (void)
 {
-   U8 b0[] = {3,0,10,  2,0};
+      // 5 Books, different lengths, cull 2nd & 4th
+      U8 b0[] = {3,1,10,  2,0,  4,1,5,6,  5,0,7,8,9,  3,1,11};
 
-   S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 17};
 
-   scanner.digest = maybeKeep;
-   scanner.minLen = 2;           // A book is a least 2 bytes
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+      prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
 
    printf("--------------- done\r\n");
 }

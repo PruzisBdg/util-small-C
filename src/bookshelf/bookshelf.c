@@ -34,9 +34,11 @@
 */
 PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *stats)
 {
-   void bumpBooksCnt(S_ScanStats *s)      { if(s != NULL) s->nBooks++; }
-   void bumpCulledCnt(S_ScanStats *s)     { if(s != NULL) s->nCulled++; }
+   void incrBooksCnt(S_ScanStats *s)      { if(s != NULL) s->nBooks++; }
+   void incrCulledCnt(S_ScanStats *s)     { if(s != NULL) s->nCulled++; }
    void wrBadIdx(S_ScanStats *s, U16 n)   { if(s != NULL) s->badIdx = n; }
+
+   bool movedHead = false;
 
    if(pk->minLen == 0 ||                                       // Minmum book length specified as 0 (zero)? OR
       src->cnt < pk->minLen) {                                 // 'src' doesn't hold even 1 book?
@@ -52,12 +54,12 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          wrBadIdx(stats, 0);
          return NULL; }                                        // then fail
 
-      bumpBooksCnt(stats);                                         // 1st legal book; bump count.
+      incrBooksCnt(stats);                                         // 1st legal book; bump count.
 
       if(t->len == src->cnt) {                                 // Ends here, so just 1 book?
          if(t->keep == false) {                                // Cull it?
             src->cnt = 0;                                      // then now 'src' is empty.
-            bumpCulledCnt(stats); }                                // bump culled-count.
+            incrCulledCnt(stats); }                            // bump culled-count.
          return src; }                                         // and we are done.
 
       // Setup initial head (to the 2nd book)
@@ -69,8 +71,8 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
             ? t->len : 0;                                      // .. else src->cnt is length of 1st book.
 
          if(t->keep == false) {                                // Culling 1st book?
-            bumpCulledCnt(stats);}                             // then bump cull-count.
-         stats->badIdx = 1;                                    // Mark 2nd book (idx <- 1) as bad.
+            incrCulledCnt(stats);}                             // then bump cull-count.
+         wrBadIdx(stats, 1);                                   // Mark 2nd book (idx <- 1) as bad.
          return NULL; }    // fail. Processed 1 book then found a bad one.
 
       /* -------- Loop
@@ -83,7 +85,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          books have been addressed they will be packed to left, with gap at right.
       */
       while(1) {
-         bumpBooksCnt(stats);
+         incrBooksCnt(stats);
 
          if(t->keep == true) {                                 // Keep the tail book?
             tail += t->len;                                    // then advance 'tail' past that book.
@@ -101,7 +103,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
             // Reduce total books-length by the size of the tail book which was just copied over.
             src->cnt -= t->len;
-            bumpCulledCnt(stats); }
+            incrCulledCnt(stats); }
 
          /* Whether we copied over the existing tail book or advanced 'tail' to the next book
             there is a new tail book. Update the tail-digest.
@@ -117,13 +119,13 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          if(tail + t->len == src->bs + src->cnt) {             // This tail book is the last one?
             if(t->keep == false) {                             // Not keeping this last book
                src->cnt -= t->len;                             // then adjust 'src->cnt' downwards.
-               bumpCulledCnt(stats); }
+               incrCulledCnt(stats); }
             return src; }                                      // return 'src' => success.
 
          /* If head book will go past end of current books counts then width is not legal.
             Subtract it from src->cnt and return fail.
          */
-         else if(head + h->len > src->bs + src->cnt) {
+         if(head + h->len > src->bs + src->cnt) {
             src->cnt = head - src->bs;
             return NULL; }
 

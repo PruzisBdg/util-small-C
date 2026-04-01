@@ -511,7 +511,7 @@ void test_CullAll3(void)
    U8 bout[9] = {4,0,5,6,  0, 4,0,5,6};
    TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
 
-   // 3 books process; none culled.
+   // 3 books process; 3 culled.
    TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nBooks);
    TEST_ASSERT_EQUAL_UINT16(_StatsInit+3, stats.nCulled);
 }
@@ -631,6 +631,55 @@ void test_IllegalLast_of3(void)
       // Part of the orignal 3rd book is left in-place.
       U8 bout[9] = {3,1,10,  2,1,  5,1,5,6};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
+   }
+}
+
+/* --------------------------------------- test_5 ----------------------------------------------
+
+   5 books/records; various combos. (3 above should be enough to check loop; but just be sure).
+*/
+void test_5(void) {
+   {
+      // 5 Books, different lengths, keep all
+      U8 b0[] = {3,1,10,  2,1,  4,1,5,6,  5,1,7,8,9,  3,1,11};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 17};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+      prefillStats(&stats);
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns bs0 with all original books.
+      TEST_ASSERT_EQUAL_PTR(bs0, rtn);
+      TEST_ASSERT_EQUAL_UINT8(17, bs0->cnt);
+      U8 bout[17] = {3,1,10,  2,1,  4,1,5,6,  5,1,7,8,9,  3,1,11};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 17);
+
+      // 5 books processed; none culled.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+5, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit, stats.nCulled);
+   }
+   {
+      // 5 Books, different lengths, cull 2nd & 4th
+      U8 b0[] = {3,1,10,  2,0,  4,1,5,6,  5,0,7,8,9,  3,1,11};
+
+      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 17};
+
+      initScan(&scanner, maybeKeep);   // Set minimum length & digest, Zero counts.
+      prefillStats(&stats);
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      // Returns bs0 with all 2nd & 4th removed.
+      TEST_ASSERT_EQUAL_PTR(bs0, rtn);
+      TEST_ASSERT_EQUAL_UINT8(10, bs0->cnt);
+      U8 bout[10] = {3,1,10,  4,1,5,6,  3,1,11};
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 10);
+
+      // 5 books processed; none culled.
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+5, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(_StatsInit+2, stats.nCulled);
    }
 }
 
