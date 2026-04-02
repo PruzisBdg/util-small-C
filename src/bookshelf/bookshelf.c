@@ -118,6 +118,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
          while(rd->cnt > 0)                           // Until ate all books... or hit an error (in loop)
          {
+printf("------- rd %u[%u]\r\n", rd->bs - src->bs, bk->len);
             if(NULL == firstToKeep(rd, bk)) {         // Looking for next Keeper, but hit error?
                src->cnt -= rd->cnt;                   // Packed (good) are up to last 'rd'.
                wrErrIdx(stats, rd->bs - src->bs);     // Error is somewhere past that
