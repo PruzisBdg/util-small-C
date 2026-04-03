@@ -8,8 +8,6 @@
 #include <string.h>
 #include <stdio.h>
 
-
-
 /* ----------------------------------- CullPackedBooks -------------------------------------------------
 
    Given a shelf of packed books in 'src' and 'pk->digest()' to query the size of a book and whether
@@ -104,12 +102,10 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          addKept(stats);                              // else a Keeper. Bump the cumulative 'stats'.
          U16 lenSum = bk->len;                        // Size of packed Block; starts with this 1st book.
 
-         U8* packedTail;            // Rightmost of packed books.
-
          if(rd->bs > src->bs) {                       // 1st Keeper is NOT the 1st book?
             memmove(src->bs, rd->bs, bk->len); }      // then move this 1st keeper down to src->bs.
 
-         packedTail = src->bs + bk->len;              // Move or no; 'tail' starts after 1st book..
+         U8 * packedTail = src->bs + bk->len;         // Rightmost of packed books.. Move or no; 'tail' starts after 1st book..
 
          /* Advance 'rd' to the next book. Note! this is not necessarily 'tail'; if the
             1st book was from up the shelf, 'rd' is beyond that.
@@ -118,7 +114,8 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
          while(rd->cnt > 0)                           // Until ate all books... or hit an error (in loop)
          {
-printf("------- rd %u[%u]\r\n", rd->bs - src->bs, bk->len);
+            printf("------- rd %u[%u]\r\n", rd->bs - src->bs, bk->len);
+
             if(NULL == firstToKeep(rd, bk)) {         // Looking for next Keeper, but hit error?
                src->cnt -= rd->cnt;                   // Packed (good) are up to last 'rd'.
                wrErrIdx(stats, rd->bs - src->bs);     // Error is somewhere past that
@@ -138,5 +135,18 @@ printf("------- rd %u[%u]\r\n", rd->bs - src->bs, bk->len);
          return src; }}             // and return success!
 
 } // CullPackedBooks()
+
+/* -------------------------------- bookShelf_InitStats ------------------------------
+*/
+PUBLIC void bookShelf_InitStats(S_ScanStats *s) {
+   s->nBooks = s->nKept = s->errIdx = 0; }
+
+/* -------------------------------- bookShelf_ChainCullStats -------------------------
+*/
+PUBLIC S_BufC8 const * bookShelf_ChainCullStats(S_BufC8 *out, S_ScanStats const *s) {
+   U16 nChars = snprintf(out->cs, out->cnt,
+                  "nBook %u, nKept %u, errIdx %u\r\n", s->nBooks, s->nKept, s->errIdx);
+   out->cs += nChars; out->cnt -= nChars;
+   return out; }
 
 // ---------------------------------------- eof ----------------------------------------------------

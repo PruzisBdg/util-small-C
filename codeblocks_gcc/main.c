@@ -17,30 +17,63 @@ static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
    dig->keep = bk[1] > 0 ? true : false;
    return dig; }
 
-/* ----------------------------- aquariusDataPt ------------------------------------
+/* ----------------------------- digestAqDataPt ------------------------------------
 
    A digest for a book where book[0] is length and keep if book[1] > 0.
 */
-
 typedef S32 T_UTC;
-typedef struct __attribute__((packed)) {U8 subKey; U8 len; S32 utc; } S_AqUTC;
+typedef U8  T_Tmpr;
+typedef struct __attribute__((packed)) {U8 subKey, len; S32 secs; } Dpt_UTC;
+typedef struct __attribute__((packed)) {U8 subkey, len; T_Tmpr degC;} Dpt_Tmpr;
+typedef struct __attribute__((packed)) {Dpt_UTC utc; Dpt_Tmpr tmpr; } Dpts_UTCwTmpr;
+
 typedef U16 T_AqKey;
+typedef U16 T_AqStatus;
+typedef struct __attribute__((packed)) {T_AqKey theKeyAcked; T_AqStatus status; } KeyAck;
+
+
 typedef U16 T_AqPayloadLen;
 
 typedef struct __attribute__((packed)) {T_AqKey key; T_AqPayloadLen len; } S_AqBlockHdr;
 
 typedef struct __attribute__((packed)) {
    S_AqBlockHdr hdr;
-   union { S_AqUTC utc; };
+   union {
+      Dpt_UTC        utc;        // Just UTC
+      Dpts_UTCwTmpr  utcTmpr;    // UTC plus (just) Ambient tmpr, which we summarise.
+      KeyAck         keyAck;};   // Reply to Datapoint request ends with KeyAck.
 } S_AqBlock;
 
-static T_ReBook const * aquariusDataPt(U8 const *bk, T_ReBook *dig) {
+
+typedef struct {
+   struct {S8 min, max;} ambT;
+   T_AqStatus keyAckSts;
+   S32         latestUTC;
+} S_DataPtDigest;
+
+S_DataPtDigest reDataPts;
+
+
+/* -------------------------------- digestAqDataPt -------------------------------------------
+
+   Return a digest of an Aquarius Block which is a part of a reply to a Datapoints request.
+   The Block can be a Datapoint or, last in the reply, a KeyAck.
+
+   All Datapoints (should) start with UTC Subkey. After that they may have more Subkeys. This
+   digest discards Datapoints which are UTC-only. Datapoints which also have Ambient Temperature
+   as the 2nd Subkey; the digest accumulates minimum and maximum Ambient and discards the Subkeys.
+
+   Other Subkeys are retained as-is.
+*/
+static T_ReBook const * digestAqDataPt(U8 const *bk, T_ReBook *dig) {
 
    #define _Subkey_UTC     0x01
+   #define _Subkey_AmbT    0x14
    #define _AqKey_DataPt   0x001D
    #define _AqKey_KeyAck   0x0003
 
    #define _leToU16(p) leToU16((U8 const*)(p))
+   #define _leToU32(p) leToU32((U8 const*)(p))
 
    /* <U16 0x001D, nBytes, payload[nBytes]>
          payload = <U8 subkey, nBytes, value[nBytes]>
@@ -49,26 +82,48 @@ static T_ReBook const * aquariusDataPt(U8 const *bk, T_ReBook *dig) {
    */
    S_AqBlock const *aq = (S_AqBlock const *)bk;
 
+   // Whole 'bk' is <U16 key, len; U8 payload[len]>
+   dig->len = sizeof(T_AqKey) + sizeof(T_AqPayloadLen) + _leToU16(&aq->hdr.len);
+
    T_AqKey key = _leToU16(&aq->hdr.key);
 
-   if(key == _AqKey_DataPt || key == _AqKey_KeyAck) {
+   // Except for KeyAck at the end, all Blocks in a Datapoints reply should be Datapoints
+   if(key == _AqKey_DataPt) {
 
-      // Whole digest is <U16 key, len, payload[len]>
-      dig->len = sizeof(T_AqKey) + sizeof(T_AqPayloadLen) + _leToU16(&aq->hdr.len);
+      // 1st Subkey is Calendar Time (UTC). It should always be.
+      if(aq->utc.subKey == _Subkey_UTC && aq->utc.len == sizeof(T_UTC)) {
 
-      if(key == _AqKey_DataPt) {
+         // Mark this latest UTC. Assumes UTC in successive Datapoints ascend in time.
+         reDataPts.latestUTC = _leToU32(&aq->utc.secs);
 
-         // If calendar time ONLY then discard.
-         dig->keep =
-            aq->utc.subKey == _Subkey_UTC && aq->utc.len == sizeof(T_UTC) &&            // Starts with a timestamp? AND
-            dig->len == sizeof(S_AqBlockHdr) + sizeof(S_AqUTC)                         // no other Subkeys?
-               ? false : true;  }                   // then cull.
+         // If Datapoint has only UTC then discard.
+         if(dig->len == sizeof(S_AqBlockHdr) + sizeof(Dpt_UTC)) {
+            dig->keep = false; }
 
-      else if(key == _AqKey_KeyAck) {
-         dig->keep = true; }
-      return dig; }
+         /* else if Datapoint just UTC followed by just Ambient Temperature then update
+            min and max Ambient for this Aquarius Frame. Then discard the Datapoint.
+         */
+         else if(dig->len == sizeof(S_AqBlockHdr) + sizeof(Dpt_UTC) + sizeof(Dpt_Tmpr) &&
+                 aq->utcTmpr.tmpr.subkey == _Subkey_AmbT && aq->utcTmpr.tmpr.len == sizeof(T_Tmpr)) {
 
-   return NULL;  }
+            S_DataPtDigest *d = &reDataPts;
+            T_Tmpr degC = aq->utcTmpr.tmpr.degC;
+
+            if(degC > d->ambT.max) {d->ambT.max = degC;}
+            if(degC < d->ambT.min) {d->ambT.min = degC;}
+            dig->keep = false; }
+         // anythings else; keep the Datapoint.
+         else {
+            dig->keep = true; }}
+      else {
+         dig->keep = true; }}
+
+   // else trailing KeyAck. Note reply the status.
+   else if(key == _AqKey_KeyAck) {
+      reDataPts.keyAckSts = _leToU16(&aq->keyAck.status);
+      dig->keep = true; }
+
+   return dig; }
 
 
 /* ------------------------------ initScan -------------------------------------
@@ -155,12 +210,18 @@ int main (void)
          0x05, 0x03, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04, 0x80, 0x13, 0x03, 0x00, 0x14, 0x01, 0x18, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x90, 0x21, 0x03, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04,
          0xA0, 0x2F, 0x03, 0x00, 0x14, 0x01, 0x17, 0x03, 0x00, 0x04, 0x00, 0x22, 0x00, 0x00, 0x00, 0xA2, 0xD7 };
 
-      S_BufU8 *bs0 = &(S_BufU8){.bs = &b0[4], .cnt = RECORDS_IN(b0)-4};
+      S_BufU8 *bs0 = &(S_BufU8){.bs = &b0[4], .cnt = RECORDS_IN(b0)-6};
 
-      initScan(&scanner, aquariusDataPt);
-      zeroStats(&stats);
+      initScan(&scanner, digestAqDataPt);
+      bookShelf_InitStats(&stats);
 
       S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+
+      C8 c0[150+1];
+      S_BufC8 *cs0 = &(S_BufC8){.cs = c0, .cnt = 150};
+      bookShelf_ChainCullStats(cs0, &stats);
+
+      printf("Stats: %s\r\n", c0);
    }
 
 #if 0

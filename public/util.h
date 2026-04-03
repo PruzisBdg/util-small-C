@@ -1000,7 +1000,8 @@ typedef struct {
 } S_ScanStats;
 
 PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *sts);
-
+PUBLIC void bookShelf_InitStats(S_ScanStats *s);
+PUBLIC S_BufC8 const * bookShelf_ChainCullStats(S_BufC8 *out, S_ScanStats const *s);
 
 // ================================= Macros ======================================================
 
