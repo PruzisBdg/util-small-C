@@ -21,21 +21,51 @@ static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
 
    A digest for a book where book[0] is length and keep if book[1] > 0.
 */
+
+typedef S32 T_UTC;
+typedef struct __attribute__((packed)) {U8 subKey; U8 len; S32 utc; } S_AqUTC;
+typedef U16 T_AqKey;
+typedef U16 T_AqPayloadLen;
+
+typedef struct __attribute__((packed)) {T_AqKey key; T_AqPayloadLen len; } S_AqBlockHdr;
+
+typedef struct __attribute__((packed)) {
+   S_AqBlockHdr hdr;
+   union { S_AqUTC utc; };
+} S_AqBlock;
+
 static T_ReBook const * aquariusDataPt(U8 const *bk, T_ReBook *dig) {
+
+   #define _Subkey_UTC     0x01
+   #define _AqKey_DataPt   0x001D
+   #define _AqKey_KeyAck   0x0003
+
+   #define _leToU16(p) leToU16((U8 const*)(p))
 
    /* <U16 0x001D, nBytes, payload[nBytes]>
          payload = <U8 subkey, nBytes, value[nBytes]>
 
       Calendar time = <U16 0x1D, 6, <U8 1=calendar_time, 4, utc[4]>>
    */
-   if(bk[0] == 0x1D && bk[1] == 0x00) {
-      dig->len = leToU16(&bk[2]) + (2 * sizeof(U16));
+   S_AqBlock const *aq = (S_AqBlock const *)bk;
 
-      // If calendar time ONLY then discard.
-      dig->keep =
-         bk[4] == 1 && bk[5] == 4 &&            // Starts with a timestamp? AND
-         dig->len == 10                         // no other Subkeys?
-            ? false : true;                     // then cull.
+   T_AqKey key = _leToU16(&aq->hdr.key);
+
+   if(key == _AqKey_DataPt || key == _AqKey_KeyAck) {
+
+      // Whole digest is <U16 key, len, payload[len]>
+      dig->len = sizeof(T_AqKey) + sizeof(T_AqPayloadLen) + _leToU16(&aq->hdr.len);
+
+      if(key == _AqKey_DataPt) {
+
+         // If calendar time ONLY then discard.
+         dig->keep =
+            aq->utc.subKey == _Subkey_UTC && aq->utc.len == sizeof(T_UTC) &&            // Starts with a timestamp? AND
+            dig->len == sizeof(S_AqBlockHdr) + sizeof(S_AqUTC)                         // no other Subkeys?
+               ? false : true;  }                   // then cull.
+
+      else if(key == _AqKey_KeyAck) {
+         dig->keep = true; }
       return dig; }
 
    return NULL;  }
