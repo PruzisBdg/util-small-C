@@ -3,6 +3,7 @@
 #include "tdd_common.h"
 #include "util.h"
 #include <string.h>
+#include "arith.h"
 
 // =============================== Tests start here ==================================
 
@@ -659,7 +660,7 @@ void test_IllegalLast(void)
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
       // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
-      TEST_ASSERT_EQUAL_UINT8(3, bs0->cnt);
+      TEST_ASSERT_EQUAL_UINT16(3, bs0->cnt);
       U8 bout[5] = {3,1,10,  1,0};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
 
@@ -685,7 +686,7 @@ void test_IllegalLast(void)
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
       // 1st book removed but undisturbed; 2nd illegal undisturbed too (even though not counted).
-      TEST_ASSERT_EQUAL_UINT8(0, bs0->cnt);
+      TEST_ASSERT_EQUAL_UINT16(0, bs0->cnt);
       U8 bout[5] = {3,0,10,  3,0};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 5);
 
@@ -737,7 +738,7 @@ void test_IllegalLast_of3(void)
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_NULL(rtn);
-      TEST_ASSERT_EQUAL_UINT8(5, bs0->cnt);
+      TEST_ASSERT_EQUAL_UINT16(5, bs0->cnt);
       // Part of the orignal 3rd book is left in-place.
       U8 bout[9] = {3,1,10,  2,1,  5,1,5,6};
       TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, b0, 9);
@@ -746,15 +747,159 @@ void test_IllegalLast_of3(void)
       TEST_ASSERT_EQUAL_UINT16(5, stats.errIdx);
    }
 }
-/* -------------------------------------- test_PolarDatapoints -------------------------------------
 
-   Most are empty timestamps.
+/* ==================================== Polar Datapoints ========================================
+
+   CullPackedBooks() is used to strip empty Datapoints from a reply to a Datapoints request.
 */
-void test_PolarDatapoints(void)
+
+
+/* ---------------- Exceprts of Aquarius, just for these Test ------------------------------------
+
+   Don't #include real Aquarius; quote just what we need to check CullPackedBooks().
+*/
+
+// Datapoint with just UTC or UTC followed by Ambient Tmpr.
+typedef S32 T_UTC;
+typedef U8  T_Tmpr;
+typedef struct __attribute__((packed)) {U8 subKey, len; S32 secs; } Dpt_UTC;
+typedef struct __attribute__((packed)) {U8 subkey, len; T_Tmpr degC;} Dpt_Tmpr;
+typedef struct __attribute__((packed)) {Dpt_UTC utc; Dpt_Tmpr tmpr; } Dpts_UTCwTmpr;
+
+typedef U16 T_AqKey;
+typedef U16 T_AqStatus;
+typedef struct __attribute__((packed)) {T_AqKey theKeyAcked; T_AqStatus status; } KeyAck;
+
+// Aquarius Block header (not the Frame header)
+typedef U16 T_AqPayloadLen;
+typedef struct __attribute__((packed)) {T_AqKey key; T_AqPayloadLen len; } S_AqBlockHdr;
+
+typedef struct __attribute__((packed)) {
+   S_AqBlockHdr hdr;
+   union {
+      Dpt_UTC        utc;        // Just UTC
+      Dpts_UTCwTmpr  utcTmpr;    // UTC plus (just) Ambient tmpr, which we summarise.
+      KeyAck         keyAck;};   // Reply to Datapoint request ends with KeyAck.
+} S_AqBlock;
+
+
+/* ------------------------------ (Reports on) Datapoints Digest --------------------------------------
+
+   Collect / accumulate these on reading through and condensing a 'bookshelf' of Datapoints.
+*/
+typedef struct {
+   struct {S8 min, max;} ambT;      // Collect highest and lowest Ambient degC.
+   T_AqStatus  keyAckSts;           // From KeyAck at end of Datapoints reply.
+   S32         latestUTC;           // Youngest timestamp in the original Frame.
+} S_DataPtDigest;
+
+S_DataPtDigest reDataPts;
+
+
+static void initDataPtsDigest(S_DataPtDigest *s) {
+   s->ambT.min = 100; s->ambT.max = -100;    // Init for min/max capture
+   s->keyAckSts = 0x5A5A;                    // SO we can tell we got something
+   s->latestUTC = 0x5A5A5A5A; }              // Likewise; should always get a legit UTC.
+
+
+
+static S_BufC8 chainDataPtsDigest(S_BufC8 const *src, S_DataPtDigest const *s) {
+   U16 nChars = snprintf(src->cs, src->cnt, "ambT %u-%u keyAck %04Xh utc %lu",
+                           s->ambT.min, s->ambT.max, s->keyAckSts, s->latestUTC);
+   nChars = MinU16(nChars, src->cnt);
+   return (S_BufC8){.cs = src->cs + nChars, .cnt = src->cnt - nChars}; }
+
+static C8 const * printDataPtsDigest(S_BufC8 const *src, S_DataPtDigest const *s) {
+   snprintf(src->cs, src->cnt, "ambT %u-%u keyAck %04Xh utc %lu",
+                           s->ambT.min, s->ambT.max, s->keyAckSts, s->latestUTC);
+   return src->cs; }
+
+// -------------------------- ends: reports on Datapoints Digest --------------------------------
+
+
+
+/* -------------------------------- digestAqDataPt -------------------------------------------
+
+   Return a digest of an Aquarius Block which is a part of a reply to a Datapoints request.
+   The Block can be a Datapoint or, last in the reply, a KeyAck.
+
+   All Datapoints (should) start with UTC Subkey. After that they may have more Subkeys. This
+   digest discards Datapoints which are UTC-only. Datapoints which also have Ambient Temperature
+   as the 2nd Subkey; the digest accumulates minimum and maximum Ambient and discards the Subkeys.
+
+   Other Subkeys are retained as-is.
+*/
+static T_ReBook const * digestAqDataPt(U8 const *bk, T_ReBook *dig) {
+
+   #define _Subkey_UTC     0x01
+   #define _Subkey_AmbT    0x14
+   #define _AqKey_DataPt   0x001D
+   #define _AqKey_KeyAck   0x0003
+
+   #define _leToU16(p) leToU16((U8 const*)(p))
+   #define _leToU32(p) leToU32((U8 const*)(p))
+
+   /* <U16 0x001D, nBytes, payload[nBytes]>
+         payload = <U8 subkey, nBytes, value[nBytes]>
+
+      Calendar time = <U16 0x1D, 6, <U8 1=calendar_time, 4, utc[4]>>
+   */
+   S_AqBlock const *aq = (S_AqBlock const *)bk;
+
+   // Whole 'bk' is <U16 key, len; U8 payload[len]>
+   dig->len = sizeof(T_AqKey) + sizeof(T_AqPayloadLen) + _leToU16(&aq->hdr.len);
+
+   T_AqKey key = _leToU16(&aq->hdr.key);
+
+   // Except for KeyAck at the end, all Blocks in a Datapoints reply should be Datapoints
+   if(key == _AqKey_DataPt) {
+
+      // 1st Subkey is Calendar Time (UTC). It should always be.
+      if(aq->utc.subKey == _Subkey_UTC && aq->utc.len == sizeof(T_UTC)) {
+
+         // Mark this latest UTC. Assumes UTC in successive Datapoints ascend in time.
+         reDataPts.latestUTC = _leToU32(&aq->utc.secs);
+
+         // If Datapoint has only UTC then discard.
+         if(dig->len == sizeof(S_AqBlockHdr) + sizeof(Dpt_UTC)) {
+            dig->keep = false; }
+
+         /* else if Datapoint just UTC followed by just Ambient Temperature then update
+            min and max Ambient for this Aquarius Frame. Then discard the Datapoint.
+         */
+         else if(dig->len == sizeof(S_AqBlockHdr) + sizeof(Dpt_UTC) + sizeof(Dpt_Tmpr) &&
+                 aq->utcTmpr.tmpr.subkey == _Subkey_AmbT && aq->utcTmpr.tmpr.len == sizeof(T_Tmpr)) {
+
+            S_DataPtDigest *d = &reDataPts;
+            T_Tmpr degC = aq->utcTmpr.tmpr.degC;
+
+            if(degC > d->ambT.max) {d->ambT.max = degC;}
+            if(degC < d->ambT.min) {d->ambT.min = degC;}
+            dig->keep = false; }
+         // anythings else; keep the Datapoint.
+         else {
+            dig->keep = true; }}
+      else {
+         dig->keep = true; }}
+
+   // else trailing KeyAck. Note reply the status.
+   else if(key == _AqKey_KeyAck) {
+      reDataPts.keyAckSts = _leToU16(&aq->keyAck.status);
+      dig->keep = true; }
+
+   return dig; }
+
+
+
+/* -------------------------------------- test_PolarDatapoints_1739 -------------------------------------
+
+   Reply to Datpoints query from a Polar with no flow. Most are empty timestamps.
+*/
+void test_PolarDatapoints_1739(void)
 {
-   {
-         U8 b0[] = {
-            0xA5, 0x0F, 0xCD, 0x96, 0x1D, 0x00, 0x3F, 0x00, 0x01, 0x04, 0x10, 0x0E, 0x00, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x38, 0x33, 0x00, 0x08, 0x04, 0x00,
+      U8 b0[] = {
+         0xA5, 0x0F, 0xCD, 0x96,       // Frame header.
+                                 0x1D, 0x00, 0x3F, 0x00, 0x01, 0x04, 0x10, 0x0E, 0x00, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x38, 0x33, 0x00, 0x08, 0x04, 0x00,
          0x00, 0x00, 0x00, 0x0E, 0x01, 0x03, 0x10, 0x01, 0x7C, 0x11, 0x01, 0x00, 0x12, 0x01, 0x00, 0x13, 0x01, 0x00, 0x14, 0x01, 0x19, 0x15, 0x02, 0x09, 0x00, 0x16, 0x01, 0xFD, 0x17, 0x06, 0x00, 0x1F,
          0x1E, 0x00, 0x0B, 0x0A, 0x18, 0x01, 0x12, 0x1D, 0x00, 0x18, 0x00, 0x01, 0x04, 0x20, 0x1C, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x38, 0x31, 0x00, 0x11, 0x01, 0x8C, 0x13, 0x01, 0x46,
          0x14, 0x01, 0x18, 0x1D, 0x00, 0x1D, 0x00, 0x01, 0x04, 0x30, 0x2A, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x30, 0x31, 0x00, 0x14, 0x01, 0x17, 0x17, 0x06, 0x1F, 0x1F, 0x1F, 0x0B, 0x0B,
@@ -808,11 +953,56 @@ void test_PolarDatapoints(void)
          0x00, 0x14, 0x01, 0x18, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x20, 0xBF, 0x02, 0x00, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x30, 0xCD, 0x02, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04, 0x40, 0xDB,
          0x02, 0x00, 0x14, 0x01, 0x19, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x50, 0xE9, 0x02, 0x00, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x60, 0xF7, 0x02, 0x00, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x70,
          0x05, 0x03, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04, 0x80, 0x13, 0x03, 0x00, 0x14, 0x01, 0x18, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x90, 0x21, 0x03, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04,
-         0xA0, 0x2F, 0x03, 0x00, 0x14, 0x01, 0x17, 0x03, 0x00, 0x04, 0x00, 0x22, 0x00, 0x00, 0x00, 0xA2, 0xD7 };
+         0xA0, 0x2F, 0x03, 0x00, 0x14, 0x01, 0x17, 0x03, 0x00, 0x04, 0x00, 0x22, 0x00, 0x00, 0x00,
 
-      S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = RECORDS_IN(b0)};
+         0xA2, 0xD7 };     // ends with CRC.
 
-   }
+      // Datapoints start at [4], after the frame header. Count omits the header and CRC.
+      S_BufU8 *src = &(S_BufU8){.bs = &b0[4], .cnt = RECORDS_IN(b0)-6};
+
+      U16 startCnt = src->cnt;
+
+      initScan(&scanner, digestAqDataPt);
+      bookShelf_InitStats(&stats);
+      initDataPtsDigest(&reDataPts);
+
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, src, &stats);
+
+      TEST_ASSERT_EQUAL_PTR(src, rtn);
+      TEST_ASSERT_EQUAL_PTR(src->bs, rtn->bs);
+      TEST_ASSERT_EQUAL_UINT16(214, rtn->cnt);
+
+      // Start with 144 Datapoints plus KeyAck. Retain 5 plus KeyAck.
+      TEST_ASSERT_EQUAL_UINT16(145, stats.nBooks);
+      TEST_ASSERT_EQUAL_UINT16(6,   stats.nKept);
+
+      U8 bout[] = {
+         // @ 0[67]
+         0x1D, 0x00, 0x3F, 0x00, 0x01, 0x04, 0x10, 0x0E, 0x00, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x38, 0x33, 0x00, 0x08, 0x04, 0x00,
+         0x00, 0x00, 0x00, 0x0E, 0x01, 0x03, 0x10, 0x01, 0x7C, 0x11, 0x01, 0x00, 0x12, 0x01, 0x00, 0x13, 0x01, 0x00, 0x14, 0x01, 0x19, 0x15, 0x02, 0x09, 0x00, 0x16, 0x01, 0xFD, 0x17, 0x06, 0x00, 0x1F,
+         0x1E, 0x00, 0x0B, 0x0A, 0x18, 0x01, 0x12,
+         // @ 67[28]
+         0x1D, 0x00, 0x18, 0x00, 0x01, 0x04, 0x20, 0x1C, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x38, 0x31, 0x00, 0x11, 0x01, 0x8C, 0x13, 0x01, 0x46, 0x14, 0x01, 0x18,
+         // @ 95[33]
+         0x1D, 0x00, 0x1D, 0x00, 0x01, 0x04, 0x30, 0x2A, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x30, 0x31, 0x00, 0x14, 0x01, 0x17, 0x17, 0x06, 0x1F, 0x1F, 0x1F, 0x0B, 0x0B,
+         0x0B, 0x18, 0x01, 0x00,
+         // @ 1032[39]
+         0x1D, 0x00, 0x23, 0x00, 0x01, 0x04, 0x30, 0x2A, 0x00, 0x00, 0x04, 0x07, 0x32, 0x39, 0x34, 0x34, 0x38, 0x33, 0x00, 0x11,
+         0x01, 0x00, 0x13, 0x01, 0x00, 0x14, 0x01, 0x19, 0x17, 0x06, 0x00, 0x1F, 0x1F, 0x00, 0x0B, 0x0B, 0x18, 0x01, 0x32,
+         // @ 1071[39]
+         0x1D, 0x00, 0x23, 0x00, 0x01, 0x04, 0x40, 0x38, 0x00, 0x00, 0x04, 0x07, 0x32,
+         0x39, 0x34, 0x34, 0x30, 0x31, 0x00, 0x11, 0x01, 0x8C, 0x13, 0x01, 0x46, 0x14, 0x01, 0x18, 0x17, 0x06, 0x1F, 0x1F, 0x1F, 0x0B, 0x0B, 0x0B, 0x18, 0x01, 0x00};
+
+      TEST_ASSERT_EQUAL_UINT8_ARRAY(bout, src->bs, RECORDS_IN(bout));
+
+      C8 c0[150+1];
+      S_BufC8 *cs0 = &(S_BufC8){.cs = c0, .cnt = 150};
+      bookShelf_ChainCullStats(cs0, &stats);
+
+      printf("Stats: %s cnt %u -> %u %s\r\n",
+             c0, startCnt, src->cnt,
+             printDataPtsDigest(&(S_BufC8){.cs = (C8[50]){}, .cnt = 49}, &reDataPts));
+
 
 }
 

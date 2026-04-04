@@ -32,22 +32,35 @@
 */
 PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *stats)
 {
+   // To update stats.
    void addBook(S_ScanStats *s)           { if(s != NULL) s->nBooks++; }
    void addKept(S_ScanStats *s)           { if(s != NULL) s->nKept++; }
    void wrErrIdx(S_ScanStats *s, U16 n)   { s->errIdx = n; }
 
-   /* -------------------------- getDigest --------------------------------- */
 
-   T_ReBook const * getDigest(S_BufU8 const *src, T_ReBook *dig) {
-      if(src->cnt < pk->minLen) {
-         return NULL; }
+   /* -------------------------- getDigest ---------------------------------
 
-       T_ReBook const *d = pk->digest(src->bs, dig);
+      If this 'book' is legal return a digest of the book. Else NULL.
+   */
+   T_ReBook const * getDigest(S_BufU8 const *bk, T_ReBook *dig) {
+      if(bk->cnt < pk->minLen) {                         // Book length is illegal? too short.
+         return NULL; }                                  // fail <- NULL
 
-      if(d->len < pk->minLen || d->len > src->cnt) {
-         return NULL; }
+      T_ReBook const *d = pk->digest(bk->bs, dig);       // else ask for a digest.
+
+      if(d == NULL ||                                    // No digest? OR
+         (d->len < pk->minLen ||                         // Digest returns illegal length (too short)? OR ...
+          d->len > bk->cnt)) {                           // ... Digest returns length which exceeds bookshelf? (this cannot be)
+         return NULL; }                                  // then fail <- NULL
       else {
-         return dig; }}
+         return dig; }}                                  // else return the digest.
+
+
+   // --------------------------- advanceBy ----------------------------------
+
+   void advanceBy(S_BufU8 *rd, U16 by) {
+      rd->bs += by; rd->cnt -= by; }
+
 
    /* ---------------------- firstToKeep -----------------------------------
 
@@ -58,32 +71,24 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          - if there are no more keeper books on the shelf then return 'src' at the last (legal)
            book. (with digest 'd')
 
-         - return NULL if hit illegal data before the a matching book above. Illegal is where
+         - return NULL if hit illegal data before a matching book above. Illegal is where
            encoded length is too short (0|1) or too long and is past the bookshelf.
 
       A keeper book has d->keep <- true.
    */
-   T_ReBook const * firstToKeep(S_BufU8 *src, T_ReBook *d)
-   {
+   T_ReBook const * firstToKeep(S_BufU8 *src, T_ReBook *d) {
       while(1){
-         if(NULL == getDigest(src, d)) {
-            return NULL; }
+         if(NULL == getDigest(src, d)) {                    // Get about book?
+            return NULL; }                                  // Fail... return fail.
          else {
-            addBook(stats);
-            if(d->keep == true || src->cnt == d->len) {
-               return d; }
+            addBook(stats);                                 // else add latest book to stats.
+            if(d->keep == true || src->cnt == d->len) {     // Keeping this book? AND/OR it's the last book?
+               return d; }                                  // then return it.
             else {
-               src->bs += d->len;
-               src->cnt -= d->len; }}}
-   }
-
-   // --------------------------------------------------
-
-   void advanceBy(S_BufU8 *rd, U16 by) {
-      rd->bs += by; rd->cnt -= by; }
+               advanceBy(src, d->len); }}}}                 // else advance to next book.
 
 
-   // --------------------------------------------------------------------
+   // ------------------------- Start here ---------------------------------------
 
    T_ReBook *bk = &(T_ReBook){};       // A digest of the latest book.
 
@@ -92,7 +97,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
    if(NULL == firstToKeep(rd, bk)) {                  // Hit error before any legal book?
       src->cnt = 0;                                   // We kept nothing.!
-      wrErrIdx(stats, rd->bs - src->bs);              // Bad book at last parse-attempt.
+      wrErrIdx(stats, rd->bs - src->bs);              // Mark last (failed) parse-attempt.
       return NULL; }                                  // and say fail.
    else {
       if(bk->keep == false) {                         // else no error, but nothing to keep either.
@@ -100,39 +105,37 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
          return src; }                                // but return 'src', says parse succeeded
       else {
          addKept(stats);                              // else a Keeper. Bump the cumulative 'stats'.
-         U16 lenSum = bk->len;                        // Size of packed Block; starts with this 1st book.
 
-         if(rd->bs > src->bs) {                       // 1st Keeper is NOT the 1st book?
+         if(rd->bs > src->bs) {                       // This 1st Keeper is NOT the 1st book?
             memmove(src->bs, rd->bs, bk->len); }      // then move this 1st keeper down to src->bs.
 
-         U8 * packedTail = src->bs + bk->len;         // Rightmost of packed books.. Move or no; 'tail' starts after 1st book..
+         U8 * packed = src->bs + bk->len;             // Start 'packed' tail right after 1st packed book.
 
          /* Advance 'rd' to the next book. Note! this is not necessarily 'tail'; if the
-            1st book was from up the shelf, 'rd' is beyond that.
+            1st book was from up the shelf, then 'rd' is beyond that.
          */
          advanceBy(rd, bk->len);
 
          while(rd->cnt > 0)                           // Until ate all books... or hit an error (in loop)
          {
-            printf("------- rd %u[%u]\r\n", rd->bs - src->bs, bk->len);
+            //printf("------- keep@ %u[%u]\r\n", (U16)(rd->bs-src->bs) - bk->len, bk->len);
 
             if(NULL == firstToKeep(rd, bk)) {         // Looking for next Keeper, but hit error?
                src->cnt -= rd->cnt;                   // Packed (good) are up to last 'rd'.
-               wrErrIdx(stats, rd->bs - src->bs);     // Error is somewhere past that
+               wrErrIdx(stats, rd->bs - src->bs);     // Error is somewhere the failed parse.
                return NULL; }                         // and fail
             else {
                if(bk->keep == false) {                // No next Keeper, all books scanned?
                   break; }                            // Break to return with books packed.
                else {
-                  addKept(stats);                     // else another Keeper, increment (cumulative) count.
-                  memmove(packedTail, rd->bs, bk->len);  // (maybe) append latest Keeper to 'tail'
-                  lenSum += bk->len;                  // Update total packed bytes
-                  advanceBy(rd, bk->len);             // Advance to next book after the one we just appened to 'tail'
-                  packedTail += bk->len; }}           // 'tail' advances to end of book we appened.
+                  addKept(stats);                     // else another Keeper, increment books-kept.
+                  memmove(packed, rd->bs, bk->len);   // Append latest Keeper to 'packed'. Once we have a gap this is always a real move
+                  advanceBy(rd, bk->len);             // Advance to next book after the one we just appendd to 'packed'
+                  packed += bk->len; }}               // 'packed' advances to end of book we appended.
          } // while()
 
-         src->cnt = lenSum;         // Books processed without error! these many bytes packed.
-         return src; }}             // and return success!
+         src->cnt = packed - src->bs;        // Books processed without error! these many bytes packed.
+         return src; }}                      // and return success!
 
 } // CullPackedBooks()
 
@@ -145,7 +148,7 @@ PUBLIC void bookShelf_InitStats(S_ScanStats *s) {
 */
 PUBLIC S_BufC8 const * bookShelf_ChainCullStats(S_BufC8 *out, S_ScanStats const *s) {
    U16 nChars = snprintf(out->cs, out->cnt,
-                  "nBook %u, nKept %u, errIdx %u\r\n", s->nBooks, s->nKept, s->errIdx);
+                  "nBook %u, nKept %u, errIdx %u", s->nBooks, s->nKept, s->errIdx);
    out->cs += nChars; out->cnt -= nChars;
    return out; }
 

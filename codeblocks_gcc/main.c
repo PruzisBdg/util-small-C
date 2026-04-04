@@ -44,14 +44,34 @@ typedef struct __attribute__((packed)) {
       KeyAck         keyAck;};   // Reply to Datapoint request ends with KeyAck.
 } S_AqBlock;
 
+/* ------------------------------ Datapoints Digest --------------------------------------
 
+   Collect / accumulate these on reading through and condensing a 'bookshelf' of Datapoints
+*/
 typedef struct {
    struct {S8 min, max;} ambT;
-   T_AqStatus keyAckSts;
+   T_AqStatus  keyAckSts;
    S32         latestUTC;
 } S_DataPtDigest;
 
 S_DataPtDigest reDataPts;
+
+
+static void initDataPtsDigest(S_DataPtDigest *s) {
+   s->ambT.min = 100; s->ambT.max = -100;
+   s->keyAckSts = 0x5A5A;
+   s->latestUTC = 0x5A5A5A5A; }
+
+static S_BufC8 chainDataPtsDigest(S_BufC8 const *src, S_DataPtDigest const *s) {
+   U16 nChars = snprintf(src->cs, src->cnt, "ambT %u-%u keyAck %04Xh utc %lu",
+                           s->ambT.min, s->ambT.max, s->keyAckSts, s->latestUTC);
+   nChars = MinU16(nChars, src->cnt);
+   return (S_BufC8){.cs = src->cs + nChars, .cnt = src->cnt - nChars}; }
+
+static C8 const * printDataPtsDigest(S_BufC8 const *src, S_DataPtDigest const *s) {
+   snprintf(src->cs, src->cnt, "ambT %u-%u keyAck %04Xh utc %lu",
+                           s->ambT.min, s->ambT.max, s->keyAckSts, s->latestUTC);
+   return src->cs; }
 
 
 /* -------------------------------- digestAqDataPt -------------------------------------------
@@ -210,18 +230,23 @@ int main (void)
          0x05, 0x03, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04, 0x80, 0x13, 0x03, 0x00, 0x14, 0x01, 0x18, 0x1D, 0x00, 0x06, 0x00, 0x01, 0x04, 0x90, 0x21, 0x03, 0x00, 0x1D, 0x00, 0x09, 0x00, 0x01, 0x04,
          0xA0, 0x2F, 0x03, 0x00, 0x14, 0x01, 0x17, 0x03, 0x00, 0x04, 0x00, 0x22, 0x00, 0x00, 0x00, 0xA2, 0xD7 };
 
-      S_BufU8 *bs0 = &(S_BufU8){.bs = &b0[4], .cnt = RECORDS_IN(b0)-6};
+      S_BufU8 *src = &(S_BufU8){.bs = &b0[4], .cnt = RECORDS_IN(b0)-6};
+
+      U16 startCnt = src->cnt;
 
       initScan(&scanner, digestAqDataPt);
       bookShelf_InitStats(&stats);
+      initDataPtsDigest(&reDataPts);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = CullPackedBooks(&scanner, src, &stats);
 
       C8 c0[150+1];
       S_BufC8 *cs0 = &(S_BufC8){.cs = c0, .cnt = 150};
       bookShelf_ChainCullStats(cs0, &stats);
 
-      printf("Stats: %s\r\n", c0);
+      printf("Stats: %s cnt %u -> %u %s\r\n",
+             c0, startCnt, src->cnt,
+             printDataPtsDigest(&(S_BufC8){.cs = (C8[50]){}, .cnt = 49}, &reDataPts));
    }
 
 #if 0
