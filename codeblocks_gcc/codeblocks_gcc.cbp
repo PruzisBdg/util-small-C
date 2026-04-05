@@ -280,6 +280,7 @@
 		<Unit filename="../src/bookshelf/bookshelf.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
+			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
 		<Unit filename="../src/codec/3of6.c">

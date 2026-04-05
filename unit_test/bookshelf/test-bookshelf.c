@@ -19,7 +19,7 @@ void tearDown(void) {
 }
 
 // A digest for a book where byte[0] is length and always keep.
-static T_ReBook const * alwaysKeep(U8 const *bk, T_ReBook *dig) {
+static bookPack_S_Digest const * alwaysKeep(U8 const *bk, bookPack_S_Digest *dig) {
    dig->len = bk[0];
    dig->keep = true;
    return dig; }
@@ -28,19 +28,19 @@ static T_ReBook const * alwaysKeep(U8 const *bk, T_ReBook *dig) {
 
    A digest for a book where book[0] is length and keep if book[1] > 0.
 */
-static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
+static bookPack_S_Digest const * maybeKeep(U8 const *bk, bookPack_S_Digest *dig) {
    dig->len = bk[0];
    dig->keep = bk[1] > 0 ? true : false;
    return dig; }
 
 
-S_BookScanner scanner;
-S_ScanStats stats;
+bookPack_S_Packer scanner;
+bookPack_S_Stats stats;
 
 /* ------------------------------ initScan -------------------------------------
 
 */
-static void initScan(S_BookScanner *s, F_GetsDigest d)
+static void initScan(bookPack_S_Packer *s, bookPack_F_GetsDigest d)
 {
    s->minLen = 2;          // A book is a least 2bytes
    s->digest = d;
@@ -51,7 +51,7 @@ static void initScan(S_BookScanner *s, F_GetsDigest d)
    Prefill with 0x5A5A so we can see which fields were updated.
 */
 #define _StatsInit 0x5A5A
-static void prefillStats(S_ScanStats *s)
+static void prefillStats(bookPack_S_Stats *s)
 {
    s->errIdx = s->nBooks = s->nKept = _StatsInit;
 }
@@ -71,7 +71,7 @@ void test_NoBooks(void) {
    initScan(&scanner, alwaysKeep);
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 <- 0.
    TEST_ASSERT_NULL(rtn);
@@ -103,7 +103,7 @@ void test_keepOne(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns bs0 unchanged.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -126,7 +126,7 @@ void test_RemoveOne(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns bs0 with count <- 0.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -150,7 +150,7 @@ void test_OneUndersized(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 set to zero bytes.
    TEST_ASSERT_NULL(rtn);
@@ -177,7 +177,7 @@ void test_OneOversized(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 set to zero bytes.
    TEST_ASSERT_NULL(rtn);
@@ -204,7 +204,7 @@ void test_Keep1st_2ndUndersized(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns NULL, bs0 unchanged, but minus the illegal latter book.
    TEST_ASSERT_NULL(rtn);
@@ -231,7 +231,7 @@ void test_Keep1st_2ndOversized(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns NULL, count omits 2nd illegal book.
    TEST_ASSERT_NULL(rtn);
@@ -259,7 +259,7 @@ void test_KeepBoth(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns bs0, which is unchanged.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -289,7 +289,7 @@ void test_CullLast(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns bs0 with just the 1st book.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -312,7 +312,7 @@ void test_CullLast(void)
 */
 void test_Cull1stOfTwo(void)
 {
-   // To test that stats are cumulative; reset them just here, before running 2 CullPackedBooks() below.
+   // To test that stats are cumulative; reset them just here, before running 2 bookPack_CullRepack() below.
    prefillStats(&stats);
 
    {
@@ -323,7 +323,7 @@ void test_Cull1stOfTwo(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -345,7 +345,7 @@ void test_Cull1stOfTwo(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -367,7 +367,7 @@ void test_Cull1stOfTwo(void)
 */
 void test_CullBoth(void)
 {
-   // To test that stats are cumulative; reset them just here, before running 2 CullPackedBooks() below.
+   // To test that stats are cumulative; reset them just here, before running 2 bookPack_CullRepack() below.
    prefillStats(&stats);
    {
       // 2 Books, different lengths, remove both books.
@@ -377,7 +377,7 @@ void test_CullBoth(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -399,7 +399,7 @@ void test_CullBoth(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with just the 2nd book at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -428,7 +428,7 @@ void test_KeepAll3(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns bs0 with 2nd & 3rd books at left.
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -457,7 +457,7 @@ void test_CullAll3(void)
    initScan(&scanner, maybeKeep);   // Set scanner
    prefillStats(&stats);
 
-   S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+   S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
    // Returns bs0 with length zero
    TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -486,7 +486,7 @@ void test_Cull_1of3(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -504,7 +504,7 @@ void test_Cull_1of3(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -522,7 +522,7 @@ void test_Cull_1of3(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -540,7 +540,7 @@ void test_Cull_1of3(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -569,7 +569,7 @@ void test_5(void) {
       initScan(&scanner, maybeKeep);   // Set scanner
       prefillStats(&stats);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with all original books.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -590,7 +590,7 @@ void test_5(void) {
       initScan(&scanner, maybeKeep);   // Set scanner
       prefillStats(&stats);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with all 2nd & 4th removed.
       TEST_ASSERT_EQUAL_PTR(bs0, rtn);
@@ -618,7 +618,7 @@ void test_5(void) {
 */
 void test_IllegalLast(void)
 {
-   // Reset Stats just here, before running 3 CullPackedBooks() below.
+   // Reset Stats just here, before running 3 bookPack_CullRepack() below.
    prefillStats(&stats);
 
    {
@@ -629,7 +629,7 @@ void test_IllegalLast(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
@@ -655,7 +655,7 @@ void test_IllegalLast(void)
       initScan(&scanner, maybeKeep);   // Set scanner
       stats.errIdx = _StatsInit;       // Reset just the error index; make sure it gets written.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
@@ -681,7 +681,7 @@ void test_IllegalLast(void)
       initScan(&scanner, maybeKeep);   // Set scanner
       stats.errIdx = _StatsInit;       // Reset just the error index; make sure it gets written.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns NULL / fail.
       TEST_ASSERT_NULL(rtn);
@@ -703,7 +703,7 @@ void test_IllegalLast(void)
 
 void test_IllegalLast_of3(void)
 {
-   // Reset Stats just here, before running 3 CullPackedBooks() below.
+   // Reset Stats just here, before running 3 bookPack_CullRepack() below.
    prefillStats(&stats);
    {
       // 3 Books, different lengths, but 3rd has illegal length 1 .
@@ -713,7 +713,7 @@ void test_IllegalLast_of3(void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_NULL(rtn);
@@ -734,7 +734,7 @@ void test_IllegalLast_of3(void)
       initScan(&scanner, maybeKeep);   // Set scanner
       stats.errIdx = _StatsInit;       // Reset just the error index; make sure it gets written.
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
       // Returns bs0 with 2nd & 3rd books at left.
       TEST_ASSERT_NULL(rtn);
@@ -750,13 +750,13 @@ void test_IllegalLast_of3(void)
 
 /* ==================================== Polar Datapoints ========================================
 
-   CullPackedBooks() is used to strip empty Datapoints from a reply to a Datapoints request.
+   bookPack_CullRepack() is used to strip empty Datapoints from a reply to a Datapoints request.
 */
 
 
 /* ---------------- Exceprts of Aquarius, just for these Test ------------------------------------
 
-   Don't #include real Aquarius; quote just what we need to check CullPackedBooks().
+   Don't #include real Aquarius; quote just what we need to check bookPack_CullRepack().
 */
 
 // Datapoint with just UTC or UTC followed by Ambient Tmpr.
@@ -829,7 +829,7 @@ static C8 const * printDataPtsDigest(S_BufC8 const *src, S_DataPtDigest const *s
 
    Other Subkeys are retained as-is.
 */
-static T_ReBook const * digestAqDataPt(U8 const *bk, T_ReBook *dig) {
+static bookPack_S_Digest const * digestAqDataPt(U8 const *bk, bookPack_S_Digest *dig) {
 
    #define _Subkey_UTC     0x01
    #define _Subkey_AmbT    0x14
@@ -963,10 +963,10 @@ void test_PolarDatapoints_1739(void)
       U16 startCnt = src->cnt;
 
       initScan(&scanner, digestAqDataPt);
-      bookShelf_InitStats(&stats);
+      bookPack_InitStats(&stats);
       initDataPtsDigest(&reDataPts);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, src, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, src, &stats);
 
       TEST_ASSERT_EQUAL_PTR(src, rtn);
       TEST_ASSERT_EQUAL_PTR(src->bs, rtn->bs);
@@ -997,7 +997,7 @@ void test_PolarDatapoints_1739(void)
 
       C8 c0[150+1];
       S_BufC8 *cs0 = &(S_BufC8){.cs = c0, .cnt = 150};
-      bookShelf_ChainCullStats(cs0, &stats);
+      bookPack_ChainCullStats(cs0, &stats);
 
       printf("Stats: %s cnt %u -> %u %s\r\n",
              c0, startCnt, src->cnt,

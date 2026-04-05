@@ -4,15 +4,15 @@
 #include "arith.h"
 #include <stdio.h>
 
-// Used by CullPackedBooks()
-S_BookScanner scanner;
-S_ScanStats stats;
+// Used by bookPack_CullRepack()
+bookPack_S_Packer scanner;
+bookPack_S_Stats stats;
 
 /* ----------------------------- maybeKeep ------------------------------------
 
    A digest for a book where book[0] is length and keep if book[1] > 0.
 */
-static T_ReBook const * maybeKeep(U8 const *bk, T_ReBook *dig) {
+static bookPack_S_Digest const * maybeKeep(U8 const *bk, bookPack_S_Digest *dig) {
    dig->len = bk[0];
    dig->keep = bk[1] > 0 ? true : false;
    return dig; }
@@ -85,7 +85,7 @@ static C8 const * printDataPtsDigest(S_BufC8 const *src, S_DataPtDigest const *s
 
    Other Subkeys are retained as-is.
 */
-static T_ReBook const * digestAqDataPt(U8 const *bk, T_ReBook *dig) {
+static bookPack_S_Digest const * digestAqDataPt(U8 const *bk, bookPack_S_Digest *dig) {
 
    #define _Subkey_UTC     0x01
    #define _Subkey_AmbT    0x14
@@ -149,7 +149,7 @@ static T_ReBook const * digestAqDataPt(U8 const *bk, T_ReBook *dig) {
 /* ------------------------------ initScan -------------------------------------
 
 */
-static void initScan(S_BookScanner *s, F_GetsDigest d)
+static void initScan(bookPack_S_Packer *s, bookPack_F_GetsDigest d)
 {
    s->minLen = 2;          // A book is a least 2bytes
    s->digest = d;
@@ -160,13 +160,13 @@ static void initScan(S_BookScanner *s, F_GetsDigest d)
    Prefill with 0x5A5A so we can see which fields were updated.
 */
 #define _StatsInit 0x5A5A
-static void prefillStats(S_ScanStats *s) {
+static void prefillStats(bookPack_S_Stats *s) {
    s->errIdx = s->nBooks = s->nKept = _StatsInit; }
 
 
 // ----------------------------- zeroStats ------------------------------------
 
-static void zeroStats(S_ScanStats *s) {
+static void zeroStats(bookPack_S_Stats *s) {
    s->errIdx = s->nBooks = s->nKept = 0; }
 
 
@@ -235,14 +235,14 @@ int main (void)
       U16 startCnt = src->cnt;
 
       initScan(&scanner, digestAqDataPt);
-      bookShelf_InitStats(&stats);
+      bookPack_InitStats(&stats);
       initDataPtsDigest(&reDataPts);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, src, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, src, &stats);
 
       C8 c0[150+1];
       S_BufC8 *cs0 = &(S_BufC8){.cs = c0, .cnt = 150};
-      bookShelf_ChainCullStats(cs0, &stats);
+      bookPack_ChainCullStats(cs0, &stats);
 
       printf("Stats: %s cnt %u -> %u %s\r\n",
              c0, startCnt, src->cnt,
@@ -258,7 +258,7 @@ int main (void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
    }
 
    {
@@ -269,7 +269,7 @@ int main (void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
    }
 
    {
@@ -280,7 +280,7 @@ int main (void)
 
       initScan(&scanner, maybeKeep);   // Set scanner
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
    }
 
    {
@@ -290,7 +290,7 @@ int main (void)
       initScan(&scanner, maybeKeep);   // Set scanner
       prefillStats(&stats);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
    }
    {
 
@@ -302,7 +302,7 @@ int main (void)
       initScan(&scanner, maybeKeep);   // Set scanner
       prefillStats(&stats);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
    }
    {
 
@@ -314,7 +314,7 @@ int main (void)
       initScan(&scanner, maybeKeep);   // Set scanner
       prefillStats(&stats);
 
-      S_BufU8 const * rtn = CullPackedBooks(&scanner, bs0, &stats);
+      S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
    }
 #endif
 

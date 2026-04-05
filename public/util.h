@@ -980,28 +980,29 @@ extern S_CodecBufU8 const en13757_3of6_Codec;
 
 // -------------------------------- Bookshelf Packer ---------------------------------------------
 
-typedef struct {     // 'Book' stats gotten by S_BookScanner.digest()
+typedef struct {     // 'Book' stats gotten by bookPack_S_Packer.digest()
    U16   len;        // Size of the 'book' in bytes, including the length/size encoding.
    bool  keep;       // Keep this book; else remove from shelf.
-} T_ReBook;
+} bookPack_S_Digest;
 
 // Return stats 'info' from book 'at'.
-typedef T_ReBook const * (*F_GetsDigest)(U8 const *bk, T_ReBook *dig);
+typedef bookPack_S_Digest const * (*bookPack_F_GetsDigest)(U8 const *bk, bookPack_S_Digest *dig);
 
 typedef struct {
-   F_GetsDigest digest;    // Return digest of a book (required).
-   U8       minLen;        // Minimum length of a book.
-} S_BookScanner;
+   bookPack_F_GetsDigest
+         digest;        // Return digest of a book (required).
+   U8    minLen;        // Minimum length of a book.
+} bookPack_S_Packer;
 
 typedef struct {
    U16      nBooks,        // Number of books originally.
             nKept;         // Number kept.
    U16      errIdx;        // Array index of error
-} S_ScanStats;
+} bookPack_S_Stats;
 
-PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *sts);
-PUBLIC void bookShelf_InitStats(S_ScanStats *s);
-PUBLIC S_BufC8 const * bookShelf_ChainCullStats(S_BufC8 *out, S_ScanStats const *s);
+PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, bookPack_S_Stats *sts);
+PUBLIC void bookPack_InitStats(bookPack_S_Stats *s);
+PUBLIC S_BufC8 const * bookPack_ChainCullStats(S_BufC8 *out, bookPack_S_Stats const *s);
 
 // ================================= Macros ======================================================
 

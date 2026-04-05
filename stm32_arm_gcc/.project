@@ -65,6 +65,11 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>src/bookshelf</name>
+			<type>2</type>
+			<location>C:/SPJ10/swr/util/src/bookshelf</location>
+		</link>
+		<link>
 			<name>src/codec</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>

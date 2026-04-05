@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 
-/* ----------------------------------- CullPackedBooks -------------------------------------------------
+/* ----------------------------------- bookPack_CullRepack -------------------------------------------------
 
    Given a shelf of packed books in 'src' and 'pk->digest()' to query the size of a book and whether
    it should be culled, remove zero of more books from the 'shelf', leaving the remaining books packed
@@ -19,7 +19,7 @@
 
    'src->len' is the size of the starting shelf.
 
-   CullPackedBooks() will never read outside the bookshelf i.e it is memory-safe.
+   bookPack_CullRepack() will never read outside the bookshelf i.e it is memory-safe.
 
    Returns 'src->cnt' the total size of the remaining (packed) books post-cull.
 
@@ -30,23 +30,23 @@
 
    A NULL return leaves the book & shelves in an undefined state.
 */
-PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanStats *stats)
+PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, bookPack_S_Stats *stats)
 {
    // To update stats.
-   void addBook(S_ScanStats *s)           { if(s != NULL) s->nBooks++; }
-   void addKept(S_ScanStats *s)           { if(s != NULL) s->nKept++; }
-   void wrErrIdx(S_ScanStats *s, U16 n)   { s->errIdx = n; }
+   void addBook(bookPack_S_Stats *s)           { if(s != NULL) s->nBooks++; }
+   void addKept(bookPack_S_Stats *s)           { if(s != NULL) s->nKept++; }
+   void wrErrIdx(bookPack_S_Stats *s, U16 n)   { s->errIdx = n; }
 
 
    /* -------------------------- getDigest ---------------------------------
 
       If this 'book' is legal return a digest of the book. Else NULL.
    */
-   T_ReBook const * getDigest(S_BufU8 const *bk, T_ReBook *dig) {
+   bookPack_S_Digest const * getDigest(S_BufU8 const *bk, bookPack_S_Digest *dig) {
       if(bk->cnt < pk->minLen) {                         // Book length is illegal? too short.
          return NULL; }                                  // fail <- NULL
 
-      T_ReBook const *d = pk->digest(bk->bs, dig);       // else ask for a digest.
+      bookPack_S_Digest const *d = pk->digest(bk->bs, dig);       // else ask for a digest.
 
       if(d == NULL ||                                    // No digest? OR
          (d->len < pk->minLen ||                         // Digest returns illegal length (too short)? OR ...
@@ -76,7 +76,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
       A keeper book has d->keep <- true.
    */
-   T_ReBook const * firstToKeep(S_BufU8 *src, T_ReBook *d) {
+   bookPack_S_Digest const * firstToKeep(S_BufU8 *src, bookPack_S_Digest *d) {
       while(1){
          if(NULL == getDigest(src, d)) {                    // Get about book?
             return NULL; }                                  // Fail... return fail.
@@ -90,7 +90,7 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
 
    // ------------------------- Start here ---------------------------------------
 
-   T_ReBook *bk = &(T_ReBook){};       // A digest of the latest book.
+   bookPack_S_Digest *bk = &(bookPack_S_Digest){};       // A digest of the latest book.
 
    // Read-at and bytes-remaining. Starts at 'src->bs[]' with all of 'src->cnt'
    S_BufU8 *rd = &(S_BufU8){.bs = src->bs, .cnt = src->cnt};
@@ -130,23 +130,23 @@ PUBLIC S_BufU8 * CullPackedBooks(S_BookScanner const *pk, S_BufU8 *src, S_ScanSt
                else {
                   addKept(stats);                     // else another Keeper, increment books-kept.
                   memmove(packed, rd->bs, bk->len);   // Append latest Keeper to 'packed'. Once we have a gap this is always a real move
-                  advanceBy(rd, bk->len);             // Advance to next book after the one we just appendd to 'packed'
+                  advanceBy(rd, bk->len);             // Advance to next book after the one we just append to 'packed'
                   packed += bk->len; }}               // 'packed' advances to end of book we appended.
          } // while()
 
          src->cnt = packed - src->bs;        // Books processed without error! these many bytes packed.
          return src; }}                      // and return success!
 
-} // CullPackedBooks()
+} // bookPack_CullRepack()
 
-/* -------------------------------- bookShelf_InitStats ------------------------------
+/* -------------------------------- bookPack_InitStats ------------------------------
 */
-PUBLIC void bookShelf_InitStats(S_ScanStats *s) {
+PUBLIC void bookPack_InitStats(bookPack_S_Stats *s) {
    s->nBooks = s->nKept = s->errIdx = 0; }
 
-/* -------------------------------- bookShelf_ChainCullStats -------------------------
+/* -------------------------------- bookPack_ChainCullStats -------------------------
 */
-PUBLIC S_BufC8 const * bookShelf_ChainCullStats(S_BufC8 *out, S_ScanStats const *s) {
+PUBLIC S_BufC8 const * bookPack_ChainCullStats(S_BufC8 *out, bookPack_S_Stats const *s) {
    U16 nChars = snprintf(out->cs, out->cnt,
                   "nBook %u, nKept %u, errIdx %u", s->nBooks, s->nKept, s->errIdx);
    out->cs += nChars; out->cnt -= nChars;
