@@ -40,9 +40,9 @@ bookPack_S_Stats stats;
 /* ------------------------------ initScan -------------------------------------
 
 */
-static void initScan(bookPack_S_Packer *s, bookPack_F_GetsDigest d)
+static void initScan(bookPack_S_Packer *s, bookPack_F_GetsDigest d, U8 minBlockBytes)
 {
-   s->minLen = 2;          // A book is a least 2bytes
+   s->minLen = minBlockBytes;          // A book is a least 2bytes
    s->digest = d;
 }
 
@@ -58,6 +58,9 @@ static void prefillStats(bookPack_S_Stats *s)
 
 // ============================ Null Books tests =====================================
 
+// Except for Aquarius test at end, use {U8 key, len;}
+#define _dfltMinBlock_bytes 2
+
 /* --------------------------------- test_NoBooks ---------------------------------------
 
    Has not even 1 book
@@ -68,7 +71,7 @@ void test_NoBooks(void) {
    U8 b0[4] = {0,1,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 1};
 
-   initScan(&scanner, alwaysKeep);
+   initScan(&scanner, alwaysKeep, _dfltMinBlock_bytes);
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -100,7 +103,7 @@ void test_keepOne(void)
    U8 b0[4] = {4,1,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -123,7 +126,7 @@ void test_RemoveOne(void)
    U8 b0[4] = {4,0,2,3};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -147,7 +150,7 @@ void test_OneUndersized(void)
    U8 b0[4] = {1,10,11,12};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -174,7 +177,7 @@ void test_OneOversized(void)
    U8 b0[4] = {6,1,11,12};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 4};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -201,7 +204,7 @@ void test_Keep1st_2ndUndersized(void)
    U8 b0[6] = {3,1,8,  1,9,10};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 6};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -228,7 +231,7 @@ void test_Keep1st_2ndOversized(void)
    U8 b0[6] = {3,1,8,  4,9,10};
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 6};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -256,7 +259,7 @@ void test_KeepBoth(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -286,7 +289,7 @@ void test_CullLast(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -321,7 +324,7 @@ void test_Cull1stOfTwo(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -343,7 +346,7 @@ void test_Cull1stOfTwo(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -375,7 +378,7 @@ void test_CullBoth(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -397,7 +400,7 @@ void test_CullBoth(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -425,7 +428,7 @@ void test_KeepAll3(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -454,7 +457,7 @@ void test_CullAll3(void)
 
    S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-   initScan(&scanner, maybeKeep);   // Set scanner
+   initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
    prefillStats(&stats);
 
    S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -484,7 +487,7 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -502,7 +505,7 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -520,7 +523,7 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -538,7 +541,7 @@ void test_Cull_1of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -566,7 +569,7 @@ void test_5(void) {
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 17};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
       prefillStats(&stats);
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -587,7 +590,7 @@ void test_5(void) {
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 17};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
       prefillStats(&stats);
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -627,7 +630,7 @@ void test_IllegalLast(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -652,7 +655,7 @@ void test_IllegalLast(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
       stats.errIdx = _StatsInit;       // Reset just the error index; make sure it gets written.
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -678,7 +681,7 @@ void test_IllegalLast(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 5};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
       stats.errIdx = _StatsInit;       // Reset just the error index; make sure it gets written.
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -711,7 +714,7 @@ void test_IllegalLast_of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
 
@@ -731,7 +734,7 @@ void test_IllegalLast_of3(void)
 
       S_BufU8 *bs0 = &(S_BufU8){.bs = b0, .cnt = 9};
 
-      initScan(&scanner, maybeKeep);   // Set scanner
+      initScan(&scanner, maybeKeep, _dfltMinBlock_bytes);   // Set scanner
       stats.errIdx = _StatsInit;       // Reset just the error index; make sure it gets written.
 
       S_BufU8 const * rtn = bookPack_CullRepack(&scanner, bs0, &stats);
@@ -960,9 +963,11 @@ void test_PolarDatapoints_1739(void)
       // Datapoints start at [4], after the frame header. Count omits the header and CRC.
       S_BufU8 *src = &(S_BufU8){.bs = &b0[4], .cnt = RECORDS_IN(b0)-6};
 
+      printf("------ b0 %u\r\n", sizeof(b0));
+
       U16 startCnt = src->cnt;
 
-      initScan(&scanner, digestAqDataPt);
+      initScan(&scanner, digestAqDataPt, sizeof(S_AqBlockHdr));
       bookPack_InitStats(&stats);
       initDataPtsDigest(&reDataPts);
 

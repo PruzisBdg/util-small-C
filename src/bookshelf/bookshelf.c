@@ -46,7 +46,7 @@ PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, 
       if(bk->cnt < pk->minLen) {                         // Book length is illegal? too short.
          return NULL; }                                  // fail <- NULL
 
-      bookPack_S_Digest const *d = pk->digest(bk->bs, dig);       // else ask for a digest.
+      bookPack_S_Digest const *d = pk->digest(bk->bs, dig); // else ask for a digest.
 
       if(d == NULL ||                                    // No digest? OR
          (d->len < pk->minLen ||                         // Digest returns illegal length (too short)? OR ...
@@ -90,7 +90,7 @@ PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, 
 
    // ------------------------- Start here ---------------------------------------
 
-   bookPack_S_Digest *bk = &(bookPack_S_Digest){};       // A digest of the latest book.
+   bookPack_S_Digest *bk = &(bookPack_S_Digest){};    // A digest of the latest book.
 
    // Read-at and bytes-remaining. Starts at 'src->bs[]' with all of 'src->cnt'
    S_BufU8 *rd = &(S_BufU8){.bs = src->bs, .cnt = src->cnt};
