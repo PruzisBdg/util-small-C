@@ -315,6 +315,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/src/bits/swar_u8.c</locationURI>
 		</link>
 		<link>
+			<name>src/bookshelf/bookshelf.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src/bookshelf/bookshelf.c</locationURI>
+		</link>
+		<link>
 			<name>src/codec/3of6.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/codec/3of6.c</locationURI>

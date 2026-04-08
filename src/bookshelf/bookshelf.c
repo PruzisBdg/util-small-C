@@ -33,9 +33,9 @@
 PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, bookPack_S_Stats *stats)
 {
    // To update stats.
-   void addBook(bookPack_S_Stats *s)           { if(s != NULL) s->nBooks++; }
-   void addKept(bookPack_S_Stats *s)           { if(s != NULL) s->nKept++; }
-   void wrErrIdx(bookPack_S_Stats *s, U16 n)   { s->errIdx = n; }
+   void addBook(bookPack_S_Stats *s, U16 nBytes)   { if(s != NULL) {s->nBooks++; s->nBytes += nBytes;} }
+   void addKept(bookPack_S_Stats *s, U16 nBytes)   { if(s != NULL) {s->nKept++;  s->bytesKept += nBytes;} }
+   void wrErrIdx(bookPack_S_Stats *s, U16 n)       { s->errIdx = n; }
 
 
    /* -------------------------- getDigest ---------------------------------
@@ -81,7 +81,7 @@ PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, 
          if(NULL == getDigest(src, d)) {                    // Get about book?
             return NULL; }                                  // Fail... return fail.
          else {
-            addBook(stats);                                 // else add latest book to stats.
+            addBook(stats, d->len);                         // else add latest book to stats.
             if(d->keep == true || src->cnt == d->len) {     // Keeping this book? AND/OR it's the last book?
                return d; }                                  // then return it.
             else {
@@ -104,7 +104,7 @@ PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, 
          src->cnt = 0;                                // so, again, we got nothing.
          return src; }                                // but return 'src', says parse succeeded
       else {
-         addKept(stats);                              // else a Keeper. Bump the cumulative 'stats'.
+         addKept(stats, bk->len);                     // else a Keeper. Bump the cumulative 'stats'.
 
          if(rd->bs > src->bs) {                       // This 1st Keeper is NOT the 1st book?
             memmove(src->bs, rd->bs, bk->len); }      // then move this 1st keeper down to src->bs.
@@ -128,7 +128,7 @@ PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, 
                if(bk->keep == false) {                // No next Keeper, all books scanned?
                   break; }                            // Break to return with books packed.
                else {
-                  addKept(stats);                     // else another Keeper, increment books-kept.
+                  addKept(stats, bk->len);            // else another Keeper, increment books-kept.
                   memmove(packed, rd->bs, bk->len);   // Append latest Keeper to 'packed'. Once we have a gap this is always a real move
                   advanceBy(rd, bk->len);             // Advance to next book after the one we just append to 'packed'
                   packed += bk->len; }}               // 'packed' advances to end of book we appended.
@@ -142,14 +142,21 @@ PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, 
 /* -------------------------------- bookPack_InitStats ------------------------------
 */
 PUBLIC void bookPack_InitStats(bookPack_S_Stats *s) {
-   s->nBooks = s->nKept = s->errIdx = 0; }
+   s->nBooks = s->nKept = s->errIdx = s->nBytes = s->bytesKept = 0; }
 
-/* -------------------------------- bookPack_ChainCullStats -------------------------
+/* -------------------------------- bookPack_Print/ChainStats -------------------------
 */
-PUBLIC S_BufC8 const * bookPack_ChainCullStats(S_BufC8 *out, bookPack_S_Stats const *s) {
+PUBLIC S_BufC8 const * bookPack_PrintStats(S_BufC8 *out, bookPack_S_Stats const *s) {
    U16 nChars = snprintf(out->cs, out->cnt,
-                  "nBook %u, nKept %u, errIdx %u", s->nBooks, s->nKept, s->errIdx);
-   out->cs += nChars; out->cnt -= nChars;
+                  "nBook %u, nKept %u, errIdx %u  nBytes %u bytesKept %u",
+                  s->nBooks, s->nKept, s->errIdx, s->nBytes, s->bytesKept);
+   out->cnt = nChars;
+   return out; }
+
+PUBLIC S_BufC8 const * bookPack_ChainStats(S_BufC8 *out, bookPack_S_Stats const *s) {
+   U16 preCnt = out->cnt;
+   bookPack_PrintStats(out, s);
+   out->cs += out->cnt; out->cnt = preCnt - out->cnt;
    return out; }
 
 // ---------------------------------------- eof ----------------------------------------------------

@@ -995,14 +995,17 @@ typedef struct {
 } bookPack_S_Packer;
 
 typedef struct {
+   U16      nBytes, bytesKept;   // Bytes pre and post-packing.
    U16      nBooks,        // Number of books originally.
             nKept;         // Number kept.
    U16      errIdx;        // Array index of error
 } bookPack_S_Stats;
 
 PUBLIC S_BufU8 * bookPack_CullRepack(bookPack_S_Packer const *pk, S_BufU8 *src, bookPack_S_Stats *sts);
+
 PUBLIC void bookPack_InitStats(bookPack_S_Stats *s);
-PUBLIC S_BufC8 const * bookPack_ChainCullStats(S_BufC8 *out, bookPack_S_Stats const *s);
+PUBLIC S_BufC8 const * bookPack_PrintStats(S_BufC8 *out, bookPack_S_Stats const *s);
+PUBLIC S_BufC8 const * bookPack_ChainStats(S_BufC8 *out, bookPack_S_Stats const *s);
 
 // ================================= Macros ======================================================
 
