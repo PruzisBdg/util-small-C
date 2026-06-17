@@ -135,6 +135,7 @@ typedef struct {
 } enc_S_MsgData;
 
 PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType filterFor);
+PUBLIC bool Sensus_DecodeMField(U32 mf, enc_S_MsgData *ed);
 
 // ===================================== ends: Batch Decoder ========================================'
 
@@ -187,6 +188,8 @@ PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed);
 PUBLIC bool Sensus_EncodersEqual(enc_S_MsgData const *a, enc_S_MsgData const *b, bool chkMag);
 PUBLIC C8 const * sens_ShowEncoders(C8 *out, enc_M_EncType t);
 PUBLIC C8 const * sens_ShowAlerts(C8 *out, enc_S_Alerts const *a);
+
+#define _sens_ShowEnc_maxChars sizeof("(ADE|Gen1|Gen2|HRE|HRE-LCD|Mag)")
 
 #endif // SENSUS_CODEC_H
 

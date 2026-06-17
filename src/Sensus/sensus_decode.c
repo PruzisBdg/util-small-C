@@ -556,6 +556,17 @@ PUBLIC bool Sensus_DecodeMsg(C8 const *src, enc_S_MsgData *ed, enc_M_EncType fil
    return false;
 } // Sensus_DecodeMsg
 
+
+/* ---------------------------- Sensus_DecodeMField -----------------------------------------
+
+   Decode the lower 24bits of 'mf' into 'ed'. Does not support Mag Meters (for now).
+
+   Always returns true (for now).
+*/
+PUBLIC bool Sensus_DecodeMField(U32 mf, enc_S_MsgData *ed) {
+   return decodeExtended_MField(mf, ed);
+}
+
 // =============================== ends: Block Decoder ===========================================
 
 
