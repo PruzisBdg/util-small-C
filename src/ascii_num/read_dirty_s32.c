@@ -26,7 +26,7 @@ PRIVATE void addChToAcc(S32 *n, U8 ch) { *n = (10 * *n) + ch - '0'; }
 |  ReadDirtyASCII_S32()
 |
 |  Return the next number from 'inStr' into 'out', skipping anything else except
-|  the string terminator '\0'. The number must be a signed 16bit integer.
+|  the string terminator '\0'. The number must be a signed 32bit integer.
 |
 |  This parser takes the largest sequence which completes an integer (maximal
 |  match). The number may be bounded by any non-numeric chars, whitespace or
