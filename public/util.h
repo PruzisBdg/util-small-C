@@ -389,7 +389,7 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
    Zero seconds is midnight, New-years Eve 2000AD and spans forward 136 years to
    Tues Feb 7th 2136 6:28:15 AM.
 
-   S_DateTime (below) can represent any year from 0000AD onwards, function which use
+   S_DateTime (below) can represent any year from 2000 AD onwards, function which use
    32-bit seconds run from 2000AD - 2136AD,
 */
 
@@ -561,12 +561,14 @@ extern S16 const     DaysToMonthStartTbl[];
 // ISO8601 string sizes.
 #define _ISO8601_YMDHMS_MaxStr (sizeof("2018-03-06T20:28:44") + 2)
 #define _ISO8601_YMDHMS_AsSpaces       "                   "
+#define _ISO8601_YMD_MaxStr (sizeof("2018-03-06") + 1)
 
-#define _HMS_MaxStr   (sizeof("65535:59:59") + 2)
+// Non-ISO8601 elapsed HMS sizes; for 'S_TimeHMS' where hours are U16
+#define _HMS_MaxStr   (sizeof("T65535:59:59") + 1)
 #define _ISO8601_HMS_MaxSpaces "           "
 #define _ISO8601_HMS_AsSpaces "        "
+#define _HM_MaxStr   (sizeof("T65536:59")+1)
 
-#define _ISO8601_YMD_MaxStr (sizeof("2018-03-06") + 1)
 
 // Compact into U16, tagged with secs, minutes or hrs.
 PUBLIC U16 Secs_IntoHMS_U16(S32 secs);
