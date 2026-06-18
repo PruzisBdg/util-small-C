@@ -579,6 +579,15 @@ PUBLIC C8 const * PrintU8s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, U8 const
 PUBLIC C8 const * PrintU8sReversed_1Line(C8 *out, U16 outBufLen, C8 const *fmt, U8 const *src, size_t numBytes);
 PUBLIC C8 const * PrintS16s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, S16 const *src, size_t numBytes);
 PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 const *fmt, U8 const *srcA, size_t aBytes, U8 const *srcB, size_t bBytes);
+
+// ---- S_BufC8 ----- 'cnt' is the number of chars.
+typedef struct {C8 *cs; U16 cnt;} S_BufC8;
+
+// ------------------------- Prints and Chains to S_BufC8 ------------------------------------
+PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...);
+PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...);
+PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8 const *src, C8 const *key);
+
 /* -------------------------- Table search ----------------------------------------- */
 
 PUBLIC void const * TblSearchSAR_AscendKeyU16(void const *tbl, U16 numRecords, U8 bytesPerRec, U16 keyToMatch);
@@ -945,9 +954,11 @@ PUBLIC C8 const * EndStrC(C8 const * str);
 
 PUBLIC U8 strlenU8(C8 const* str);
 
-typedef struct {C8 *cs; U16 cnt;} S_BufC8;
 PUBLIC U16 PutStr_Safe(S_BufC8 *put, C8 const *str);
 PUBLIC U16 PutStrs_Safe(S_BufC8 *put, C8 const * const *strs, U8 cnt);
+
+// --------- strnstr(); which is only in BSD.
+char * strnstr(const char *s, const char *find, size_t slen);
 
 // ------------------------------------------ CRCs --------------------------------------------
 

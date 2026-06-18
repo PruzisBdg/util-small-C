@@ -595,9 +595,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/src/printfs/array_print_line.c</locationURI>
 		</link>
 		<link>
-			<name>src/printfs/array_print_line.c.bak</name>
+			<name>src/printfs/print_S_BufC8.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src/printfs/array_print_line.c.bak</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/src/printfs/print_S_BufC8.c</locationURI>
 		</link>
 		<link>
 			<name>src/printfs/tiny1_printf.c</name>
@@ -648,6 +648,11 @@
 			<name>src/safe_string/strlenU8.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/safe_string/strlenU8.c</locationURI>
+		</link>
+		<link>
+			<name>src/safe_string/strnstr.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src/safe_string/strnstr.c</locationURI>
 		</link>
 		<link>
 			<name>src/srecord/parse_s_record.c</name>
@@ -708,6 +713,11 @@
 			<name>src/timedate/Secs_to_HMS.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/timedate/Secs_to_HMS.c</locationURI>
+		</link>
+		<link>
+			<name>src/timedate/T_Time_to_hms_centisecs.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src/timedate/T_Time_to_hms_centisecs.c</locationURI>
 		</link>
 		<link>
 			<name>src/timedate/days_in_month.c</name>

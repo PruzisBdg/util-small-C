@@ -8,6 +8,7 @@
 
 #include "libs_support.h"
 #include <stdbool.h>
+#include "util.h"
 
 #define _SENSUS_MSG_DECODER_INCLUDE_MAG_SUPPORT
 
@@ -188,6 +189,7 @@ PUBLIC C8 const * Sensus_PrintMsgData(C8 *out, enc_S_MsgData const *ed);
 PUBLIC bool Sensus_EncodersEqual(enc_S_MsgData const *a, enc_S_MsgData const *b, bool chkMag);
 PUBLIC C8 const * sens_ShowEncoders(C8 *out, enc_M_EncType t);
 PUBLIC C8 const * sens_ShowAlerts(C8 *out, enc_S_Alerts const *a);
+PUBLIC S_BufC8 const * sens_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred);
 
 #define _sens_ShowEnc_maxChars sizeof("(ADE|Gen1|Gen2|HRE|HRE-LCD|Mag)")
 

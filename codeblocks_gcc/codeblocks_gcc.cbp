@@ -559,6 +559,9 @@
 			<Option target="Release" />
 			<Option target="Console" />
 		</Unit>
+		<Unit filename="../src/printfs/print_S_BufC8.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../src/printfs/tiny1_printf.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -611,6 +614,9 @@
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/safe_string/strnstr.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/srecord/parse_s_record.c">
 			<Option compilerVar="CC" />
@@ -665,6 +671,9 @@
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
 			<Option target="Release" />
+		</Unit>
+		<Unit filename="../src/timedate/T_Time_to_hms_centisecs.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/timedate/days_in_month.c">
 			<Option compilerVar="CC" />

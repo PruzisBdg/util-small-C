@@ -128,6 +128,59 @@ PUBLIC C8 const *sens_ShowAlerts(C8 *out, enc_S_Alerts const *a)
    return out;
 }
 
+/* -------------------------- sens_ShowAlertsToggled ----------------------------------------
+
+   Prints into 'out' the moniker '+name' for any alerts corresponding to bits set in 'mBitsSet'
+   and a '-name' moniker for any bits set in 'mBitsClred'. On entry 'out->cnt' is the chars-space
+   available in 'out'.
+
+   This printout is to show what M-field flags toggled since the previous DataPoint M-field.
+
+   The monikers are concatenated to be a field in a CSV line (i.e the printout uses no commas)
+
+   Example: "+Ovfl:-Tamp:+NoFlo"
+
+   Returns 'out' with the number of chars actually printed.
+*/
+PUBLIC S_BufC8 const * sens_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred)
+{
+   enc_S_MsgData d;
+
+   // Convert the M-field 'mBitsSet' to alerts flags.
+   Sensus_DecodeMField(mBitsSet, &d);  enc_S_NonMagAlerts adds = d.alerts.noMag;
+
+   // Convert also 'mBitsClred' to alerts flags.
+   Sensus_DecodeMField(mBitsClred, &d);  enc_S_NonMagAlerts cleared = d.alerts.noMag;
+
+   // 'either' are all Alerts that were either set or cleared
+   enc_S_NonMagAlerts either; either.asU16 = adds.asU16 | cleared.asU16;
+
+   #define _fldTxt_maxChs sizeof("+Empty:")
+   C8 fldTxt[_fldTxt_maxChs+1];
+
+   // Returns "+name:" if add set; else "-name:"
+   C8 const * mkFld(C8 const *name, U8 add) {
+      snprintf(fldTxt, _fldTxt_maxChs, "%s%s:", add == 1 ? "+" : "-'", name);
+      return fldTxt; }
+
+   // For each possible alert, print '+alert:', '-alert:' or nothing.
+   return Print_BufC8(out, "%s%s%s%s%s%s%s%s%s%s%s",
+
+         either.bs.overflow == 1     ? mkFld("Ovfl", adds.bs.overflow)  : "",
+         either.bs.pressure == 1     ? mkFld("Pres", adds.bs.pressure)  : "",
+         either.bs.reverseFlow == 1  ? mkFld("revF", adds.bs.reverseFlow) : "",
+         either.bs.negFlowRate == 1  ? mkFld("negF", adds.bs.negFlowRate) : "",
+         either.bs.tamper == 1       ? mkFld("Tamp", adds.bs.tamper)    : "",
+         either.bs.leak == 1         ? mkFld("Leak", adds.bs.leak)      : "",
+         either.bs.program == 1      ? mkFld("Pgm",  adds.bs.program)   : "",
+         either.bs.temperature == 1  ? mkFld("Tmpr", adds.bs.temperature) : "",
+         either.bs.endOfLife == 1    ? mkFld("EOL",  adds.bs.endOfLife)  : "",
+         either.bs.emptyPipe == 1    ? mkFld("Empty",adds.bs.emptyPipe) : "",
+         either.bs.noFlow == 1       ? mkFld("NoFlo",adds.bs.noFlow)    : "");
+} // sens_ShowAlertsToggled()
+
+
+
 // ------------------------------------------------------------------------------------------
 static C8 const *showOnePres(C8 *out, enc_T_Pressure p) {
    if(p == 0xFE) {
