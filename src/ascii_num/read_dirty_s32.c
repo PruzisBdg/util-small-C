@@ -33,7 +33,7 @@ PRIVATE void addChToAcc(S32 *n, U8 ch) { *n = (10 * *n) + ch - '0'; }
 |  non-printing chars. The number may not be split. If a digit is directly preceded
 |  by '-', the number is read as negative.
 |
-|  Returns pointer to the first char after the last byte read, else 0 if reached
+|  Returns pointer to the first char after the last byte read, else NULL if reached
 |  '\0' (NULL) without parsing a number
 |
 |  Note: If a number is NOT parsed '*out' is 0.

@@ -128,7 +128,7 @@ PUBLIC C8 const *sens_ShowAlerts(C8 *out, enc_S_Alerts const *a)
    return out;
 }
 
-/* -------------------------- sens_ShowAlertsToggled ----------------------------------------
+/* -------------------------- Sensus_ShowAlertsToggled ----------------------------------------
 
    Prints into 'out' the moniker '+name' for any alerts corresponding to bits set in 'mBitsSet'
    and a '-name' moniker for any bits set in 'mBitsClred'. On entry 'out->cnt' is the chars-space
@@ -142,7 +142,7 @@ PUBLIC C8 const *sens_ShowAlerts(C8 *out, enc_S_Alerts const *a)
 
    Returns 'out' with the number of chars actually printed.
 */
-PUBLIC S_BufC8 const * sens_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred)
+PUBLIC S_BufC8 const * Sensus_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred)
 {
    enc_S_MsgData d;
 
@@ -177,7 +177,7 @@ PUBLIC S_BufC8 const * sens_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mB
          either.bs.endOfLife == 1    ? mkFld("EOL",  adds.bs.endOfLife)  : "",
          either.bs.emptyPipe == 1    ? mkFld("Empty",adds.bs.emptyPipe) : "",
          either.bs.noFlow == 1       ? mkFld("NoFlo",adds.bs.noFlow)    : "");
-} // sens_ShowAlertsToggled()
+} // Sensus_ShowAlertsToggled()
 
 
 
