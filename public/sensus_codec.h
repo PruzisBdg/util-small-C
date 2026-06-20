@@ -191,7 +191,7 @@ PUBLIC C8 const * sens_ShowEncoders(C8 *out, enc_M_EncType t);
 #define _sens_ShowEnc_maxChars sizeof("(ADE|Gen1|Gen2|HRE|HRE-LCD|Mag)")
 
 PUBLIC C8 const * sens_ShowAlerts(C8 *out, enc_S_Alerts const *a);
-PUBLIC S_BufC8 const * Sensus_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred);
+PUBLIC S_BufC8 const * Sensus_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred, C8 const *delimiter);
 #define _Sensus_ShowAlertsToggled_maxChars \
    sizeof("+Ovfl:+Pres:+revF:+negF:+Tamp:+Leak:+Pgm:+Tmpr:+EOL:+Empty:+NoFlow:")
 

@@ -12,7 +12,7 @@
 
 /* ------------------------ SecsToHrMinStr ----------------------------
 
-   Print 'secsCnt' into mm:ss, e.g  23:17,  923:04:01
+   Print 'secsCnt' into hh:mm, e.g  23:17
 
    Returns the length of the resulting 'strOut', which is 5.
 */
@@ -21,43 +21,28 @@ PUBLIC C8 const HMFormatter[] = "%02d:%02d";  // Make public to avoid ARM gcc li
 PUBLIC U8 SecsToHrMinStr(T_Seconds32 secsCnt, C8 *strOut) {
 
    // Limit to 59:59.
-   secsCnt = MinU32(secsCnt, 60*59 + 59);
+   secsCnt = MinU32(secsCnt, 60*(23*60 + 59));
 
-   /* Note: must evaluate hours, minutes, secs explicitly because 'mins' uses 'hours'
-      and 'secs' uses 'mins' AND the evaluation order of the expressions passed to
-      a function is not guaranteed.
-   */
-   U8 mins   = secsCnt/60;
-   U8 secs   = secsCnt - (60 * (U32)mins);
-   U8 rtn;
+   U8 hrs   = secsCnt/3600;
+   U8 mins  = (secsCnt - (3600 * (U32)hrs))/60;
 
-   // Make sure resulting string is no more than "hhhh:mm:ss".
-   rtn = MinS16(sprintf(strOut, HMFormatter, mins, secs), 10);
-   strOut[6] = '\0';
-   return rtn;
+   return sprintf(strOut, HMFormatter, hrs, mins);
 }
 
 /* ------------------------ SecsToHrMinStrRtn ----------------------------
 
-    Same as above but chains 'strOut'.
+    Same as above but returns 'strOut'.
 */
 PUBLIC C8 const * SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut) {
 
-   // Limit to 9999:59:59.
-   secsCnt = MinU32(secsCnt, 60*59 + 59);
+   // Limit to 59:59.
+   secsCnt = MinU32(secsCnt, 60*(23*60 + 59));
 
-   /* Note: must evaluate hours, minutes, secs explicitly because 'mins' uses 'hours'
-      and 'secs' uses 'mins' AND the evaluation order of the expressions passed to
-      a function is not guaranteed.
-   */
-   U8 mins   = secsCnt/60;
-   U8 secs   = secsCnt - (60 * (U32)mins);
+   U8 hrs   = secsCnt/3600;
+   U8 mins  = (secsCnt - (3600 * (U32)hrs))/60;
 
-   // Make sure resulting string is no more than "hhhh:mm:ss".
-   sprintf(strOut, HMFormatter, mins, secs);
-   strOut[6] = '\0';
-   return strOut;
-}
+   sprintf(strOut, HMFormatter, hrs, mins);
+   return strOut; }
 
 
 // ------------------------------ eof -----------------------------------

@@ -142,7 +142,7 @@ PUBLIC C8 const *sens_ShowAlerts(C8 *out, enc_S_Alerts const *a)
 
    Returns 'out' with the number of chars actually printed.
 */
-PUBLIC S_BufC8 const * Sensus_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred)
+PUBLIC S_BufC8 const * Sensus_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 mBitsClred, C8 const *delimiter)
 {
    enc_S_MsgData d;
 
@@ -150,33 +150,37 @@ PUBLIC S_BufC8 const * Sensus_ShowAlertsToggled(S_BufC8 *out, U32 mBitsSet, U32 
    Sensus_DecodeMField(mBitsSet, &d);  enc_S_NonMagAlerts adds = d.alerts.noMag;
 
    // Convert also 'mBitsClred' to alerts flags.
-   Sensus_DecodeMField(mBitsClred, &d);  enc_S_NonMagAlerts cleared = d.alerts.noMag;
+   Sensus_DecodeMField(mBitsClred, &d);  enc_S_NonMagAlerts clrd = d.alerts.noMag;
 
-   // 'either' are all Alerts that were either set or cleared
-   enc_S_NonMagAlerts either; either.asU16 = adds.asU16 | cleared.asU16;
+   S_BufC8 outCpy = *out;  S_BufC8 *chn = &outCpy;
 
-   #define _fldTxt_maxChs sizeof("+Empty:")
-   C8 fldTxt[_fldTxt_maxChs+1];
+   C8 const *prefixIs(U8 adds, U8 lost) {
+      return adds != 0 ? "+" : (lost != 0 ? "-" : ""); }
 
-   // Returns "+name:" if add set; else "-name:"
-   C8 const * mkFld(C8 const *name, U8 add) {
-      snprintf(fldTxt, _fldTxt_maxChs, "%s%s:", add == 1 ? "+" : "-'", name);
-      return fldTxt; }
+   #define _OneAlert_maxChars sizeof("+Empty:")
+   C8 oneAlert[_OneAlert_maxChars];       // Content is consumed by each Chain_BufC8(); then may be reused.
 
-   // For each possible alert, print '+alert:', '-alert:' or nothing.
-   return Print_BufC8(out, "%s%s%s%s%s%s%s%s%s%s%s",
+   // Makes e.g ":+Ovfl"
+   C8 const *alertStr(C8 const *name, C8 const *prefix, C8 const *delimiter) {
+      snprintf(oneAlert, _OneAlert_maxChars, "%s%s%s", delimiter, prefix, name);
+      return oneAlert; }
 
-         either.bs.overflow == 1     ? mkFld("Ovfl", adds.bs.overflow)  : "",
-         either.bs.pressure == 1     ? mkFld("Pres", adds.bs.pressure)  : "",
-         either.bs.reverseFlow == 1  ? mkFld("revF", adds.bs.reverseFlow) : "",
-         either.bs.negFlowRate == 1  ? mkFld("negF", adds.bs.negFlowRate) : "",
-         either.bs.tamper == 1       ? mkFld("Tamp", adds.bs.tamper)    : "",
-         either.bs.leak == 1         ? mkFld("Leak", adds.bs.leak)      : "",
-         either.bs.program == 1      ? mkFld("Pgm",  adds.bs.program)   : "",
-         either.bs.temperature == 1  ? mkFld("Tmpr", adds.bs.temperature) : "",
-         either.bs.endOfLife == 1    ? mkFld("EOL",  adds.bs.endOfLife)  : "",
-         either.bs.emptyPipe == 1    ? mkFld("Empty",adds.bs.emptyPipe) : "",
-         either.bs.noFlow == 1       ? mkFld("NoFlo",adds.bs.noFlow)    : "");
+   // For each possible alert, print ':+alert', ':-alert' or nothing.
+   Chain_BufC8(chn, alertStr("Ovfl" , prefixIs(adds.bs.overflow,     clrd.bs.overflow),      ""));    // No leading delimiter for 1st printout.
+   Chain_BufC8(chn, alertStr("Pres",  prefixIs(adds.bs.pressure,     clrd.bs.pressure),      delimiter));
+   Chain_BufC8(chn, alertStr("revF",  prefixIs(adds.bs.reverseFlow,  clrd.bs.reverseFlow),   delimiter));
+   Chain_BufC8(chn, alertStr("negF",  prefixIs(adds.bs.negFlowRate,  clrd.bs.negFlowRate),   delimiter));
+   Chain_BufC8(chn, alertStr("Tamp",  prefixIs(adds.bs.tamper,       clrd.bs.tamper),        delimiter));
+   Chain_BufC8(chn, alertStr("Leak",  prefixIs(adds.bs.leak,         clrd.bs.leak),          delimiter));
+   Chain_BufC8(chn, alertStr("Pgm",   prefixIs(adds.bs.program,      clrd.bs.program),       delimiter));
+   Chain_BufC8(chn, alertStr("Tmpr",  prefixIs(adds.bs.temperature,  clrd.bs.temperature),   delimiter));
+   Chain_BufC8(chn, alertStr("EOL",   prefixIs(adds.bs.endOfLife,    clrd.bs.endOfLife),     delimiter));
+   Chain_BufC8(chn, alertStr("Empty", prefixIs(adds.bs.emptyPipe,    clrd.bs.emptyPipe),     delimiter));
+   Chain_BufC8(chn, alertStr("NoFlo", prefixIs(adds.bs.noFlow,       clrd.bs.noFlow),        delimiter));
+
+   // Total printed length is initial chars-space minus space remaining after chains.
+   out->cnt -= chn->cnt;
+   return out;
 } // Sensus_ShowAlertsToggled()
 
 
