@@ -381,6 +381,9 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_
 PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const * src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian);
 PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian);
 
+// ---- S_BufC8 ----- 'cnt' is the number of chars.
+typedef struct {C8 *cs; U16 cnt;} S_BufC8;
+
 /* --------------------- Time/Date, ISO8601 format -------------------------
 
    These functions convert between seconds and hours/minutes/seconds (HMS) and
@@ -505,6 +508,7 @@ PUBLIC U8            SecsToHMSStr(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHMS32_Str(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHrMinStr(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut);
+PUBLIC S_BufC8 const * SecsToDHMStr(T_Seconds32 secsCnt, S_BufC8 *out);
 PUBLIC C8 const *    SecsToHMSStrRtn(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC C8 const *    SecsToHMS32_StrRtn(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC BOOLEAN       Legal_HMS(S_TimeHMS const *t);
@@ -567,7 +571,8 @@ extern S16 const     DaysToMonthStartTbl[];
 #define _HMS_MaxStr   (sizeof("T65535:59:59") + 1)
 #define _ISO8601_HMS_MaxSpaces "           "
 #define _ISO8601_HMS_AsSpaces "        "
-#define _HM_MaxStr   (sizeof("T65536:59")+1)
+#define _HM_MaxStr   (sizeof("P65536:59")+1)
+#define _DHM_MaxStr   (sizeof("P9999D23H59M")+1)
 
 
 // Compact into U16, tagged with secs, minutes or hrs.
@@ -580,12 +585,10 @@ PUBLIC C8 const * PrintU8sReversed_1Line(C8 *out, U16 outBufLen, C8 const *fmt, 
 PUBLIC C8 const * PrintS16s_1Line(C8 *out, U16 outBufLen, C8 const *fmt, S16 const *src, size_t numBytes);
 PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 const *fmt, U8 const *srcA, size_t aBytes, U8 const *srcB, size_t bBytes);
 
-// ---- S_BufC8 ----- 'cnt' is the number of chars.
-typedef struct {C8 *cs; U16 cnt;} S_BufC8;
-
 // ------------------------- Prints and Chains to S_BufC8 ------------------------------------
 PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...);
+#define _ChainBufC8_NULLEndsStr NULL
 PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8 const *src, C8 const *key);
 
 /* -------------------------- Table search ----------------------------------------- */

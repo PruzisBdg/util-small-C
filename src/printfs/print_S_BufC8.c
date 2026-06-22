@@ -31,12 +31,14 @@ PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...) {
    Same as Print_BufC8() except return 'out->cs' advanced past the chars added and with 'out->cnt'
    reduced by the number of chars added.
 
-   Use fmt == "" to append just a '\0'. Use this to insert a separator for a fresh string after.
+   Use fmt == NULL to append just a '\0'. Use this to insert a separator for a fresh string after.
 */
 PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...) {
-   if(fmt[0] == '\0' && out->cnt > 0) {               // Add ""? and there's space to add it?
-      out->cs++; *(out->cs) = '\0'; out->cnt--; }     // then append '\0' and cap with another '\0'
-   else {
+   if(fmt == NULL) {
+      if(out->cnt > 0) {                  // 'fmt' is NULL? AND there's space to add 1 char?
+         out->cs++; *(out->cs) = '\0';    // then append '\0' and cap with another '\0'
+         out->cnt--; }}
+   else {                                 // else fmt is not NULL. Append it with any args.
       va_list  ap;
       va_start(ap, fmt);
 
