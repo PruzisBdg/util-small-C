@@ -466,11 +466,18 @@ typedef U16 T_Weeks16;
 // If you want to call 'S_DateTime' this to be consistent with below.
 #define S_YMDHMS  S_DateTime
 
-// Up to 9999 hrs when rendered as an ISO8601 string i.e max is "9999:59:59".
+// Up to 9999 hrs when rendered as an ISO8601 Period string i.e max is "P9999H59M59S".
 typedef struct {
    U16 hr;           // 0 - 9999
    U8 min, sec;      // 0 - 59
    } S_TimeHMS;
+
+
+// Up to 9999 days when rendered as an ISO8601 Period string i.e max is "P9999D23H59M59S".
+typedef struct {
+   U16 days;
+   U8  hr, min, sec;
+   } S_TimeDHMS;
 
 #define _HMS_WildHr     _YMD_AnyYear   // i.e for U16.
 #define _HMS_Wilds      _YMD_AnyMDHMS
@@ -503,7 +510,8 @@ static inline U8 DayOfYMD(S_YMD const *d) {
          : d->day; }
 
 // Hours, minutes, sec.
-PUBLIC void          SecsToHMS(T_Seconds32 secs, S_TimeHMS *hms);
+PUBLIC S_TimeHMS const * SecsToHMS(T_Seconds32 secs, S_TimeHMS *hms);
+PUBLIC S_TimeDHMS const * SecsToDHMS(T_Seconds32 secs, S_TimeDHMS *dhms);
 PUBLIC U8            SecsToHMSStr(   T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHMS32_Str(T_Seconds32 secsCnt, C8 *strOut);
 PUBLIC U8            SecsToHrMinStr(T_Seconds32 secsCnt, C8 *strOut);
@@ -568,11 +576,13 @@ extern S16 const     DaysToMonthStartTbl[];
 #define _ISO8601_YMD_MaxStr (sizeof("2018-03-06") + 1)
 
 // Non-ISO8601 elapsed HMS sizes; for 'S_TimeHMS' where hours are U16
-#define _HMS_MaxStr   (sizeof("T65535:59:59") + 1)
-#define _ISO8601_HMS_MaxSpaces "           "
-#define _ISO8601_HMS_AsSpaces "        "
-#define _HM_MaxStr   (sizeof("P65536:59")+1)
-#define _DHM_MaxStr   (sizeof("P9999D23H59M")+1)
+#define _HMS_MaxStr   (sizeof("P65535H59M59S") + 1)
+#define _ISO8601_HMS_MaxSpaces "            "
+#define _ISO8601_HMS_AsSpaces  "            "
+
+#define _HM_MaxStr      (sizeof("P65536:59")+1)
+#define _DHM_MaxStr     (sizeof("P9999D23H59M")+1)
+#define _DHMS_MaxStr    (sizeof("P9999D23H59M59S")+1)
 
 
 // Compact into U16, tagged with secs, minutes or hrs.

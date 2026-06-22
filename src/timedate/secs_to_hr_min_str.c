@@ -46,15 +46,9 @@ PUBLIC C8 const * SecsToHrMinStrRtn(T_Seconds32 secsCnt, C8 *strOut) {
 PUBLIC C8 const DHMFormatter[] = "P%02uD%02dH%02dM";  // Make public to avoid ARM gcc linker bug.
 
 PUBLIC S_BufC8 const * SecsToDHMStr(T_Seconds32 secsCnt, S_BufC8 *out) {
-   // limit to 9999:23:59
-   secsCnt = MinU32(secsCnt, 60*(((9999*24UL) + 23)*60 + 59));
+   S_TimeDHMS const *dhms = SecsToDHMS(secsCnt, &(S_TimeDHMS){});
 
-   U16 days = secsCnt/(3600*24);
-   U32 dysec = (3600*24*(U32)days);
-   U8  hrs  = (secsCnt - dysec)/3600;
-   U8  mins = (secsCnt - dysec - (3600*(U32)hrs))/60;
-
-   out->cnt = MinU16(out->cnt, snprintf(out->cs, out->cnt, DHMFormatter, days, hrs, mins));
+   out->cnt = MinU16(out->cnt, snprintf(out->cs, out->cnt, DHMFormatter, dhms->days, dhms->hr, dhms->min));
    return out;
 }
 

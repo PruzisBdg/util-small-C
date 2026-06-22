@@ -710,6 +710,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/src/timedate/ISO8601_Str_to_secs.c</locationURI>
 		</link>
 		<link>
+			<name>src/timedate/Secs_to_DHMS.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src/timedate/Secs_to_DHMS.c</locationURI>
+		</link>
+		<link>
 			<name>src/timedate/Secs_to_HMS.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/timedate/Secs_to_HMS.c</locationURI>

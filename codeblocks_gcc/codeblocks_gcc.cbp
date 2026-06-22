@@ -667,6 +667,9 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="../src/timedate/Secs_to_DHMS.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../src/timedate/Secs_to_HMS.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -674,6 +677,8 @@
 		</Unit>
 		<Unit filename="../src/timedate/T_Time_to_hms_centisecs.c">
 			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="../src/timedate/days_in_month.c">
 			<Option compilerVar="CC" />
