@@ -381,8 +381,19 @@ PUBLIC bool bit64K_Out(bit64K_Ports const *port, U8 *dest, T_bit64K src, bit64K_
 PUBLIC bool bit64K_In(bit64K_Ports const *port, T_bit64K dest, U8 const * src, bit64K_T_Cnt numBits, E_EndianIs destEndian, bool srcIsEndian);
 PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fieldBits, bool parmHasEndian);
 
-// ---- S_BufC8 ----- 'cnt' is the number of chars.
+/* ------------------------------- S_BufC8 ----------------------------------------
+
+   To hold chars or strings. By convention 'cnt' is the size of the largest string which will fit
+   i.e its the capacity in CHARS, allowing room for terminating '\0'.
+*/
 typedef struct {C8 *cs; U16 cnt;} S_BufC8;
+
+// (Anonynous) init a S_bufC8, prefilled with '\0's.
+#define _BufC8(capacityChs)  (S_BufC8){.cs = (C8[(capacityChs)+1]){0}, .cnt = (capacityChs)}
+// and declare a S_BufC8.
+#define _Decl_BufC8(_name, capacityChs) S_BufC8 _name = _BufC8(capacityChs)
+
+
 
 /* --------------------- Time/Date, ISO8601 format -------------------------
 
