@@ -387,6 +387,7 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
    i.e its the capacity in CHARS, allowing room for terminating '\0'.
 */
 typedef struct {C8 *cs; U16 cnt;} S_BufC8;
+typedef struct {C8 const *cs; U16 cnt;} S_BufC8_ro;
 
 // (Anonynous) init a S_bufC8, prefilled with '\0's.
 #define _BufC8(capacityChs)  (S_BufC8){.cs = (C8[(capacityChs)+1]){0}, .cnt = (capacityChs)}
@@ -610,7 +611,7 @@ PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 c
 PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 #define _ChainBufC8_NULLEndsStr NULL
-PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8 const *src, C8 const *key);
+PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 const *key);
 
 /* -------------------------- Table search ----------------------------------------- */
 

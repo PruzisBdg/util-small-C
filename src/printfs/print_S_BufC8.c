@@ -65,7 +65,7 @@ PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...) {
 
    Return 'dest->cnt' the number of chars copied' into dest; '\0'/cnt = 0 if 'key' not found.
 */
-PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8 const *src, C8 const *key) {
+PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 const *key) {
    C8 const *keyAt = strnstr(src->cs, key, src->cnt);    // Look for 'key' in 'src'.
 
    if(keyAt != NULL) {                                   // Found 'key'?
