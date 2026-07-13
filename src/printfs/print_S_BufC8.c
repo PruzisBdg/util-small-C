@@ -78,4 +78,35 @@ PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 co
       dest->cs[0] = '\0'; dest->cnt = 0; }               // so return just "".
    return dest; }       // This function always returns some string.
 
+
+
+/* ------------------------------------ Strcpy_BufC8 --------------------------------------------
+
+   Copy string 'src' into 'dest', up to 'dest->cnt' chars. Return 'dest' with 'cnt' unchanged
+*/
+PUBLIC S_BufC8 * Strcpy_BufC8(S_BufC8 *dest, C8 const *src) {
+   U16 nChars = MinU16(dest->cnt, strlen(src));    // Will copy up what will fit in 'dest'.
+   memmove(dest->cs, src, nChars);
+   dest->cs[nChars] = '\0';                        // '\0' terminated, whether copied all of 'src' or no.
+   return dest; }
+
+
+/* ------------------------------------- StrChainCpy_BufC8 --------------------------------------------
+
+   Copy string 'src' into 'dest', up to 'dest->cnt' chars. 'dest'->cnt is unmodified.
+
+   Return a copy of 'dest' but with 'cs' advanced to the '\0' of the 'src' copied in and with 'cnt'
+   decremented by the number of chars copied in.
+*/
+PUBLIC S_BufC8 Strcpy_ChainBufC8(S_BufC8 const *dest, C8 const *src) {
+   U16 nChars = MinU16(dest->cnt, strlen(src));    // Will copy up what will fit in 'dest'.
+   memmove(dest->cs, src, nChars+1);               // Including '\0'.
+   dest->cs[nChars] = '\0';                        // '\0' terminated, whether copied all of 'src' or no.
+
+   // Return a new 'dest' starting after 'src' copied in and with chars-free remaining in 'dest'.
+   return (S_BufC8){.cs = dest->cs + nChars, .cnt = dest->cnt + nChars}; }
+
+
+
+
 // --------------------------------------------- eof ---------------------------------------------

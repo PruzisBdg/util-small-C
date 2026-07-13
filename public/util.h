@@ -612,6 +612,8 @@ PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 #define _ChainBufC8_NULLEndsStr NULL
 PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 const *key);
+PUBLIC S_BufC8 * Strcpy_BufC8(S_BufC8 *dest, C8 const *src);
+PUBLIC S_BufC8 Strcpy_ChainBufC8(S_BufC8 const *dest, C8 const *src);
 
 /* -------------------------- Table search ----------------------------------------- */
 
