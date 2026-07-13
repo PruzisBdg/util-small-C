@@ -387,12 +387,7 @@ PUBLIC bool bit64K_ParmFitsField(U8 const *parm, U8 parmBytes, bit64K_T_Cnt fiel
    i.e its the capacity in CHARS, allowing room for terminating '\0'.
 */
 typedef struct {C8 *cs; U16 cnt;} S_BufC8;
-<<<<<<< HEAD
 typedef struct {C8 const *cs; U16 cnt;} S_BufC8_ro;   // Read-only.
-
-=======
-typedef struct {C8 const *cs; U16 cnt;} S_BufC8_ro;
->>>>>>> 649e5c2a36a9714177eff343b3429935fbc2ef3e
 
 // (Anonynous) init a S_bufC8, prefilled with '\0's.
 #define _BufC8(capacityChs)  (S_BufC8){.cs = (C8[(capacityChs)+1]){0}, .cnt = (capacityChs)}
