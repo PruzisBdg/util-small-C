@@ -84,7 +84,7 @@ PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 co
 
    Copy string 'src' into 'dest', up to 'dest->cnt' chars. Return 'dest' with 'cnt' unchanged
 */
-PUBLIC S_BufC8 * Strcpy_BufC8(S_BufC8 *dest, C8 const *src) {
+PUBLIC S_BufC8 const * Strcpy_BufC8(S_BufC8 const *dest, C8 const *src) {
    U16 nChars = MinU16(dest->cnt, strlen(src));    // Will copy up what will fit in 'dest'.
    memmove(dest->cs, src, nChars);
    dest->cs[nChars] = '\0';                        // '\0' terminated, whether copied all of 'src' or no.

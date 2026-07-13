@@ -391,8 +391,8 @@ typedef struct {C8 const *cs; U16 cnt;} S_BufC8_ro;   // Read-only.
 
 // (Anonynous) init a S_bufC8, prefilled with '\0's.
 #define _BufC8(capacityChs)  (S_BufC8){.cs = (C8[(capacityChs)+1]){0}, .cnt = (capacityChs)}
-// and declare a S_BufC8.
-#define _Decl_BufC8(_name, capacityChs) S_BufC8 _name = _BufC8(capacityChs)
+// and declare a S_BufC8 AND a reference to same.
+#define _Decl_BufC8(_name, capacityChs) S_BufC8 *_name = &_BufC8(capacityChs)
 
 
 
@@ -612,7 +612,7 @@ PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 #define _ChainBufC8_NULLEndsStr NULL
 PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 const *key);
-PUBLIC S_BufC8 * Strcpy_BufC8(S_BufC8 *dest, C8 const *src);
+PUBLIC S_BufC8 const * Strcpy_BufC8(S_BufC8 const *dest, C8 const *src);
 PUBLIC S_BufC8 Strcpy_ChainBufC8(S_BufC8 const *dest, C8 const *src);
 
 /* -------------------------- Table search ----------------------------------------- */
