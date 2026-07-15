@@ -79,6 +79,20 @@ PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 co
    return dest; }       // This function always returns some string.
 
 
+/* ------------------------------------- Strlen_BufC8 ------------------------------------------
+
+   Return the length of a string in 'src'. Thats the number of chars; same strlen()  If no '\0'
+   found the return 'src->cnt'.
+
+   For S_BufC8 use this in place of strlen(). S_BufC8 & Strlen_BufC8() is bounded to U16 chars,
+   wheras strlen() may run past that.
+*/
+PUBLIC U16 Strlen_BufC8(S_BufC8 const *src) {
+   U32 len;
+   for(len = 0; len < src->cnt; len++) {     // Up to the chars-capacity of 'src'..
+      if(src->cs[len] == '\0') {             // Found '\0'?
+         break; }}                           // then done
+   return len; }     // either chars preceding '\0' OR src->cnt.
 
 /* ------------------------------------ Strcpy_BufC8 --------------------------------------------
 
@@ -88,6 +102,20 @@ PUBLIC S_BufC8 const * Strcpy_BufC8(S_BufC8 const *dest, C8 const *src) {
    U16 nChars = MinU16(dest->cnt, strlen(src));    // Will copy up what will fit in 'dest'.
    memmove(dest->cs, src, nChars);
    dest->cs[nChars] = '\0';                        // '\0' terminated, whether copied all of 'src' or no.
+   return dest; }
+
+
+/* ----------------------------------- Strcat_BufC8 --------------------------------------------
+
+   Concatenate regular string 'src' onto 'dest', up to as many chars as will fit.
+*/
+PUBLIC S_BufC8 const * Strcat_BufC8(S_BufC8 const *dest, C8 const *src) {
+   size_t srcLen = strlen(src);                       // 'src' may be 'size_t' i.e longer than an S_BufC8.
+   U16 destLen   = Strlen_BufC8(dest);
+   U16 nOpen     = dest->cnt - destLen;               // nChars open to append 'src'
+   U16 nCpy      = nOpen > srcLen ? srcLen : nOpen;   // Will append no more than 'nOpen'
+   memmove(&dest->cs[destLen], src, nCpy);            // Use memmove(); 'src' may overlap 'dest'
+   dest->cs[destLen + nCpy] = '\0';                   // terminate.
    return dest; }
 
 

@@ -610,6 +610,8 @@ PUBLIC C8 const * PrintU8s_MarkDiffs(C8 *out, U16 outBufLen, C8 const *hdr, C8 c
 // ------------------------- Prints and Chains to S_BufC8 ------------------------------------
 PUBLIC S_BufC8 const * Print_BufC8(S_BufC8 *out, C8 const *fmt, ...);
 PUBLIC S_BufC8 const * Chain_BufC8(S_BufC8 *out, C8 const *fmt, ...);
+PUBLIC U16 Strlen_BufC8(S_BufC8 const *src);
+PUBLIC S_BufC8 const * Strcat_BufC8(S_BufC8 const *dest, C8 const *src);
 #define _ChainBufC8_NULLEndsStr NULL
 PUBLIC S_BufC8 const * CpyTail_BufC8(S_BufC8 *dest, S_BufC8_ro const *src, C8 const *key);
 PUBLIC S_BufC8 const * Strcpy_BufC8(S_BufC8 const *dest, C8 const *src);
