@@ -984,6 +984,13 @@
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
 		</Unit>
+		<Unit filename="../unit_test/printfs/print_S_BufC8.mak">
+			<Option target="Unity TDD" />
+		</Unit>
+		<Unit filename="../unit_test/printfs/test-print_S_BufC8.c">
+			<Option compilerVar="CC" />
+			<Option target="Unity TDD" />
+		</Unit>
 		<Unit filename="../unit_test/printfs/test-tiny1_printf_float.c">
 			<Option compilerVar="CC" />
 			<Option target="Unity TDD" />
